@@ -3,7 +3,7 @@
     <h1>Product Management System</h1>
 </div>
 
-Welcome to the **Product Management System** App!
+Welcome to the **Product Management** System!
 
 This is a .NET project designed to demonstrate role based authentication and authorisation with ASP.NET Core Identity.
 
