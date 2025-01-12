@@ -1,9 +1,130 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
 
 <Header />
-<main>
-    <article class="content px-4">
-        @Body
-    </article>
-</main>
+<div class="container-fluid">
+    <div class="row">
+        <div class="sidebar border border-right col-md-3 col-lg-2 p-0 bg-body-tertiary">
+            <div class="offcanvas-md offcanvas-end bg-body-tertiary" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="sidebarMenuLabel">Company name</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2 @(currentPage is CurrentPage.Home ? "active" : "" )" aria-current="page" href="#">
+                                @if(currentPage is CurrentPage.Home)
+                                {
+                                    <HouseFillSvg />
+                                }
+                                else
+                                {
+                                    <HouseSvg />
+                                }
+                                Home
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2 @(currentPage is CurrentPage.Products ? "active" : "" )" href="#">
+                                @if (currentPage is CurrentPage.Products)
+                                {
+                                    <CartFillSvg />
+                                }
+                                else
+                                {
+                                    <CartSvg />
+                                }
+                                Products
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2 @(currentPage is CurrentPage.Users ? "active" : "" )" href="#">
+                                @if (currentPage is CurrentPage.Users)
+                                {
+                                    <PeopleFillSvg />
+                                }
+                                else
+                                {
+                                    <PeopleSvg />
+                                }
+                                Users
+                            </a>
+                        </li>
+                    </ul>
 
+                    <hr class="my-3">
+
+                    <ul class="nav flex-column mb-auto">
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2" href="#">
+                                <DoorClosedSvg />
+                                Sign out
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="btn-group m-3" role="group" aria-label="theme select">
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-theme-value="light" aria-pressed="false">
+                            <SunFillSvg />
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-theme-value="dark" aria-pressed="false">
+                            <MoonStarsFillSvg />
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-theme-value="auto" aria-pressed="true">
+                            <CircleHalfSvg />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Dashboard</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1">
+                        @* <svg class="bi"><use xlink:href="#calendar3" /></svg> *@
+                        This week
+                    </button>
+                </div>
+            </div>
+
+            @Body
+
+        </main>
+    </div>
+</div>
+
+@code {
+    private enum CurrentPage
+    {
+        Home,
+        Products,
+        Users,
+    }
+
+    private CurrentPage currentPage;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        currentPage = GetCurrentPage(NavigationManager.Uri.ToString());
+    }
+
+    private CurrentPage GetCurrentPage(string uri)
+    {
+        return uri.Split("\\").LastOrDefault()?.ToLower() switch
+        {
+            "products" => CurrentPage.Products,
+            "users" => CurrentPage.Users,
+            _ => CurrentPage.Users,
+        };
+    }
+
+}

@@ -1,0 +1,20 @@
+﻿@media (min-width: 768px) {
+  .sidebar .offcanvas-lg {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 48px;
+  }
+}
+
+.sidebar .nav-link {
+  font-size: .875rem;
+  font-weight: 500;
+}
+
+  .sidebar .nav-link.active {
+    color: #2470dc;
+  }
+
+.sidebar-heading {
+  font-size: .75rem;
+}
