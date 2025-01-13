@@ -1,7 +1,3 @@
-html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
-
 a, .btn-link {
     color: #006bb7;
 }
@@ -18,4 +14,39 @@ a, .btn-link {
 
 h1:focus {
     outline: none;
+}
+
+.navbar-brand {
+  padding-top: .75rem;
+  padding-bottom: .75rem;
+  background-color: rgba(0, 0, 0, .25);
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
+}
+
+@media (min-width: 768px) {
+  .sidebar .offcanvas-lg {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 48px;
+  }
+}
+
+.sidebar .nav-link {
+  font-size: .875rem;
+  font-weight: 500;
+}
+
+  .sidebar .nav-link.active {
+    color: #2470dc;
+  }
+
+.sidebar-heading {
+  font-size: .75rem;
+}
+
+.header-logo {
+  max-height: 1.25rem;
+  max-width: 1.25rem;
+  width: 100%;
+  object-fit: cover;
 }
