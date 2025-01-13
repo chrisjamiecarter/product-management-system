@@ -1,4 +1,7 @@
-﻿@inherits LayoutComponentBase
+﻿@implements IDisposable
+
+@inherits LayoutComponentBase
+
 @inject NavigationManager NavigationManager
 
 <Header />
@@ -13,7 +16,7 @@
                 <div class="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto">
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center gap-2 @(currentPage is CurrentPage.Home ? "active" : "" )" aria-current="page" href="#">
+                            <NavLink class="nav-link d-flex align-items-center gap-2" href="" Match="NavLinkMatch.All">
                                 @if (currentPage is CurrentPage.Home)
                                 {
                                     <HouseFillSvg />
@@ -23,10 +26,10 @@
                                     <HouseSvg />
                                 }
                                 Home
-                            </a>
+                            </NavLink>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center gap-2 @(currentPage is CurrentPage.Products ? "active" : "" )" href="#">
+                            <NavLink class="nav-link d-flex align-items-center gap-2" href="products">
                                 @if (currentPage is CurrentPage.Products)
                                 {
                                     <CartFillSvg />
@@ -36,10 +39,10 @@
                                     <CartSvg />
                                 }
                                 Products
-                            </a>
+                            </NavLink>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center gap-2 @(currentPage is CurrentPage.Users ? "active" : "" )" href="#">
+                            <NavLink class="nav-link d-flex align-items-center gap-2" href="users">
                                 @if (currentPage is CurrentPage.Users)
                                 {
                                     <PeopleFillSvg />
@@ -49,26 +52,55 @@
                                     <PeopleSvg />
                                 }
                                 Users
-                            </a>
+                            </NavLink>
                         </li>
                     </ul>
 
                     <hr class="my-3">
 
                     <ul class="nav flex-column mb-auto">
-                        <li class="nav-item">
-                            <a class="nav-link d-flex align-items-center gap-2" href="#">
-                                <DoorClosedSvg />
-                                Sign out
-                            </a>
-                        </li>
+                        <AuthorizeView>
+                            <Authorized>
+                                <li class="nav-item">
+                                    <NavLink class="nav-link d-flex align-items-center gap-2" href="Account/Manage">
+                                        <PersonGearSvg />
+                                        @* @context.User.Identity?.Name *@
+                                        User Settings
+                                    </NavLink>
+                                </li>
+                                <li class="nav-item">
+                                    <form action="Account/Logout" method="post">
+                                        <AntiforgeryToken />
+                                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                                        <button type="submit" class="nav-link d-flex align-items-center gap-2">
+                                            <DoorClosedSvg />
+                                            Sign out
+                                        </button>
+                                    </form>
+                                </li>
+                            </Authorized>
+                            <NotAuthorized>
+                                <div class="nav-item">
+                                    <NavLink class="nav-link d-flex align-items-center gap-2" href="Account/Register">
+                                        <PersonSvg />
+                                        Register
+                                    </NavLink>
+                                </div>
+                                <div class="nav-item">
+                                    <NavLink class="nav-link d-flex align-items-center gap-2" href="Account/Login">
+                                        <PersonBadgeSvg />
+                                        Login
+                                    </NavLink>
+                                </div>
+                            </NotAuthorized>
+                        </AuthorizeView>
                     </ul>
                 </div>
             </div>
         </div>
 
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            
+
             @Body
 
         </main>
@@ -77,6 +109,27 @@
 <script src="js/theme.js"></script>
 
 @code {
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+
+        currentPage = GetCurrentPage(currentUrl);
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+
     private enum CurrentPage
     {
         Home,
@@ -86,16 +139,9 @@
 
     private CurrentPage currentPage;
 
-    protected override void OnInitialized()
+    private CurrentPage GetCurrentPage(string page)
     {
-        base.OnInitialized();
-
-        currentPage = GetCurrentPage(NavigationManager.Uri.ToString());
-    }
-
-    private CurrentPage GetCurrentPage(string uri)
-    {
-        return uri.Split("\\").LastOrDefault()?.ToLower() switch
+        return page.Split("/").FirstOrDefault()?.ToLower() switch
         {
             "products" => CurrentPage.Products,
             "users" => CurrentPage.Users,
