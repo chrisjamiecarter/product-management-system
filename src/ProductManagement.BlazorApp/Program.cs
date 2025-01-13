@@ -30,7 +30,31 @@ public class Program
         .AddIdentityCookies();
 
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-        builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+        builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        {
+            options.UseSqlServer(connectionString);
+            options.UseSeeding((context, _) =>
+            {
+                var defaultAdminEmail = "admin@email.com";
+                var defaultAdminUser = new ApplicationUser
+                {
+                    UserName = defaultAdminEmail,
+                    NormalizedUserName = defaultAdminEmail.ToUpper(),
+                    Email = defaultAdminEmail,
+                    NormalizedEmail = defaultAdminEmail.ToUpper(),
+                    EmailConfirmed = true,
+                };
+
+                var contains = context.Set<ApplicationUser>().Any(x => x.UserName == defaultAdminUser.UserName);
+                if (!contains)
+                {
+                    defaultAdminUser.PasswordHash = new PasswordHasher<ApplicationUser>().HashPassword(defaultAdminUser, "Admin123###");
+                    context.Set<ApplicationUser>().Add(defaultAdminUser);
+                    context.SaveChanges();
+                }
+
+            });
+        });
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
         builder.Services.AddIdentityCore<ApplicationUser>(options =>
