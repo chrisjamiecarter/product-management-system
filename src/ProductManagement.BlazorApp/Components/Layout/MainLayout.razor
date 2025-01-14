@@ -28,32 +28,36 @@
                                 Home
                             </NavLink>
                         </li>
-                        <li class="nav-item">
-                            <NavLink class="nav-link d-flex align-items-center gap-2" href="products">
-                                @if (currentPage is CurrentPage.Products)
-                                {
-                                    <CartFillSvg />
-                                }
-                                else
-                                {
-                                    <CartSvg />
-                                }
-                                Products
-                            </NavLink>
-                        </li>
-                        <li class="nav-item">
-                            <NavLink class="nav-link d-flex align-items-center gap-2" href="users">
-                                @if (currentPage is CurrentPage.Users)
-                                {
-                                    <PeopleFillSvg />
-                                }
-                                else
-                                {
-                                    <PeopleSvg />
-                                }
-                                Users
-                            </NavLink>
-                        </li>
+                        <AuthorizeView>
+                            <Authorized>
+                                <li class="nav-item">
+                                    <NavLink class="nav-link d-flex align-items-center gap-2" href="products">
+                                        @if (currentPage is CurrentPage.Products)
+                                        {
+                                            <CartFillSvg />
+                                        }
+                                        else
+                                        {
+                                            <CartSvg />
+                                        }
+                                        Products
+                                    </NavLink>
+                                </li>
+                                <li class="nav-item">
+                                    <NavLink class="nav-link d-flex align-items-center gap-2" href="users">
+                                        @if (currentPage is CurrentPage.Users)
+                                        {
+                                            <PeopleFillSvg />
+                                        }
+                                        else
+                                        {
+                                            <PeopleSvg />
+                                        }
+                                        Users
+                                    </NavLink>
+                                </li>
+                            </Authorized>
+                        </AuthorizeView>
                     </ul>
 
                     <hr class="my-3">
@@ -63,9 +67,15 @@
                             <Authorized>
                                 <li class="nav-item">
                                     <NavLink class="nav-link d-flex align-items-center gap-2" href="Account/Manage">
-                                        <PersonGearSvg />
-                                        @* @context.User.Identity?.Name *@
-                                        User Settings
+                                        @if (currentPage is CurrentPage.Manage)
+                                        {
+                                            <PersonGearFillSvg />
+                                        }
+                                        else
+                                        {
+                                            <PersonGearSvg />
+                                        }
+                                        Account
                                     </NavLink>
                                 </li>
                                 <li class="nav-item">
@@ -82,13 +92,27 @@
                             <NotAuthorized>
                                 <div class="nav-item">
                                     <NavLink class="nav-link d-flex align-items-center gap-2" href="Account/Register">
-                                        <PersonSvg />
+                                        @if (currentPage is CurrentPage.Register)
+                                        {
+                                            <PersonFillSvg />
+                                        }
+                                        else
+                                        {
+                                            <PersonSvg />
+                                        }
                                         Register
                                     </NavLink>
                                 </div>
                                 <div class="nav-item">
                                     <NavLink class="nav-link d-flex align-items-center gap-2" href="Account/Login">
-                                        <PersonBadgeSvg />
+                                        @if (currentPage is CurrentPage.Login)
+                                        {
+                                            <PersonBadgeFillSvg />
+                                        }
+                                        else
+                                        {
+                                            <PersonBadgeSvg />
+                                        }
                                         Login
                                     </NavLink>
                                 </div>
@@ -132,21 +156,41 @@
 
     private enum CurrentPage
     {
+        Unknown,
         Home,
         Products,
         Users,
+        Login,
+        Register,
+        Manage
     }
 
     private CurrentPage currentPage;
 
     private CurrentPage GetCurrentPage(string page)
     {
-        return page.Split("/").FirstOrDefault()?.ToLower() switch
+        var pageParts = page.Split("/").Select(x => x.Split("?").FirstOrDefault()?.ToLower()).ToArray();
+        if (!pageParts.Any())
+        {
+            return CurrentPage.Home;
+        }
+
+        if (pageParts.FirstOrDefault() == "account")
+        {
+            return pageParts[1] switch
+        {
+                "login" => CurrentPage.Login,
+                "register" => CurrentPage.Register,
+                "manage" => CurrentPage.Manage,
+                _ => CurrentPage.Unknown,
+            };
+        }
+
+        return pageParts.FirstOrDefault()?.ToLower() switch
         {
             "products" => CurrentPage.Products,
             "users" => CurrentPage.Users,
             _ => CurrentPage.Home,
         };
     }
-
 }
