@@ -1,5 +1,9 @@
 ﻿@page "/users"
 
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize]
+
 <PageTitle>Users</PageTitle>
 
 <div class="pt-3 pb-2 mb-3">
