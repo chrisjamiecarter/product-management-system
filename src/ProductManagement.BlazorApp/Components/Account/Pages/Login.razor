@@ -12,57 +12,51 @@
 
 <PageTitle>Log in</PageTitle>
 
-<h1>Log in</h1>
-<div class="row">
-    <div class="col-lg-6">
-        <section>
+<section class="pt-3 pb-2">
+    <div class="row d-flex h-100 gap-2">
+        <div class="col-md-8 col-lg-6 col-xl-4">
+            <h1 class="h3 mb-3 fw-normal">Please log in</h1>
             <StatusMessage Message="@errorMessage" />
             <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
                 <DataAnnotationsValidator />
-                <h2>Use a local account to log in.</h2>
-                <hr />
                 <ValidationSummary class="text-danger" role="alert" />
-                <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                <div class="form-floating mb-4">
+                    <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control form-control-lg" autocomplete="username" aria-required="true" placeholder="name@example.com" />
                     <label for="Input.Email" class="form-label">Email</label>
                     <ValidationMessage For="() => Input.Email" class="text-danger" />
                 </div>
                 <div class="form-floating mb-3">
-                    <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
+                    <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control form-control-lg" autocomplete="current-password" aria-required="true" placeholder="password" />
                     <label for="Input.Password" class="form-label">Password</label>
                     <ValidationMessage For="() => Input.Password" class="text-danger" />
                 </div>
-                <div class="checkbox mb-3">
-                    <label class="form-label">
-                        <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input" />
+                <div class="form-check mb-3">
+                    <label class="form-check-label">
+                        <InputCheckbox @bind-Value="Input.RememberMe" class="form-check-input me-2" />
                         Remember me
                     </label>
                 </div>
-                <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
-                </div>
-                <div>
-                    <p>
-                        <a href="Account/ForgotPassword">Forgot your password?</a>
+                <div class="text-center text-lg-start mt-4 pt-2">
+                    <button id="loginSubmit" type="submit" class="btn btn-primary btn-lg w-100 px-3">
+                        Log in
+                    </button>
+                    <p class="small fw-bold mt-2 pt-1 mb-0">
+                        Don't have an account?
+                        <a class="link-primary" href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register</a>
                     </p>
-                    <p>
-                        <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register as a new user</a>
+                    <p class="small fw-bold mt-2 pt-1 mb-0">
+                        Forgot your password?
+                        <a class="link-primary" href="Account/ForgotPassword">Reset</a>
                     </p>
-                    <p>
-                        <a href="Account/ResendEmailConfirmation">Resend email confirmation</a>
+                    <p class="small fw-bold mt-2 pt-1 mb-0">
+                        Not received your email confirmation?
+                        <a class="link-primary" href="Account/ResendEmailConfirmation">Resend</a>
                     </p>
                 </div>
             </EditForm>
-        </section>
+        </div>
     </div>
-    <div class="col-lg-4 col-lg-offset-2">
-        <section>
-            <h3>Use another service to log in.</h3>
-            <hr />
-            <ExternalLoginPicker />
-        </section>
-    </div>
-</div>
+</section>
 
 @code {
     private string? errorMessage;
