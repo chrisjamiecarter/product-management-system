@@ -12,43 +12,47 @@
 
 <PageTitle>Product Management - Sign in</PageTitle>
 
-<section class="pt-3 pb-2">
-    <div class="row d-flex h-100 gap-2">
-        <div class="col-md-8 col-lg-6 col-xl-4">
-            <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
-            <StatusMessage Message="@errorMessage" />
-            <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
-                <DataAnnotationsValidator />
-                <ValidationSummary class="text-danger" role="alert" />
-                <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control form-control-lg" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                    <label for="Input.Email" class="form-label">Email</label>
-                    <ValidationMessage For="() => Input.Email" class="text-danger" />
-                </div>
-                <div class="form-floating mb-3">
-                    <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control form-control-lg" autocomplete="current-password" aria-required="true" placeholder="password" />
-                    <label for="Input.Password" class="form-label">Password</label>
-                    <ValidationMessage For="() => Input.Password" class="text-danger" />
-                </div>
-                <div class="d-flex justify-content-between">
-                    <div class="form-check mb-3">
-                        <label class="form-check-label">
-                            <InputCheckbox @bind-Value="Input.RememberMe" class="form-check-input me-2" />
-                            Remember me
-                        </label>
+<section class="d-flex w-100 h-100 p-3 mx-auto flex-column align-items-center">
+    <div class="mt-auto mb-auto w-100 px-3">
+        <div class="row d-flex flex-md-row-reverse justify-content-center align-items-center h-100 gap-2">
+            <div class="col-md-9 col-lg-6 col-xl-5 offset-xl-1 d-flex justify-content-center">
+                <img src="/img/product-management-system-logo-with-text.png" class="img-fluid p-5 overflow-hidden rounded-circle" alt="Application logo" />
+            </div>
+            <div class="col-md-8 col-lg-6 col-xl-5">
+                <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+                <StatusMessage Message="@errorMessage" />
+                <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+                    <DataAnnotationsValidator />
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control form-control-lg" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                        <label for="Input.Email" class="form-label">Email</label>
+                        <ValidationMessage For="() => Input.Email" class="text-danger" />
                     </div>
-                    <a class="link-primary small text-muted link-underline-opacity-0" href="Account/ForgotPassword">Forgot password?</a>                        
-                </div>
-                <div class="text-center text-lg-start">
-                    <button id="loginSubmit" type="submit" class="btn btn-primary btn-lg w-100 px-3">
-                        Sign in
-                    </button>
-                    <div class="d-flex justify-content-between mt-3">
-                        <a class="link-primary small text-muted link-underline-opacity-0" href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Don't have an account?</a>
-                        <a class="link-primary small text-muted link-underline-opacity-0" href="Account/ResendEmailConfirmation">Resend email confirmation?</a>                    
+                    <div class="form-floating mb-3">
+                        <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control form-control-lg" autocomplete="current-password" aria-required="true" placeholder="password" />
+                        <label for="Input.Password" class="form-label">Password</label>
+                        <ValidationMessage For="() => Input.Password" class="text-danger" />
                     </div>
-                </div>
-            </EditForm>
+                    <div class="d-flex justify-content-between">
+                        <div class="form-check mb-3">
+                            <label class="form-check-label">
+                                <InputCheckbox @bind-Value="Input.RememberMe" class="form-check-input me-2" />
+                                Remember me
+                            </label>
+                        </div>
+                        <a class="link-primary small text-muted link-underline-opacity-0" href="Account/ForgotPassword">Forgot password?</a>
+                    </div>
+                    <div class="text-center text-lg-start">
+                        <button id="loginSubmit" type="submit" class="btn btn-primary btn-lg w-100 px-3">
+                            Sign in
+                        </button>
+                        <div class="d-flex justify-content-between mt-3">
+                            <a class="link-primary small text-muted link-underline-opacity-0" href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Don't have an account?</a>
+                            <a class="link-primary small text-muted link-underline-opacity-0" href="Account/ResendEmailConfirmation">Resend email confirmation?</a>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
         </div>
     </div>
 </section>
