@@ -13,7 +13,7 @@
                     <h5 class="offcanvas-title" id="sidebarMenuLabel">Company name</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
                 </div>
-                <div class="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto">
+                <div class="offcanvas-body d-md-flex flex-column p-0 pt-md-3 overflow-y-auto">
                     <ul class="nav flex-column">
                         <li class="nav-item">
                             <NavLink class="nav-link d-flex align-items-center gap-2" href="" Match="NavLinkMatch.All">
@@ -90,7 +90,7 @@
                                 </li>
                             </Authorized>
                             <NotAuthorized>
-                                <div class="nav-item">
+                                <li class="nav-item">
                                     <NavLink class="nav-link d-flex align-items-center gap-2" href="Account/Register">
                                         @if (currentPage is CurrentPage.Register)
                                         {
@@ -102,10 +102,10 @@
                                         }
                                         Register
                                     </NavLink>
-                                </div>
-                                <div class="nav-item">
+                                </li>
+                                <li class="nav-item">
                                     <NavLink class="nav-link d-flex align-items-center gap-2" href="Account/Login">
-                                        @if (currentPage is CurrentPage.Login)
+                                        @if (currentPage is CurrentPage.Signin)
                                         {
                                             <PersonBadgeFillSvg />
                                         }
@@ -113,9 +113,9 @@
                                         {
                                             <PersonBadgeSvg />
                                         }
-                                        Login
+                                        Sign in
                                     </NavLink>
-                                </div>
+                                </li>
                             </NotAuthorized>
                         </AuthorizeView>
                     </ul>
@@ -160,7 +160,7 @@
         Home,
         Products,
         Users,
-        Login,
+        Signin,
         Register,
         Manage
     }
@@ -179,7 +179,7 @@
         {
             return pageParts[1] switch
         {
-                "login" => CurrentPage.Login,
+                "login" => CurrentPage.Signin,
                 "register" => CurrentPage.Register,
                 "manage" => CurrentPage.Manage,
                 _ => CurrentPage.Unknown,

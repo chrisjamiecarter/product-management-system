@@ -10,17 +10,17 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Log in</PageTitle>
+<PageTitle>Product Management - Sign in</PageTitle>
 
 <section class="pt-3 pb-2">
     <div class="row d-flex h-100 gap-2">
         <div class="col-md-8 col-lg-6 col-xl-4">
-            <h1 class="h3 mb-3 fw-normal">Please log in</h1>
+            <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
             <StatusMessage Message="@errorMessage" />
             <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
                 <DataAnnotationsValidator />
                 <ValidationSummary class="text-danger" role="alert" />
-                <div class="form-floating mb-4">
+                <div class="form-floating mb-3">
                     <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control form-control-lg" autocomplete="username" aria-required="true" placeholder="name@example.com" />
                     <label for="Input.Email" class="form-label">Email</label>
                     <ValidationMessage For="() => Input.Email" class="text-danger" />
@@ -30,28 +30,23 @@
                     <label for="Input.Password" class="form-label">Password</label>
                     <ValidationMessage For="() => Input.Password" class="text-danger" />
                 </div>
-                <div class="form-check mb-3">
-                    <label class="form-check-label">
-                        <InputCheckbox @bind-Value="Input.RememberMe" class="form-check-input me-2" />
-                        Remember me
-                    </label>
+                <div class="d-flex justify-content-between">
+                    <div class="form-check mb-3">
+                        <label class="form-check-label">
+                            <InputCheckbox @bind-Value="Input.RememberMe" class="form-check-input me-2" />
+                            Remember me
+                        </label>
+                    </div>
+                    <a class="link-primary small text-muted link-underline-opacity-0" href="Account/ForgotPassword">Forgot password?</a>                        
                 </div>
-                <div class="text-center text-lg-start mt-4 pt-2">
+                <div class="text-center text-lg-start">
                     <button id="loginSubmit" type="submit" class="btn btn-primary btn-lg w-100 px-3">
-                        Log in
+                        Sign in
                     </button>
-                    <p class="small fw-bold mt-2 pt-1 mb-0">
-                        Don't have an account?
-                        <a class="link-primary" href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register</a>
-                    </p>
-                    <p class="small fw-bold mt-2 pt-1 mb-0">
-                        Forgot your password?
-                        <a class="link-primary" href="Account/ForgotPassword">Reset</a>
-                    </p>
-                    <p class="small fw-bold mt-2 pt-1 mb-0">
-                        Not received your email confirmation?
-                        <a class="link-primary" href="Account/ResendEmailConfirmation">Resend</a>
-                    </p>
+                    <div class="d-flex justify-content-between mt-3">
+                        <a class="link-primary small text-muted link-underline-opacity-0" href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Don't have an account?</a>
+                        <a class="link-primary small text-muted link-underline-opacity-0" href="Account/ResendEmailConfirmation">Resend email confirmation?</a>                    
+                    </div>
                 </div>
             </EditForm>
         </div>
