@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using ProductManagement.BlazorApp.Components;
 using ProductManagement.BlazorApp.Components.Account;
 using ProductManagement.BlazorApp.Data;
+using ProductManagement.BlazorApp.Installers;
+using ProductManagement.Infrastructure.Installers;
 
 namespace ProductManagement.BlazorApp;
 
@@ -12,6 +14,9 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        builder.Services.AddInfrastructure(builder.Configuration);
+        
+        // TODO: Refactor the below.
 
         // Add services to the container.
         builder.Services.AddRazorComponents()
@@ -73,6 +78,7 @@ public class Program
         builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
         var app = builder.Build();
+        app.SetUpDatabase();
 
         using (var scope = app.Services.CreateScope())
         {
