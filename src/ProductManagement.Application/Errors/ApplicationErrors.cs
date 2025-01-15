@@ -16,7 +16,7 @@ internal static class ApplicationErrors
 
         internal static readonly Error NotFound = new(
             "Product.NotFound",
-            "The product with Id was not found.");
+            "The product was not found.");
         
         internal static readonly Error NotUpdated = new(
             "Product.NotUpdated",
