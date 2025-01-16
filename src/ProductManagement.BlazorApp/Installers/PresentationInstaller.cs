@@ -1,4 +1,6 @@
-﻿using ProductManagement.Infrastructure.Installers;
+﻿using ProductManagement.Application.Services;
+using ProductManagement.BlazorApp.Services;
+using ProductManagement.Infrastructure.Installers;
 
 namespace ProductManagement.BlazorApp.Installers;
 
@@ -7,6 +9,13 @@ namespace ProductManagement.BlazorApp.Installers;
 /// </summary>
 public static class PresentationInstaller
 {
+    public static IServiceCollection AddPresentation(this IServiceCollection services)
+    {
+        services.AddScoped<IProductService, ProductService>();
+
+        return services;
+    }
+
     public static WebApplication SetUpDatabase(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
