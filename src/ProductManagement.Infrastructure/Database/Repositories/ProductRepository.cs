@@ -22,7 +22,7 @@ internal class ProductRepository(ProductManagementDbContext context, ILogger<Pro
         return deleted > 0;
     }
 
-    public async Task<IReadOnlyList<Product>> ReturnAllAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<Product>> ReturnAllAsync(CancellationToken cancellationToken = default)
     {
         return await context.Products.ToListAsync(cancellationToken);
     }
