@@ -1,6 +1,6 @@
 ﻿namespace ProductManagement.Application.Products.Queries.GetProductById;
 
-public sealed record ProductResponse(
+public sealed record GetProductByIdQueryResponse(
     Guid Id,
     string Name,
     string Description,

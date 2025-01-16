@@ -2,4 +2,4 @@
 
 namespace ProductManagement.Application.Products.Queries.GetProductById;
 
-public sealed record GetProductByIdQuery(Guid ProductId) : IQuery<ProductResponse>;
+public sealed record GetProductByIdQuery(Guid ProductId) : IQuery<GetProductByIdQueryResponse>;

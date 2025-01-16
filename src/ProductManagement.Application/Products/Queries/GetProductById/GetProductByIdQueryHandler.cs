@@ -5,7 +5,7 @@ using ProductManagement.Domain.Shared;
 
 namespace ProductManagement.Application.Products.Queries.GetProductById;
 
-internal sealed class GetProductByIdQueryHandler : IQueryHandler<GetProductByIdQuery, ProductResponse>
+internal sealed class GetProductByIdQueryHandler : IQueryHandler<GetProductByIdQuery, GetProductByIdQueryResponse>
 {
     private readonly IProductRepository _productRepository;
 
@@ -14,7 +14,7 @@ internal sealed class GetProductByIdQueryHandler : IQueryHandler<GetProductByIdQ
         _productRepository = productRepository;
     }
 
-    public async Task<Result<ProductResponse>> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<GetProductByIdQueryResponse>> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
     {
         var id = request.ProductId;
 
@@ -22,10 +22,10 @@ internal sealed class GetProductByIdQueryHandler : IQueryHandler<GetProductByIdQ
 
         if (product is null)
         {
-            return Result.Failure<ProductResponse>(ApplicationErrors.Product.NotFound);
+            return Result.Failure<GetProductByIdQueryResponse>(ApplicationErrors.Product.NotFound);
         }
 
-        var response = new ProductResponse(product.Id, product.Name.Value, product.Description, product.IsActive, product.AddedOnUtc, product.Price.Value);
+        var response = new GetProductByIdQueryResponse(product.Id, product.Name.Value, product.Description, product.IsActive, product.AddedOnUtc, product.Price.Value);
         return Result.Success(response);
     }
 }
