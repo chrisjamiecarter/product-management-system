@@ -1,0 +1,80 @@
+﻿@page "/products/add"
+@using System.Linq.Expressions
+@attribute [Authorize]
+@inject NavigationManager NavigationManager
+@inject IProductService ProductService
+@rendermode InteractiveServer
+
+<PageTitle>Add Product</PageTitle>
+
+<div class="container-md py-3">
+
+    <div class="d-flex gap-3 align-items-center mb-5">
+        <CartPlusFillSvg Height="1.5rem" Width="1.5rem" />
+        <h1 class="h2 mb-0">Add New Product</h1>
+    </div>
+
+    @if (EditContext is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
+        <div class="form-group col-lg-6">
+            <EditForm EditContext="EditContext" FormName="AddProduct" OnValidSubmit="AddProductAsync">
+                <DataAnnotationsValidator />
+                <div class="form-floating mb-3">
+                    <InputText id="createProductName" class=@($"form-control {EditContext?.GetValidationClass(() => CreateProductDto.Name)}") placeholder="name" @bind-Value="CreateProductDto.Name" aria-describedby="createProductNameValidationMessage" />
+                    <label for="createProductName" class="form-label">Name</label>
+                    <ValidationMessage For="() => CreateProductDto.Name" class="invalid-feedback" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputTextArea id="createProductDescription" class=@($"form-control {EditContext?.GetValidationClass(() => CreateProductDto.Description)}") placeholder="description" @bind-Value="CreateProductDto.Description" />
+                    <label for="createProductDescription" class="form-label">Description</label>
+                    <ValidationMessage For="() => CreateProductDto.Description" class="invalid-feedback" />
+                </div>
+                <div class="form-floating mb-3">
+                    <InputNumber id="createProductPrice" class=@($"form-control {EditContext?.GetValidationClass(() => CreateProductDto.Price)}") @bind-Value="CreateProductDto.Price" />
+                    <label for="createProductPrice" class="form-label">Price</label>
+                    <ValidationMessage For="() => CreateProductDto.Price" class="invalid-feedback" />
+                </div>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-outline-dark w-50" type="submit">Create</button>
+                    <button class="btn btn-dark w-50" type="button" @onclick="() => NavigateToProducts()">Cancel</button>
+                </div>
+            </EditForm>
+        </div>
+    }
+</div>
+
+@code {
+    private CreateProductDto CreateProductDto = new();
+    private EditContext? EditContext;
+
+    protected override void OnInitialized()
+    {
+        EditContext = new EditContext(CreateProductDto);
+    }
+
+    private async Task AddProductAsync()
+    {
+        var command = new CreateProductCommand(CreateProductDto.Name, CreateProductDto.Description, CreateProductDto.Price);
+        var response = await ProductService.CreateAsync(command);
+
+        if (response.IsSuccess)
+        {
+            // TODO: Toast.
+            NavigateToProducts();
+        }
+        else
+        {
+            // TODO: Log and Toast.
+        }
+    }
+
+    private void NavigateToProducts()
+    {
+        NavigationManager.NavigateTo("/products");
+    }
+}

@@ -1,0 +1,107 @@
+﻿@page "/products/edit/{Id:guid}"
+@attribute [Authorize]
+@inject NavigationManager NavigationManager
+@inject IProductService ProductService
+@rendermode InteractiveServer
+
+<PageTitle>Edit Product</PageTitle>
+
+<div class="container-md py-3">
+
+    <div class="d-flex gap-3 align-items-center mb-5">
+        <CartDashFillSvg Height="1.5rem" Width="1.5rem" />
+        <h1 class="h2 mb-0">Edit Product</h1>
+    </div>
+
+    @if (UpdateProductDto is null || EditContext is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
+        <div class="form-group col-lg-6">
+            <EditForm EditContext="EditContext" FormName="EditProduct" OnValidSubmit="EditProductAsync">
+                <DataAnnotationsValidator />
+                <div class="form-floating mb-3">
+                    <InputText id="updateProductName" class=@($"form-control {EditContext?.GetValidationClass(() => UpdateProductDto.Name)}") placeholder="name" @bind-Value="UpdateProductDto.Name" />
+                    <label for="updateProductName" class="form-label">Name</label>
+                    <ValidationMessage For="() => UpdateProductDto.Name" class="invalid-feedback" />
+                </div>
+                <div class="form-floating mb-3">
+                    <InputText id="updateProductDescription" class=@($"form-control {EditContext?.GetValidationClass(() => UpdateProductDto.Description)}") @bind-Value="UpdateProductDto.Description" />
+                    <label for="updateProductDescription" class="form-label">Description</label>
+                    <ValidationMessage For="() => UpdateProductDto.Description" class="invalid-feedback" />
+                </div>
+                <div class="form-floating mb-3">
+                    <InputNumber id="updateProductPrice" class=@($"form-control {EditContext?.GetValidationClass(() => UpdateProductDto.Price)}") placeholder="name" @bind-Value="UpdateProductDto.Price" />
+                    <label for="updateProductPrice" class="form-label">Price</label>
+                    <ValidationMessage For="() => UpdateProductDto.Price" class="invalid-feedback" />
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <InputCheckbox id="updateProductIsActive" class=@($"form-check-input {EditContext?.GetValidationClass(() => UpdateProductDto.IsActive)}") @bind-Value="UpdateProductDto.IsActive" />
+                    <label for="updateProductIsActive" class="form-check-label">Is Active</label>
+                    <ValidationMessage For="() => UpdateProductDto.IsActive" class="invalid-feedback" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputDate id="updateProductAddedOnUtc" class="form-control" placeholder="name" disabled readonly @bind-Value="UpdateProductDto.AddedOnUtc" />
+                    <label for="updateProductAddedOnUtc" class="form-label">Added On</label>
+                </div>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-outline-dark w-50" type="submit">Update</button>
+                    <button class="btn btn-dark w-50" type="button" @onclick="() => NavigateToProducts()">Cancel</button>
+                </div>
+            </EditForm>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private UpdateProductDto? UpdateProductDto;
+    private EditContext? EditContext;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var query = new GetProductByIdQuery(Id);
+        var response = await ProductService.ReturnByIdAsync(query);
+
+        if (response.IsSuccess)
+        {
+            // TODO: Toast.
+            UpdateProductDto = new UpdateProductDto(response.Value);
+            EditContext = new EditContext(UpdateProductDto);
+        }
+        else
+        {
+            // TODO: Log and Toast.
+        }
+    }
+
+    private async Task EditProductAsync()
+    {
+        if (UpdateProductDto is null)
+        {
+            // TODO: Log and Toast.
+            return;
+        }
+
+        var command = new UpdateProductCommand(UpdateProductDto.Id, UpdateProductDto.Name, UpdateProductDto.Description, UpdateProductDto.IsActive, UpdateProductDto.Price);
+        var response = await ProductService.UpdateAsync(command);
+
+        if (response.IsSuccess)
+        {
+            NavigateToProducts();
+        }
+        else
+        {
+            // TODO: Log and Toast.
+        }
+    }
+
+    private void NavigateToProducts()
+    {
+        NavigationManager.NavigateTo("/products");
+    }
+}

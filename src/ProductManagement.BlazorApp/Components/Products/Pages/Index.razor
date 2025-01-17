@@ -1,0 +1,112 @@
+﻿@page "/products"
+@attribute [Authorize]
+@inject NavigationManager NavigationManager
+@inject IProductService ProductService
+@rendermode InteractiveServer
+
+<PageTitle>Products</PageTitle>
+
+<div class="container-md py-3">
+
+    <div class="d-flex gap-3 align-items-center mb-5">
+        <CartFillSvg Height="1.5rem" Width="1.5rem" />
+        <h1 class="h2 mb-0">Products</h1>
+    </div>
+
+    @if (Products is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col" class="col-4 table-dark">Name</th>
+                        <th scope="col" class="col-4 table-dark">Description</th>
+                        <th scope="col" class="col-1 table-dark text-center">Active</th>
+                        <th scope="col" class="col-1 table-dark">Added On</th>
+                        <th scope="col" class="col-1 table-dark">Price</th>
+                        <th scope="col" class="col-1">
+                            <button class="btn btn-sm btn-outline-dark w-100" type="button" @onclick="() => NavigateToAddProduct()">
+                                <CartPlusSvg />
+                            </button>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var product in Products)
+                    {
+                        <tr>
+                            <td>@product.Name</td>
+                            <td>@product.Description</td>
+                            <td class="text-center">
+                                @if (@product.IsActive)
+                                {
+                                    <CheckCircleSvg />
+                                }
+                                else
+                                {
+                                    <XCircleSvg />
+                                }
+                            </td>
+                            <td>@product.AddedOnUtc</td>
+                            <td>@product.Price</td>
+                            <td scope="row">
+                                <div class="d-flex gap-1" >
+                                    <button class="btn btn-sm btn-outline-dark w-50" type="button" @onclick="() => NavigateToEditProduct(product.Id)">
+                                        <CartDashSvg />
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-dark w-50" type="button" @onclick="() => NavigateToDeleteProduct(product.Id)">
+                                        <CartXSvg />
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    private IReadOnlyCollection<GetProductsQueryResponseProduct>? Products { get; set; }
+
+    private CreateProductDto CreateProduct = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetProductsAsync();
+    }
+
+    private async Task GetProductsAsync()
+    {
+        var query = new GetProductsQuery();
+        var response = await ProductService.ReturnAllAsync(query);
+        if (response.IsSuccess)
+        {
+            Products = response.Value.Products;
+        }
+        else
+        {
+            Products = [];
+        }
+    }
+
+    private void NavigateToAddProduct()
+    {
+        NavigationManager.NavigateTo("/products/add");
+    }
+
+    private void NavigateToDeleteProduct(Guid id)
+    {
+        NavigationManager.NavigateTo($"/products/delete/{id}");
+    }
+
+    private void NavigateToEditProduct(Guid id)
+    {
+        NavigationManager.NavigateTo($"/products/edit/{id}");
+    }
+}
