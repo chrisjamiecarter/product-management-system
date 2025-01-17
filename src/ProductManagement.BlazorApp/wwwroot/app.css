@@ -1,16 +1,16 @@
-a, .btn-link {
+/*a, .btn-link {
     color: #006bb7;
-}
+}*/
 
-.btn-primary {
+/*.btn-primary {
     color: #fff;
     background-color: #1b6ec2;
     border-color: #1861ac;
-}
+}*/
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+/*.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
+}*/
 
 h1:focus {
     outline: none;
@@ -37,7 +37,7 @@ h1:focus {
 }
 
   .sidebar .nav-link.active {
-    color: #2470dc;
+    font-weight: 700;
   }
 
 .sidebar-heading {
@@ -50,3 +50,18 @@ h1:focus {
   width: 100%;
   object-fit: cover;
 }
+
+/*-------------------------------*/
+/* Hide Arrows From Input Number */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+/* Hide Arrows From Input Number */
+/*-------------------------------*/

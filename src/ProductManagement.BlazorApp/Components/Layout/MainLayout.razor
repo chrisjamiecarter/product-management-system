@@ -16,7 +16,7 @@
                 <div class="offcanvas-body d-md-flex flex-column p-0 pt-md-3 overflow-y-auto">
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                            <NavLink class="nav-link d-flex align-items-center gap-2" href="" Match="NavLinkMatch.All">
+                            <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="" Match="NavLinkMatch.All">
                                 @if (currentPage is CurrentPage.Home)
                                 {
                                     <HouseFillSvg />
@@ -31,7 +31,7 @@
                         <AuthorizeView>
                             <Authorized>
                                 <li class="nav-item">
-                                    <NavLink class="nav-link d-flex align-items-center gap-2" href="products">
+                                    <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="products">
                                         @if (currentPage is CurrentPage.Products)
                                         {
                                             <CartFillSvg />
@@ -44,7 +44,7 @@
                                     </NavLink>
                                 </li>
                                 <li class="nav-item">
-                                    <NavLink class="nav-link d-flex align-items-center gap-2" href="users">
+                                    <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="users">
                                         @if (currentPage is CurrentPage.Users)
                                         {
                                             <PeopleFillSvg />
@@ -66,7 +66,7 @@
                         <AuthorizeView>
                             <Authorized>
                                 <li class="nav-item">
-                                    <NavLink class="nav-link d-flex align-items-center gap-2" href="Account/Manage">
+                                    <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="Account/Manage">
                                         @if (currentPage is CurrentPage.Manage)
                                         {
                                             <PersonGearFillSvg />
@@ -82,7 +82,7 @@
                                     <form action="Account/Logout" method="post">
                                         <AntiforgeryToken />
                                         <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                                        <button type="submit" class="nav-link d-flex align-items-center gap-2">
+                                        <button type="submit" class="nav-link link-dark d-flex align-items-center gap-2">
                                             <DoorClosedSvg />
                                             Sign out
                                         </button>
@@ -91,7 +91,7 @@
                             </Authorized>
                             <NotAuthorized>
                                 <li class="nav-item">
-                                    <NavLink class="nav-link d-flex align-items-center gap-2" href="Account/Register">
+                                    <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="Account/Register">
                                         @if (currentPage is CurrentPage.Register)
                                         {
                                             <PersonFillSvg />
@@ -104,7 +104,7 @@
                                     </NavLink>
                                 </li>
                                 <li class="nav-item">
-                                    <NavLink class="nav-link d-flex align-items-center gap-2" href="Account/Login">
+                                    <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="Account/Login">
                                         @if (currentPage is CurrentPage.Signin)
                                         {
                                             <PersonBadgeFillSvg />
