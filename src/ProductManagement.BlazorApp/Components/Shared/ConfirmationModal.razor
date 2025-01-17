@@ -1,0 +1,21 @@
+﻿ <div class="modal d-block" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content rounded-3 shadow">
+            <div class="modal-body p-4 text-center">
+                <h5 class="mb-3">@(Title)</h5>
+                <p class="mb-0">@(Message)</p>
+            </div>
+            <div class="modal-footer flex-nowrap p-0">
+                <button type="button" class="btn btn-lg btn-link link-dark fs-6 text-decoration-none col-6 py-3 m-0 rounded-0 border-end" onclick="@OnConfirmCallback"><strong>Yes, confirm</strong></button>
+                <button type="button" class="btn btn-lg btn-link link-dark fs-6 text-decoration-none col-6 py-3 m-0 rounded-0" onclick="@OnCancelCallback">No, cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Are you sure?";
+    [Parameter] public string Message { get; set; } = "Do you really want to perform this action?";
+    [Parameter] public EventCallback OnConfirmCallback { get; set; }
+    [Parameter] public EventCallback OnCancelCallback { get; set; }
+}
