@@ -2,8 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ProductManagement.Application.Repositories;
 using ProductManagement.Domain.Entities;
-using ProductManagement.Domain.Repositories;
 using ProductManagement.Domain.ValueObjects;
 using ProductManagement.Infrastructure.Database.Contexts;
 using ProductManagement.Infrastructure.Database.Repositories;

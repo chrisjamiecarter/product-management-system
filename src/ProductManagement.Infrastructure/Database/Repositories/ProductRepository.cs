@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using ProductManagement.Application.Models;
+using ProductManagement.Application.Repositories;
 using ProductManagement.Domain.Entities;
-using ProductManagement.Domain.Repositories;
 using ProductManagement.Infrastructure.Database.Contexts;
 
 namespace ProductManagement.Infrastructure.Database.Repositories;
@@ -30,6 +31,16 @@ internal class ProductRepository(ProductManagementDbContext context, ILogger<Pro
     public async Task<Product?> ReturnByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await context.Products.FindAsync(id, cancellationToken);
+    }
+
+    public async Task<PaginatedList<Product>> ReturnByPageAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    {
+        var query = context.Products.AsQueryable();
+        
+        var count = await query.CountAsync(cancellationToken);
+        var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
+
+        return PaginatedList<Product>.Create(items, count, pageNumber, pageSize);
     }
 
     public async Task<bool> UpdateAsync(Product product, CancellationToken cancellationToken = default)
