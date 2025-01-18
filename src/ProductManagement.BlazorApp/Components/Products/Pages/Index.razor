@@ -13,7 +13,7 @@
         <h1 class="h2 mb-0">Products</h1>
     </div>
 
-    @if (Products is null)
+    @if (ProductsPage is null)
     {
         <LoadingSpinner />
     }
@@ -23,24 +23,22 @@
             <table class="table table-hover align-middle">
                 <thead>
                     <tr>
-                        <th scope="col" class="col-4 table-dark">Name</th>
-                        <th scope="col" class="col-4 table-dark">Description</th>
+                        <th scope="col" class="col-6 table-dark">Name</th>
                         <th scope="col" class="col-1 table-dark text-center">Active</th>
-                        <th scope="col" class="col-1 table-dark">Added On</th>
-                        <th scope="col" class="col-1 table-dark">Price</th>
+                        <th scope="col" class="col-2 table-dark">Added On</th>
+                        <th scope="col" class="col-2 table-dark">Price</th>
                         <th scope="col" class="col-1">
-                            <button class="btn btn-sm btn-outline-dark w-100" type="button" @onclick="() => NavigateToAddProduct()">
+                            <button class="btn btn-sm btn-outline-dark w-100" type="button" aria-label="Add Product" title="Add Product" @onclick="() => NavigateToAddProduct()">
                                 <CartPlusSvg />
                             </button>
                         </th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var product in Products)
+                    @foreach (var product in ProductsPage.Items)
                     {
-                        <tr>
+                        <tr title="@product.Description">
                             <td>@product.Name</td>
-                            <td>@product.Description</td>
                             <td class="text-center">
                                 @if (@product.IsActive)
                                 {
@@ -55,10 +53,10 @@
                             <td>@product.Price</td>
                             <td scope="row">
                                 <div class="d-flex gap-1" >
-                                    <button class="btn btn-sm btn-outline-dark w-50" type="button" @onclick="() => NavigateToEditProduct(product.Id)">
+                                    <button class="btn btn-sm btn-outline-dark w-50" type="button" aria-label="Edit Product" title="Edit Product" @onclick="() => NavigateToEditProduct(product.Id)">
                                         <CartDashSvg />
                                     </button>
-                                    <button class="btn btn-sm btn-outline-dark w-50" type="button" @onclick="() => NavigateToDeleteProduct(product.Id)">
+                                    <button class="btn btn-sm btn-outline-dark w-50" type="button" aria-label="Delete Product" title="Delete Product" @onclick="() => NavigateToDeleteProduct(product.Id)">
                                         <CartXSvg />
                                     </button>
                                 </div>
@@ -67,33 +65,82 @@
                     }
                 </tbody>
             </table>
+            <nav aria-label="Select page">
+                <ul class="pagination justify-content-end">
+                    <li class="page-item @(ProductsPage.IsFirstPage ? "disabled" : "")">
+                        <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetProductsAsync(1))">
+                            <div class="d-flex align-items-center">
+                                <ChevronDoubleLeftSvg />
+                            </div>
+                        </button>
+                    </li>
+                    <li class="page-item @(ProductsPage.HasPreviousPage ? "" : "disabled")">
+                        <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetProductsAsync(ProductsPage.PageNumber - 1))">
+                            <div class="d-flex align-items-center">
+                                <ChevronLeftSvg />
+                            </div>
+                        </button>
+                    </li>
+                    <li class="page-item disabled">
+                        <button class="page-link h-100" type="button">Page @(ProductsPage.PageNumber) of @(ProductsPage.TotalPages) (@(ProductsPage.TotalCount))</button>
+                    </li>
+                    <li class="page-item @(ProductsPage.HasNextPage ? "" : "disabled")">
+                        <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetProductsAsync(ProductsPage.PageNumber + 1))">
+                            <div class="d-flex align-items-center">
+                                <ChevronRightSvg />
+                            </div>
+                        </button>
+                    </li>
+                    <li class="page-item @(ProductsPage.IsLastPage ? "disabled" : "")">
+                        <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetProductsAsync(ProductsPage.TotalPages))">
+                            <div class="d-flex align-items-center">
+                                <ChevronDoubleRightSvg />
+                            </div>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
         </div>
     }
 </div>
 
 @code {
-    private IReadOnlyCollection<GetProductsQueryResponseProduct>? Products { get; set; }
-
-    private CreateProductDto CreateProduct = new();
+    private PaginatedList<GetProductsPaginatedQueryResponse>? ProductsPage { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         await GetProductsAsync();
     }
 
-    private async Task GetProductsAsync()
+    private async Task GetProductsAsync(int pageNumber = 1)
     {
-        var query = new GetProductsQuery();
-        var response = await ProductService.ReturnAllAsync(query);
+        var query = new GetProductsPaginatedQuery(pageNumber);
+        var response = await ProductService.ReturnByPageAsync(query);
         if (response.IsSuccess)
         {
-            Products = response.Value.Products;
+            ProductsPage = response.Value;
         }
         else
         {
-            Products = [];
+            ProductsPage = PaginatedList<GetProductsPaginatedQueryResponse>.Create([], 0, query.PageNumber, query.PageSize);
         }
     }
+
+    // private async Task FilterProducts()
+    // {
+    //     var query = new GetProductsQuery();
+    //     var response = await ProductService.ReturnAllAsync(query);
+    //     if (response.IsSuccess)
+    //     {
+    //         var querableList = response.Value.Products.AsQueryable();
+    //         totalRecords = querableList.Count();
+    //         FilteredProducts = querableList.Skip(pageNumber - 1 * pageSize).Take(pageSize).ToList();
+    //     }
+    //     else
+    //     {
+    //         FilteredProducts = [];
+    //     }
+    // }
 
     private void NavigateToAddProduct()
     {

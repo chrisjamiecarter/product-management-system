@@ -28,7 +28,7 @@
                     <ValidationMessage For="() => UpdateProductDto.Name" class="invalid-feedback" />
                 </div>
                 <div class="form-floating mb-3">
-                    <InputText id="updateProductDescription" class=@($"form-control {EditContext?.GetValidationClass(() => UpdateProductDto.Description)}") @bind-Value="UpdateProductDto.Description" />
+                    <InputTextArea id="updateProductDescription" class=@($"form-control {EditContext?.GetValidationClass(() => UpdateProductDto.Description)}") @bind-Value="UpdateProductDto.Description" />
                     <label for="updateProductDescription" class="form-label">Description</label>
                     <ValidationMessage For="() => UpdateProductDto.Description" class="invalid-feedback" />
                 </div>
