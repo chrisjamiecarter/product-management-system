@@ -1,5 +1,5 @@
 ﻿using ProductManagement.Application.Abstractions.Messaging;
-using ProductManagement.Domain.Repositories;
+using ProductManagement.Application.Repositories;
 using ProductManagement.Domain.Shared;
 
 namespace ProductManagement.Application.Products.Queries.GetProducts;

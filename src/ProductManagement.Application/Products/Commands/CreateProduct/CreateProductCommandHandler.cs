@@ -1,7 +1,7 @@
 ﻿using ProductManagement.Application.Abstractions.Messaging;
 using ProductManagement.Application.Errors;
+using ProductManagement.Application.Repositories;
 using ProductManagement.Domain.Entities;
-using ProductManagement.Domain.Repositories;
 using ProductManagement.Domain.Shared;
 using ProductManagement.Domain.ValueObjects;
 

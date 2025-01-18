@@ -1,6 +1,6 @@
 ﻿using ProductManagement.Application.Abstractions.Messaging;
 using ProductManagement.Application.Errors;
-using ProductManagement.Domain.Repositories;
+using ProductManagement.Application.Repositories;
 using ProductManagement.Domain.Shared;
 using ProductManagement.Domain.ValueObjects;
 

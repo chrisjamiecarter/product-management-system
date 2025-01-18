@@ -22,4 +22,15 @@ internal static class ApplicationErrors
             "Product.NotUpdated",
             "The product was not updated.");
     }
+
+    internal static class PaginatedList
+    {
+        internal static readonly Error InvalidPageNumber = new(
+            "PaginatedList.InvalidPageNumber",
+            "The paginated list page number is invalid.");
+
+        internal static readonly Error InvalidPageSize = new(
+            "PaginatedList.InvalidPageSize",
+            "The paginated list page size is invalid.");
+    }
 }
