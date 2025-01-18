@@ -28,8 +28,10 @@
                         <th scope="col" class="col-2 table-dark">Added On</th>
                         <th scope="col" class="col-2 table-dark">Price</th>
                         <th scope="col" class="col-1">
-                            <button class="btn btn-sm btn-outline-dark w-100" type="button" aria-label="Add Product" title="Add Product" @onclick="() => NavigateToAddProduct()">
-                                <CartPlusSvg />
+                            <button class="btn btn-sm btn-outline-dark w-100 h-100" type="button" aria-label="Add Product" title="Add Product" @onclick="() => NavigateToAddProduct()">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <CartPlusSvg />
+                                </div>
                             </button>
                         </th>
                     </tr>
@@ -52,12 +54,16 @@
                             <td>@product.AddedOnUtc</td>
                             <td>@product.Price</td>
                             <td scope="row">
-                                <div class="d-flex gap-1" >
-                                    <button class="btn btn-sm btn-outline-dark w-50" type="button" aria-label="Edit Product" title="Edit Product" @onclick="() => NavigateToEditProduct(product.Id)">
-                                        <CartDashSvg />
+                                <div class="d-flex flex-column flex-md-row gap-1" >
+                                    <button class="btn btn-sm btn-outline-dark w-100" type="button" aria-label="Edit Product" title="Edit Product" @onclick="() => NavigateToEditProduct(product.Id)">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <CartDashSvg />
+                                        </div>
                                     </button>
-                                    <button class="btn btn-sm btn-outline-dark w-50" type="button" aria-label="Delete Product" title="Delete Product" @onclick="() => NavigateToDeleteProduct(product.Id)">
-                                        <CartXSvg />
+                                    <button class="btn btn-sm btn-outline-dark w-100" type="button" aria-label="Delete Product" title="Delete Product" @onclick="() => NavigateToDeleteProduct(product.Id)">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <CartXSvg />
+                                        </div>
                                     </button>
                                 </div>
                             </td>
@@ -65,41 +71,46 @@
                     }
                 </tbody>
             </table>
-            <nav aria-label="Select page">
-                <ul class="pagination justify-content-end">
-                    <li class="page-item @(ProductsPage.IsFirstPage ? "disabled" : "")">
-                        <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetProductsAsync(1))">
-                            <div class="d-flex align-items-center">
-                                <ChevronDoubleLeftSvg />
-                            </div>
-                        </button>
-                    </li>
-                    <li class="page-item @(ProductsPage.HasPreviousPage ? "" : "disabled")">
-                        <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetProductsAsync(ProductsPage.PageNumber - 1))">
-                            <div class="d-flex align-items-center">
-                                <ChevronLeftSvg />
-                            </div>
-                        </button>
-                    </li>
-                    <li class="page-item disabled">
-                        <button class="page-link h-100" type="button">Page @(ProductsPage.PageNumber) of @(ProductsPage.TotalPages) (@(ProductsPage.TotalCount))</button>
-                    </li>
-                    <li class="page-item @(ProductsPage.HasNextPage ? "" : "disabled")">
-                        <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetProductsAsync(ProductsPage.PageNumber + 1))">
-                            <div class="d-flex align-items-center">
-                                <ChevronRightSvg />
-                            </div>
-                        </button>
-                    </li>
-                    <li class="page-item @(ProductsPage.IsLastPage ? "disabled" : "")">
-                        <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetProductsAsync(ProductsPage.TotalPages))">
-                            <div class="d-flex align-items-center">
-                                <ChevronDoubleRightSvg />
-                            </div>
-                        </button>
-                    </li>
-                </ul>
-            </nav>
+            <div class="pagination flex-column-reverse align-items-center flex-md-row align-items-md-start justify-content-md-between">
+                <span class="small text-muted">
+                    Showing @(ProductsPage.TotalCount) results
+                </span>
+                <nav aria-label="Select page">
+                    <ul class="pagination">
+                        <li class="page-item @(ProductsPage.IsFirstPage ? "disabled" : "")">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetProductsAsync(1))">
+                                <div class="d-flex align-items-center">
+                                    <ChevronDoubleLeftSvg />
+                                </div>
+                            </button>
+                        </li>
+                        <li class="page-item @(ProductsPage.HasPreviousPage ? "" : "disabled")">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetProductsAsync(ProductsPage.PageNumber - 1))">
+                                <div class="d-flex align-items-center">
+                                    <ChevronLeftSvg />
+                                </div>
+                            </button>
+                        </li>
+                        <li class="page-item disabled">
+                            <button class="page-link h-100" type="button">@(ProductsPage.PageNumber) of @(ProductsPage.TotalPages)</button>
+                        </li>
+                        <li class="page-item @(ProductsPage.HasNextPage ? "" : "disabled")">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetProductsAsync(ProductsPage.PageNumber + 1))">
+                                <div class="d-flex align-items-center">
+                                    <ChevronRightSvg />
+                                </div>
+                            </button>
+                        </li>
+                        <li class="page-item @(ProductsPage.IsLastPage ? "disabled" : "")">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetProductsAsync(ProductsPage.TotalPages))">
+                                <div class="d-flex align-items-center">
+                                    <ChevronDoubleRightSvg />
+                                </div>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
         </div>
     }
 </div>
