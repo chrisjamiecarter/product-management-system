@@ -13,6 +13,11 @@ public sealed class ProductPrice : ValueObject
 
     public decimal Value { get; }
 
+    public static explicit operator decimal(ProductPrice productPrice)
+    {
+        return productPrice.Value;
+    }
+
     public static Result<ProductPrice> Create(decimal productPrice)
     {
         if (productPrice < 0)

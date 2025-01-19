@@ -27,7 +27,17 @@ internal sealed class GetProductsPaginatedQueryHandler : IQueryHandler<GetProduc
             return Result.Failure<PaginatedList<GetProductsPaginatedQueryResponse>>(ApplicationErrors.PaginatedList.InvalidPageSize);
         }
 
-        var products = await _productRepository.ReturnByPageAsync(request.PageNumber, request.PageSize, cancellationToken);
+        var products = await _productRepository.ReturnByPageAsync(request.SearchName,
+                                                                  request.SearchIsActive,
+                                                                  request.SearchFromAddedOnDateUtc,
+                                                                  request.SearchToAddedOnDateUtc,
+                                                                  request.SearchFromPrice,
+                                                                  request.SearchToPrice,
+                                                                  request.SortColumn,
+                                                                  request.SortOrder,
+                                                                  request.PageNumber,
+                                                                  request.PageSize,
+                                                                  cancellationToken);
 
         var response = PaginatedList<GetProductsPaginatedQueryResponse>.Create(
             products.Items.Select(p => p.ToQueryResponse()),

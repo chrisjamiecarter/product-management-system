@@ -15,25 +15,102 @@
         </ol>
     </nav>
 
-    <div class="d-flex gap-3 align-items-center mb-4">
-        <CartFillSvg Height="1.5rem" Width="1.5rem" />
-        <h1 class="h2 mb-0">Products</h1>
-    </div>
-
     @if (ProductsPage is null)
     {
         <LoadingSpinner />
     }
     else
     {
+        <div class="d-flex justify-content-between mb-4">
+            <div class="d-flex gap-3 align-items-center">
+                <CartFillSvg Height="1.5rem" Width="1.5rem" />
+                <h1 class="h2 mb-0">Products</h1>
+            </div>
+            <button class="btn btn-lg btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#productSearchForm" aria-expanded="false" aria-controls="productSearchForm">
+                <div class="d-flex align-items-center justify-content-center">
+                    <SearchSvg />
+                </div>
+            </button>
+        </div>
+
+        <div id="productSearchForm" class="collapse pb-3">
+            <EditForm Model="SearchProductsDto" OnValidSubmit="() => GetProductsAsync()" FormName="SearchProducts">
+                <div class="row">
+                    <div class="col-8 col-lg-10">
+                        <div class="form-floating mb-3">
+                            <InputText id="searchProductName" class="form-control" placeholder="name" @bind-Value="SearchProductsDto.SearchName" />
+                            <label for="searchProductName" class="form-label">Name</label>
+                        </div>
+                    </div>
+                    <div class="col-4 col-lg-2">
+                        <div class="form-floating mb-3">
+                            <FixedInputSelect id="searchIsActive" class="form-select" @bind-Value="SearchProductsDto.SearchIsActive">
+                                <option value="">All</option>
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                            </FixedInputSelect>
+                            <label for="searchIsActive">Active</label>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="form-floating mb-3">
+                            <InputDate id="searchFromAddedOnDateUtc" class="form-control" @bind-Value="SearchProductsDto.SearchFromAddedOnDateUtc" />
+                            <label for="searchFromAddedOnDateUtc">Added From</label>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="form-floating mb-3">
+                            <InputDate id="searchToAddedOnDateUtc" class="form-control" @bind-Value="SearchProductsDto.SearchToAddedOnDateUtc" />
+                            <label for="searchToAddedOnDateUtc">Added To</label>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="form-floating mb-3">
+                            <InputNumber id="searchFromPrice" class="form-control" @bind-Value="SearchProductsDto.SearchFromPrice" />
+                            <label for="searchFromPrice">Price From</label>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="form-floating mb-3">
+                            <InputNumber id="searchToPrice" class="form-control" @bind-Value="SearchProductsDto.SearchToPrice" />
+                            <label for="searchToPrice">Price To</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-1 mb-3">
+                    <button class="btn btn-sm btn-outline-dark w-100" type="submit" data-bs-toggle="collapse" data-bs-target="#productSearchForm">Search</button>
+                    <button class="btn btn-sm btn-dark w-100" type="button" data-bs-toggle="collapse" data-bs-target="#productSearchForm" @onclick="ResetSearchProductsDto">Reset</button>
+                </div>
+            </EditForm>
+        </div>
+
         <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead>
                     <tr>
-                        <th scope="col" class="col-6 table-dark">Name</th>
-                        <th scope="col" class="col-1 table-dark text-center">Active</th>
-                        <th scope="col" class="col-2 table-dark">Added On</th>
-                        <th scope="col" class="col-2 table-dark">Price</th>
+                        <th scope="col" class="col-6 table-dark align-middle sortable" @onclick="() => SortTable(nameof(GetProductsPaginatedQueryResponse.Name))">
+                            <div class="d-flex align-items-center justify-content-between">
+                                Name
+                                <DynamicComponent Type="GetSortIcon(nameof(GetProductsPaginatedQueryResponse.Name))" />
+                            </div>
+                        </th>
+                        <th scope="col" class="col-2 table-dark align-middle sortable" @onclick="() => SortTable(nameof(GetProductsPaginatedQueryResponse.AddedOnUtc))">
+                            <div class="d-flex align-items-center justify-content-between">
+
+                                Added
+                                <DynamicComponent Type="GetSortIcon(nameof(GetProductsPaginatedQueryResponse.AddedOnUtc))" />
+                            </div>
+                        </th>
+                        <th scope="col" class="col-2 table-dark align-middle sortable" @onclick="() => SortTable(nameof(GetProductsPaginatedQueryResponse.Price))">
+                            <div class="d-flex align-items-center justify-content-between">
+
+                                Price
+                                <DynamicComponent Type="GetSortIcon(nameof(GetProductsPaginatedQueryResponse.Price))" />
+                            </div>
+                        </th>
+                        <th scope="col" class="col-1 table-dark align-middle text-center">
+                            Active
+                        </th>
                         <th scope="col" class="col-1">
                             <button class="btn btn-sm btn-outline-dark w-100 h-100" type="button" aria-label="Add Product" title="Add Product" @onclick="() => NavigateToAddProduct()">
                                 <div class="d-flex align-items-center justify-content-center">
@@ -48,6 +125,8 @@
                     {
                         <tr title="@product.Description">
                             <td>@product.Name</td>
+                            <td>@product.AddedOnUtc</td>
+                            <td>@product.Price</td>
                             <td class="text-center">
                                 @if (@product.IsActive)
                                 {
@@ -58,10 +137,8 @@
                                     <XCircleSvg />
                                 }
                             </td>
-                            <td>@product.AddedOnUtc</td>
-                            <td>@product.Price</td>
                             <td scope="row">
-                                <div class="d-flex flex-column flex-md-row gap-1" >
+                                <div class="d-flex flex-column flex-md-row gap-1">
                                     <button class="btn btn-sm btn-outline-dark w-100" type="button" aria-label="Edit Product" title="Edit Product" @onclick="() => NavigateToEditProduct(product.Id)">
                                         <div class="d-flex align-items-center justify-content-center">
                                             <CartDashSvg />
@@ -79,7 +156,7 @@
                 </tbody>
             </table>
             <div class="pagination flex-column-reverse align-items-center flex-md-row align-items-md-start justify-content-md-between">
-                <span class="small text-muted">
+                <span class="small text-muted ms-md-2">
                     Showing @(ProductsPage.TotalCount) results
                 </span>
                 <nav aria-label="Select page">
@@ -125,6 +202,8 @@
 @code {
     private PaginatedList<GetProductsPaginatedQueryResponse>? ProductsPage { get; set; }
 
+    private SearchProductsDto SearchProductsDto { get; set; } = new();
+
     protected override async Task OnInitializedAsync()
     {
         await GetProductsAsync();
@@ -132,7 +211,26 @@
 
     private async Task GetProductsAsync(int pageNumber = 1)
     {
-        var query = new GetProductsPaginatedQuery(pageNumber);
+        if (string.IsNullOrWhiteSpace(SearchProductsDto.SortColumn))
+        {
+            SearchProductsDto.SortColumn = nameof(GetProductsPaginatedQueryResponse.Name);
+        }
+
+        if (string.IsNullOrWhiteSpace(SearchProductsDto.SortOrder))
+        {
+            SearchProductsDto.SortOrder = "asc";
+        }
+
+        var query = new GetProductsPaginatedQuery(SearchProductsDto.SearchName,
+                                                  SearchProductsDto.SearchIsActive,
+                                                  SearchProductsDto.SearchFromAddedOnDateUtc,
+                                                  SearchProductsDto.SearchToAddedOnDateUtc,
+                                                  SearchProductsDto.SearchFromPrice,
+                                                  SearchProductsDto.SearchToPrice,
+                                                  SearchProductsDto.SortColumn,
+                                                  SearchProductsDto.SortOrder,
+                                                  pageNumber);
+
         var response = await ProductService.ReturnByPageAsync(query);
         if (response.IsSuccess)
         {
@@ -144,21 +242,24 @@
         }
     }
 
-    // private async Task FilterProducts()
-    // {
-    //     var query = new GetProductsQuery();
-    //     var response = await ProductService.ReturnAllAsync(query);
-    //     if (response.IsSuccess)
-    //     {
-    //         var querableList = response.Value.Products.AsQueryable();
-    //         totalRecords = querableList.Count();
-    //         FilteredProducts = querableList.Skip(pageNumber - 1 * pageSize).Take(pageSize).ToList();
-    //     }
-    //     else
-    //     {
-    //         FilteredProducts = [];
-    //     }
-    // }
+    private Type GetSortIcon(string columnName)
+    {
+        if (SearchProductsDto.SortColumn == columnName)
+        {
+            if (SearchProductsDto.SortOrder == "desc")
+            {
+                return typeof(SortDownSvg);
+            }
+            else
+            {
+                return typeof(SortUpSvg);
+            }
+        }
+        else
+        {
+            return typeof(SortSvg);
+        }
+    }
 
     private void NavigateToAddProduct()
     {
@@ -173,5 +274,18 @@
     private void NavigateToEditProduct(Guid id)
     {
         NavigationManager.NavigateTo($"/products/edit/{id}");
+    }
+
+    private async Task ResetSearchProductsDto()
+    {
+        SearchProductsDto = new();
+        await GetProductsAsync();
+    }
+
+    private async Task SortTable(string columnName)
+    {
+        SearchProductsDto.SortColumn = columnName;
+        SearchProductsDto.SortOrder = SearchProductsDto.SortOrder == "asc" ? "desc" : "asc";
+        await GetProductsAsync();
     }
 }

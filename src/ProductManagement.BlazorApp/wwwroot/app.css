@@ -51,6 +51,10 @@ h1:focus {
   object-fit: cover;
 }
 
+.sortable {
+  cursor: pointer;
+}
+
 /*-------------------------------*/
 /* Hide Arrows From Input Number */
 /* Chrome, Safari, Edge, Opera */

@@ -13,6 +13,11 @@ public sealed class ProductName : ValueObject
 
     public string Value { get; }
 
+    public static explicit operator string(ProductName productName)
+    {
+        return productName.Value;
+    }
+
     public static Result<ProductName> Create(string productName)
     {
         if (string.IsNullOrWhiteSpace(productName))
