@@ -15,12 +15,12 @@
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
                 </div>
                 <div class="offcanvas-body d-md-flex flex-column p-0 pt-md-3 overflow-y-auto">
-                    <AuthorizeView>
+                    <AuthorizeView Context="Home">
                         <Authorized>
                             <ul class="nav flex-column">
                                 <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
                                     <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="" Match="NavLinkMatch.All">
-                                        @if (currentPage is CurrentPage.Home)
+                                        @if (currentPage is AppPages.Home)
                                         {
                                             <HouseFillSvg />
                                         }
@@ -31,32 +31,41 @@
                                         Home
                                     </NavLink>
                                 </li>
-                                <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
-                                    <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="products">
-                                        @if (currentPage is CurrentPage.Products)
-                                        {
-                                            <CartFillSvg />
-                                        }
-                                        else
-                                        {
-                                            <CartSvg />
-                                        }
-                                        Products
-                                    </NavLink>
-                                </li>
-                                <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
-                                    <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="users">
-                                        @if (currentPage is CurrentPage.Users)
-                                        {
-                                            <PeopleFillSvg />
-                                        }
-                                        else
-                                        {
-                                            <PeopleSvg />
-                                        }
-                                        Users
-                                    </NavLink>
-                                </li>
+
+                                <AuthorizeView Context="Products" Roles="User">
+                                    <Authorized>
+                                        <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
+                                            <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="products">
+                                                @if (currentPage is AppPages.Products)
+                                                {
+                                                    <CartFillSvg />
+                                                }
+                                                else
+                                                {
+                                                    <CartSvg />
+                                                }
+                                                Products
+                                            </NavLink>
+                                        </li>
+                                    </Authorized>
+                                </AuthorizeView>
+                                <AuthorizeView Context="Users" Roles="Admin">
+                                    <Authorized>
+                                        <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
+                                            <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="users">
+                                                @if (currentPage is AppPages.Users)
+                                                {
+                                                    <PeopleFillSvg />
+                                                }
+                                                else
+                                                {
+                                                    <PeopleSvg />
+                                                }
+                                                Users
+                                            </NavLink>
+                                        </li>
+                                    </Authorized>
+                                </AuthorizeView>
                             </ul>
 
                             <hr class="my-3">
@@ -65,11 +74,11 @@
                     </AuthorizeView>
 
                     <ul class="nav flex-column mb-auto">
-                        <AuthorizeView>
+                        <AuthorizeView Context="Account">
                             <Authorized>
                                 <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
                                     <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="Account/Manage">
-                                        @if (currentPage is CurrentPage.Manage)
+                                        @if (currentPage is AppPages.Manage)
                                         {
                                             <PersonGearFillSvg />
                                         }
@@ -83,7 +92,7 @@
                                 <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
                                     <form action="Account/Logout" method="post">
                                         <AntiforgeryToken />
-                                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                                        <input type="hidden" name="ReturnUrl" value="" />
                                         <button type="submit" class="nav-link link-dark d-flex align-items-center gap-2">
                                             <DoorClosedSvg />
                                             Sign out
@@ -94,7 +103,7 @@
                             <NotAuthorized>
                                 <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
                                     <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="Account/Register">
-                                        @if (currentPage is CurrentPage.Register)
+                                        @if (currentPage is AppPages.Register)
                                         {
                                             <PersonFillSvg />
                                         }
@@ -107,7 +116,7 @@
                                 </li>
                                 <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
                                     <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="Account/Login">
-                                        @if (currentPage is CurrentPage.Signin)
+                                        @if (currentPage is AppPages.Signin)
                                         {
                                             <PersonBadgeFillSvg />
                                         }
@@ -134,29 +143,7 @@
 </div>
 
 @code {
-    private string? currentUrl;
-
-    protected override void OnInitialized()
-    {
-        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-        NavigationManager.LocationChanged += OnLocationChanged;
-
-        currentPage = GetCurrentPage(currentUrl);
-    }
-
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
-        currentPage = GetCurrentPage(currentUrl);
-        InvokeAsync(StateHasChanged);
-    }
-
-    public void Dispose()
-    {
-        NavigationManager.LocationChanged -= OnLocationChanged;
-    }
-
-    private enum CurrentPage
+    private enum AppPages
     {
         Unknown,
         Home,
@@ -167,32 +154,51 @@
         Manage
     }
 
-    private CurrentPage currentPage;
+    private AppPages? currentPage;
 
-    private CurrentPage GetCurrentPage(string page)
+    protected override void OnInitialized()
     {
-        var pageParts = page.Split("/").Select(x => x.Split("?").FirstOrDefault()?.ToLower()).ToArray();
-        if (!pageParts.Any())
+        NavigationManager.LocationChanged += OnLocationChanged;
+        currentPage = GetCurrentPage();
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentPage = GetCurrentPage();
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+    private AppPages GetCurrentPage()
+    {
+        var currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+
+        var urlParts = currentUrl.Split("/").Select(x => x.Split("?").FirstOrDefault()?.ToLower()).ToArray();
+        if (!urlParts.Any())
         {
-            return CurrentPage.Home;
+            return AppPages.Home;
         }
 
-        if (pageParts.FirstOrDefault() == "account")
+        if (urlParts.FirstOrDefault() == "account")
         {
-            return pageParts[1] switch
-        {
-                "login" => CurrentPage.Signin,
-                "register" => CurrentPage.Register,
-                "manage" => CurrentPage.Manage,
-                _ => CurrentPage.Unknown,
+            return urlParts[1] switch
+            {
+                "login" => AppPages.Signin,
+                "register" => AppPages.Register,
+                "manage" => AppPages.Manage,
+                _ => AppPages.Unknown,
             };
         }
 
-        return pageParts.FirstOrDefault()?.ToLower() switch
+        return urlParts.FirstOrDefault()?.ToLower() switch
         {
-            "products" => CurrentPage.Products,
-            "users" => CurrentPage.Users,
-            _ => CurrentPage.Home,
+            "products" => AppPages.Products,
+            "users" => AppPages.Users,
+            _ => AppPages.Home,
         };
     }
 }

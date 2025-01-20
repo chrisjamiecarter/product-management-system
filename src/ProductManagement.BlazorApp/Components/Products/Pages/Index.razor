@@ -1,5 +1,5 @@
 ﻿@page "/products"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "User")]
 @inject NavigationManager NavigationManager
 @inject IProductService ProductService
 @inject IToastService ToastService
