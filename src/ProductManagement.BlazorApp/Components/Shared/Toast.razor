@@ -5,7 +5,10 @@
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
     <div id="toast" class="toast @(IsVisible ? "show" : "")" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header @BackgroundCssClass">
-            <i class="me-3 bi bi-@IconCssClass"></i>
+            <div class="d-flex align-items-center me-3">
+                <DynamicComponent Type="IconSvg" />
+            @* <i class="me-3 bi bi-@IconCssClass"></i> *@
+            </div>
             <strong class="me-auto">@Heading</strong>
             <button type="button" class="btn-close" aria-label="Close" @onclick="HideToast"></button>
         </div>
@@ -24,7 +27,7 @@
 
     protected string BackgroundCssClass { get; set; } = "";
 
-    protected string IconCssClass { get; set; } = "";
+    protected Type IconSvg { get; set; } = typeof(InfoCircleFillSvg);
 
     protected override void OnInitialized()
     {
@@ -43,22 +46,22 @@
         {
             case ToastLevel.Info:
                 BackgroundCssClass = "text-bg-info";
-                IconCssClass = "info-circle-fill";
+                IconSvg = typeof(InfoCircleFillSvg);
                 Heading = "Info";
                 break;
             case ToastLevel.Success:
                 BackgroundCssClass = "text-bg-success";
-                IconCssClass = "check-circle-fill";
+                IconSvg = typeof(CheckCircleFillSvg);
                 Heading = "Success";
                 break;
             case ToastLevel.Warning:
                 BackgroundCssClass = "text-bg-warning";
-                IconCssClass = "exclamation-triangle-fill";
+                IconSvg = typeof(ExclamationTriangleFillSvg);
                 Heading = "Warning";
                 break;
             case ToastLevel.Error:
                 BackgroundCssClass = "text-bg-danger";
-                IconCssClass = "exclamation-circle-fill";
+                IconSvg = typeof(ExclamationCircleFillSvg);
                 Heading = "Error";
                 break;
         }

@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @inject NavigationManager NavigationManager
 @inject IProductService ProductService
+@inject IToastService ToastService
 @rendermode InteractiveServer
 
 <PageTitle>Delete Product</PageTitle>
@@ -83,7 +84,8 @@
         }
         else
         {
-            // TODO: Log and Toast.
+            // TODO: Log.
+            ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
         }
     }
 
@@ -91,7 +93,6 @@
     {
         if (DeleteProductDto is null)
         {
-            // TODO: Log and Toast.
             return;
         }
 
@@ -100,12 +101,13 @@
 
         if (response.IsSuccess)
         {
-            // TODO: Toast.
+            ToastService.ShowToast("Product deleted", ToastLevel.Success);
             NavigateToProducts();
         }
         else
         {
-            // TODO: Log and Toast.
+            // TODO: Log.
+            ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
         }
     }
 

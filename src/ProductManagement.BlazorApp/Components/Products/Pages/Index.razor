@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @inject NavigationManager NavigationManager
 @inject IProductService ProductService
+@inject IToastService ToastService
 @rendermode InteractiveServer
 
 <PageTitle>Products</PageTitle>
@@ -239,6 +240,7 @@
         else
         {
             ProductsPage = PaginatedList<GetProductsPaginatedQueryResponse>.Create([], 0, query.PageNumber, query.PageSize);
+            ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
         }
     }
 

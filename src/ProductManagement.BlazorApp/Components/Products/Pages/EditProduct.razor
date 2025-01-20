@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @inject NavigationManager NavigationManager
 @inject IProductService ProductService
+@inject IToastService ToastService
 @rendermode InteractiveServer
 
 <PageTitle>Edit Product</PageTitle>
@@ -75,13 +76,13 @@
 
         if (response.IsSuccess)
         {
-            // TODO: Toast.
             UpdateProductDto = new UpdateProductDto(response.Value);
             EditContext = new EditContext(UpdateProductDto);
         }
         else
         {
-            // TODO: Log and Toast.
+            // TODO: Log.
+            ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
         }
     }
 
@@ -89,7 +90,6 @@
     {
         if (UpdateProductDto is null)
         {
-            // TODO: Log and Toast.
             return;
         }
 
@@ -98,11 +98,13 @@
 
         if (response.IsSuccess)
         {
+            ToastService.ShowToast("Product updated", ToastLevel.Success);
             NavigateToProducts();
         }
         else
         {
-            // TODO: Log and Toast.
+            // TODO: Log.
+            ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
         }
     }
 
