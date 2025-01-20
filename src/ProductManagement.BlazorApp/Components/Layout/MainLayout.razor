@@ -5,32 +5,33 @@
 @inject NavigationManager NavigationManager
 
 <Header />
+<Toast />
 <div class="container-fluid d-md-flex flex-md-grow-1">
     <div class="row flex-md-grow-1">
         <div class="sidebar border border-right col-md-3 col-lg-2 p-0 bg-body-tertiary">
-            <div class="offcanvas-md offcanvas-end bg-body-tertiary" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
+            <div class="offcanvas-md offcanvas-end bg-body-tertiary hide" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
                 <div class="offcanvas-header">
-                    <h5 class="offcanvas-title" id="sidebarMenuLabel">Company name</h5>
+                    <h5 class="offcanvas-title" id="sidebarMenuLabel">Product Management System</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
                 </div>
                 <div class="offcanvas-body d-md-flex flex-column p-0 pt-md-3 overflow-y-auto">
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="" Match="NavLinkMatch.All">
-                                @if (currentPage is CurrentPage.Home)
-                                {
-                                    <HouseFillSvg />
-                                }
-                                else
-                                {
-                                    <HouseSvg />
-                                }
-                                Home
-                            </NavLink>
-                        </li>
-                        <AuthorizeView>
-                            <Authorized>
-                                <li class="nav-item">
+                    <AuthorizeView>
+                        <Authorized>
+                            <ul class="nav flex-column">
+                                <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
+                                    <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="" Match="NavLinkMatch.All">
+                                        @if (currentPage is CurrentPage.Home)
+                                        {
+                                            <HouseFillSvg />
+                                        }
+                                        else
+                                        {
+                                            <HouseSvg />
+                                        }
+                                        Home
+                                    </NavLink>
+                                </li>
+                                <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
                                     <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="products">
                                         @if (currentPage is CurrentPage.Products)
                                         {
@@ -43,7 +44,7 @@
                                         Products
                                     </NavLink>
                                 </li>
-                                <li class="nav-item">
+                                <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
                                     <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="users">
                                         @if (currentPage is CurrentPage.Users)
                                         {
@@ -56,16 +57,17 @@
                                         Users
                                     </NavLink>
                                 </li>
-                            </Authorized>
-                        </AuthorizeView>
-                    </ul>
+                            </ul>
 
-                    <hr class="my-3">
+                            <hr class="my-3">
+
+                        </Authorized>
+                    </AuthorizeView>
 
                     <ul class="nav flex-column mb-auto">
                         <AuthorizeView>
                             <Authorized>
-                                <li class="nav-item">
+                                <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
                                     <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="Account/Manage">
                                         @if (currentPage is CurrentPage.Manage)
                                         {
@@ -78,7 +80,7 @@
                                         Account
                                     </NavLink>
                                 </li>
-                                <li class="nav-item">
+                                <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
                                     <form action="Account/Logout" method="post">
                                         <AntiforgeryToken />
                                         <input type="hidden" name="ReturnUrl" value="@currentUrl" />
@@ -90,7 +92,7 @@
                                 </li>
                             </Authorized>
                             <NotAuthorized>
-                                <li class="nav-item">
+                                <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
                                     <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="Account/Register">
                                         @if (currentPage is CurrentPage.Register)
                                         {
@@ -103,7 +105,7 @@
                                         Register
                                     </NavLink>
                                 </li>
-                                <li class="nav-item">
+                                <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
                                     <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="Account/Login">
                                         @if (currentPage is CurrentPage.Signin)
                                         {
@@ -145,7 +147,8 @@
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
-        StateHasChanged();
+        currentPage = GetCurrentPage(currentUrl);
+        InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
