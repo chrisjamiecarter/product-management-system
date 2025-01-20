@@ -40,15 +40,15 @@
                                 Remember me
                             </label>
                         </div>
-                        <a class="link-primary small text-muted link-underline-opacity-0" href="Account/ForgotPassword">Forgot password?</a>
+                        <a class="link-dark small text-muted link-underline-opacity-0" href="Account/ForgotPassword">Forgot password?</a>
                     </div>
                     <div class="text-center text-lg-start">
                         <button id="loginSubmit" type="submit" class="btn btn-dark btn-lg w-100 px-3">
                             Sign in
                         </button>
                         <div class="d-flex justify-content-between mt-3">
-                            <a class="link-primary small text-muted link-underline-opacity-0" href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Don't have an account?</a>
-                            <a class="link-primary small text-muted link-underline-opacity-0" href="Account/ResendEmailConfirmation">Resend email confirmation?</a>
+                            <a class="link-dark small text-muted link-underline-opacity-0" href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Don't have an account?</a>
+                            <a class="link-dark small text-muted link-underline-opacity-0" href="Account/ResendEmailConfirmation">Resend email confirmation?</a>
                         </div>
                     </div>
                 </EditForm>
