@@ -1,0 +1,90 @@
+﻿@inject IToastService ToastService
+@implements IDisposable
+@rendermode InteractiveServer
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toast" class="toast @(IsVisible ? "show" : "")" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header @BackgroundCssClass">
+            <i class="me-3 bi bi-@IconCssClass"></i>
+            <strong class="me-auto">@Heading</strong>
+            <button type="button" class="btn-close" aria-label="Close" @onclick="HideToast"></button>
+        </div>
+        <div class="toast-body">
+            @Message
+        </div>
+    </div>
+</div>
+
+@code {
+    protected string Heading { get; set; } = "";
+
+    protected string Message { get; set; } = "";
+
+    protected bool IsVisible { get; set; }
+
+    protected string BackgroundCssClass { get; set; } = "";
+
+    protected string IconCssClass { get; set; } = "";
+
+    protected override void OnInitialized()
+    {
+        if (ToastService is null)
+        {
+            throw new ArgumentNullException(nameof(ToastService));
+        }
+
+        ToastService.OnShow += ShowToast;
+        ToastService.OnHide += HideToast;
+    }
+
+    private void BuildSettings(ToastLevel level, string message)
+    {
+        switch (level)
+        {
+            case ToastLevel.Info:
+                BackgroundCssClass = "text-bg-info";
+                IconCssClass = "info-circle-fill";
+                Heading = "Info";
+                break;
+            case ToastLevel.Success:
+                BackgroundCssClass = "text-bg-success";
+                IconCssClass = "check-circle-fill";
+                Heading = "Success";
+                break;
+            case ToastLevel.Warning:
+                BackgroundCssClass = "text-bg-warning";
+                IconCssClass = "exclamation-triangle-fill";
+                Heading = "Warning";
+                break;
+            case ToastLevel.Error:
+                BackgroundCssClass = "text-bg-danger";
+                IconCssClass = "exclamation-circle-fill";
+                Heading = "Error";
+                break;
+        }
+
+        Message = message;
+    }
+
+    private void HideToast()
+    {
+        IsVisible = false;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void ShowToast(string message, ToastLevel level)
+    {
+        BuildSettings(level, message);
+        IsVisible = true;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        if (ToastService != null)
+        {
+            ToastService.OnShow -= ShowToast;
+        }
+        GC.SuppressFinalize(this);
+    }
+}

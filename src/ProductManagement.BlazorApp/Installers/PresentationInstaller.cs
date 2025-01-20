@@ -13,6 +13,8 @@ public static class PresentationInstaller
     {
         services.AddScoped<IProductService, ProductService>();
 
+        services.AddScoped<IToastService, ToastService>();
+
         return services;
     }
 
