@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using ProductManagement.BlazorApp.Components.Account.Pages;
 using ProductManagement.BlazorApp.Components.Account.Pages.Manage;
-using ProductManagement.BlazorApp.Data;
+using ProductManagement.Infrastructure.Database.Identity;
 
 namespace Microsoft.AspNetCore.Routing;
 internal static class IdentityComponentsEndpointRouteBuilderExtensions

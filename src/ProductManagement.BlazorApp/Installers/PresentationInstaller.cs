@@ -12,17 +12,19 @@ public static class PresentationInstaller
     public static IServiceCollection AddPresentation(this IServiceCollection services)
     {
         services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<IUserService, UserService>();
 
         services.AddScoped<IToastService, ToastService>();
 
         return services;
     }
 
-    public static WebApplication SetUpDatabase(this WebApplication app)
+    public static async Task<WebApplication> SetUpDatabaseAsync(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
         var services = scope.ServiceProvider;
-        services.MigrateDatabase();
+        await services.MigrateDatabaseAsync();
+        await services.SeedDatabaseAsync();
 
         return app;
     }
