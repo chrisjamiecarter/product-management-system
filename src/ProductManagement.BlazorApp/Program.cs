@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using ProductManagement.Application.Installers;
 using ProductManagement.BlazorApp.Components;
 using ProductManagement.BlazorApp.Components.Account;
@@ -67,7 +66,6 @@ public class Program
 
         //    //});
         //});
-        builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
         //builder.Services.AddIdentityCore<ApplicationUser>(options =>
         //{
@@ -97,6 +95,8 @@ public class Program
             app.UseExceptionHandler("/Error");
             app.UseHsts();
         }
+
+        app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
         app.UseHttpsRedirection();
 
