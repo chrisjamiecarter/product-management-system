@@ -110,6 +110,7 @@ internal class ProductRepository(ProductManagementDbContext context, ILogger<Pro
             _ => product => product.Id,
         };
     }
+
     private async Task<int> SaveAsync(CancellationToken cancellationToken = default)
     {
         try
