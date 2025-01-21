@@ -1,0 +1,236 @@
+﻿@page "/users"
+@attribute [Authorize(Roles = "Admin")]
+@inject NavigationManager NavigationManager
+@inject IUserService UserService
+@inject IToastService ToastService
+@rendermode InteractiveServer
+
+<PageTitle>Users</PageTitle>
+
+<div class="container-md py-3">
+
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item active" aria-current="page">Users</li>
+            <li class="breadcrumb-item active" aria-current="page">List</li>
+        </ol>
+    </nav>
+
+    @if (UsersPage is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
+        <div class="d-flex justify-content-between mb-4">
+            <div class="d-flex gap-3 align-items-center">
+                <PeopleFillSvg Height="1.5rem" Width="1.5rem" />
+                <h1 class="h2 mb-0">Users</h1>
+            </div>
+            <button class="btn btn-lg btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#userSearchForm" aria-expanded="false" aria-controls="userSearchForm">
+                <div class="d-flex align-items-center justify-content-center">
+                    <SearchSvg />
+                </div>
+            </button>
+        </div>
+
+        <div id="userSearchForm" class="collapse pb-3">
+            <EditForm Model="SearchUsersDto" OnValidSubmit="() => GetUsersAsync()" FormName="SearchUsers">
+                <div class="row">
+                    <div class="col-12 col-md-8 col-lg-9 col-xl-10">
+                        <div class="form-floating mb-3">
+                            <InputText id="searchUserName" class="form-control" placeholder="user name" @bind-Value="SearchUsersDto.SearchUserName" />
+                            <label for="searchUserName" class="form-label">User Name</label>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4 col-lg-3 col-xl-2">
+                        <div class="form-floating mb-3">
+                            <FixedInputSelect id="searchEmailConfirmed" class="form-select" @bind-Value="SearchUsersDto.SearchEmailConfirmed">
+                                <option value="">All</option>
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                            </FixedInputSelect>
+                            <label for="searchEmailConfirmed">Email Confirmed</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-1 mb-3">
+                    <button class="btn btn-sm btn-outline-dark w-100" type="submit" data-bs-toggle="collapse" data-bs-target="#userSearchForm">Search</button>
+                    <button class="btn btn-sm btn-dark w-100" type="button" data-bs-toggle="collapse" data-bs-target="#userSearchForm" @onclick="ResetSearchUsersDto">Reset</button>
+                </div>
+            </EditForm>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col" class="col-6 col-md-7 col-lg-8 col-xl-9 table-dark align-middle sortable" @onclick="() => SortTable()">
+                            <div class="d-flex align-items-center justify-content-between">
+                                User Name
+                                <DynamicComponent Type="GetSortIcon()" />
+                            </div>
+                        </th>
+                        <th scope="col" class="col-5 col-md-4 col-lg-3 col-xl-2 table-dark align-middle text-center">
+                            Email Confirmed
+                        </th>
+                        <th scope="col" class="col-1">
+                            <button class="btn btn-sm btn-outline-dark w-100 h-100" type="button" aria-label="Add User" title="Add User" @onclick="() => NavigateToAddUser()">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <PersonAddSvg />
+                                </div>
+                            </button>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in UsersPage.Items)
+                    {
+                        <tr title="@user.UserName">
+                            <td>@user.UserName</td>
+                            <td class="text-center">
+                                @if (user.EmailConfirmed)
+                                {
+                                    <CheckCircleSvg />
+                                }
+                                else
+                                {
+                                    <XCircleSvg />
+                                }
+                            </td>
+                            <td scope="row">
+                                <div class="d-flex flex-column flex-md-row gap-1">
+                                    <button class="btn btn-sm btn-outline-dark w-100" type="button" aria-label="Edit User" title="Edit User" @onclick="() => NavigateToEditUser(user.Id)">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <PersonDashSvg />
+                                        </div>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-dark w-100" type="button" aria-label="Delete User" title="Delete User" @onclick="() => NavigateToDeleteUser(user.Id)">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <PersonXSvg />
+                                        </div>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="pagination flex-column-reverse align-items-center flex-md-row align-items-md-start justify-content-md-between">
+                <span class="small text-muted ms-md-2">
+                    Showing @(UsersPage.TotalCount) results
+                </span>
+                <nav aria-label="Select page">
+                    <ul class="pagination">
+                        <li class="page-item @(UsersPage.IsFirstPage ? "disabled" : "")">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetUsersAsync(1))">
+                                <div class="d-flex align-items-center">
+                                    <ChevronDoubleLeftSvg />
+                                </div>
+                            </button>
+                        </li>
+                        <li class="page-item @(UsersPage.HasPreviousPage ? "" : "disabled")">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetUsersAsync(UsersPage.PageNumber - 1))">
+                                <div class="d-flex align-items-center">
+                                    <ChevronLeftSvg />
+                                </div>
+                            </button>
+                        </li>
+                        <li class="page-item disabled">
+                            <button class="page-link h-100" type="button">@(UsersPage.PageNumber) of @(UsersPage.TotalPages)</button>
+                        </li>
+                        <li class="page-item @(UsersPage.HasNextPage ? "" : "disabled")">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetUsersAsync(UsersPage.PageNumber + 1))">
+                                <div class="d-flex align-items-center">
+                                    <ChevronRightSvg />
+                                </div>
+                            </button>
+                        </li>
+                        <li class="page-item @(UsersPage.IsLastPage ? "disabled" : "")">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetUsersAsync(UsersPage.TotalPages))">
+                                <div class="d-flex align-items-center">
+                                    <ChevronDoubleRightSvg />
+                                </div>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private PaginatedList<GetUsersPaginatedQueryResponse>? UsersPage { get; set; }
+
+    private SearchUsersDto SearchUsersDto { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetUsersAsync();
+    }
+
+    private async Task GetUsersAsync(int pageNumber = 1)
+    {
+        if (string.IsNullOrWhiteSpace(SearchUsersDto.SortOrder))
+        {
+            SearchUsersDto.SortOrder = "asc";
+        }
+
+        var query = new GetUsersPaginatedQuery(SearchUsersDto.SearchUserName,
+                                               SearchUsersDto.SearchEmailConfirmed,
+                                               SearchUsersDto.SortOrder,
+                                               pageNumber);
+
+        var response = await UserService.ReturnByPageAsync(query);
+        if (response.IsSuccess)
+        {
+            UsersPage = response.Value;
+        }
+        else
+        {
+            UsersPage = PaginatedList<GetUsersPaginatedQueryResponse>.Create([], 0, query.PageNumber, query.PageSize);
+            ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
+        }
+    }
+
+    private Type GetSortIcon()
+    {
+        if (SearchUsersDto.SortOrder == "desc")
+        {
+            return typeof(SortDownSvg);
+        }
+        else
+        {
+            return typeof(SortUpSvg);
+        }
+    }
+
+    private void NavigateToAddUser()
+    {
+        NavigationManager.NavigateTo("/users/add");
+    }
+
+    private void NavigateToDeleteUser(string id)
+    {
+        NavigationManager.NavigateTo($"/users/delete/{id}");
+    }
+
+    private void NavigateToEditUser(string id)
+    {
+        NavigationManager.NavigateTo($"/users/edit/{id}");
+    }
+
+    private async Task ResetSearchUsersDto()
+    {
+        SearchUsersDto = new();
+        await GetUsersAsync();
+    }
+
+    private async Task SortTable()
+    {
+        SearchUsersDto.SortOrder = SearchUsersDto.SortOrder == "asc" ? "desc" : "asc";
+        await GetUsersAsync();
+    }
+}
