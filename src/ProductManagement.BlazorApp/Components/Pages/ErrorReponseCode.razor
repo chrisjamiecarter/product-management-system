@@ -1,0 +1,28 @@
+﻿@page "/Error/{ResponseCode}"
+@inject NavigationManager NavigationManager
+
+<PageTitle>Error - @ResponseCode</PageTitle>
+
+<section class="d-flex w-100 h-100 p-3 flex-column text-center">
+    <div class="m-auto px-3">
+        <div class="col-2 mx-auto mb-3">
+            <EmojiFrownSvg Height="100%" Width="100%" />
+        </div>
+        <h1>@ResponseCode</h1>
+        <p class="lead mb-3">
+        @switch (ResponseCode)
+        {
+            case "404":
+                    <span>The page you are looking for doesn't exist.</span>
+                break;
+            default:
+                    <span>An unexpected error has occured.</span>
+                break;
+        }
+        </p>
+    </div>
+</section>
+
+@code {
+    [Parameter] public string? ResponseCode { get; set; }
+}
