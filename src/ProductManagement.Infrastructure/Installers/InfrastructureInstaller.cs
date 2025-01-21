@@ -1,12 +1,12 @@
-﻿using Bogus;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ProductManagement.Application.Repositories;
-using ProductManagement.Domain.Entities;
-using ProductManagement.Domain.ValueObjects;
 using ProductManagement.Infrastructure.Database.Contexts;
+using ProductManagement.Infrastructure.Database.Identity;
 using ProductManagement.Infrastructure.Database.Repositories;
+using ProductManagement.Infrastructure.Database.Services;
 
 namespace ProductManagement.Infrastructure.Installers;
 
@@ -15,57 +15,46 @@ namespace ProductManagement.Infrastructure.Installers;
 /// </summary>
 public static class InfrastructureInstaller
 {
-    private static readonly int Seed = 19890309;
 
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("ProductManagement") ?? throw new InvalidOperationException("Connection string 'ProductManagement' not found.");
-        services.AddDbContext<ProductManagementDbContext>(options =>
+        services.AddDbContext<ProductManagementDbContext>(options => options.UseSqlServer(connectionString));
+
+        services.AddIdentityCore<ApplicationUser>(options =>
         {
-            options.UseSqlServer(connectionString);
-            options.UseSeeding((context, _) =>
-            {
-                SeedDatabase(context);
-            });
-        });
+            options.Password.RequiredLength = 8;
+            options.Password.RequireDigit = true;
+            options.Password.RequireLowercase = true;
+            options.Password.RequireUppercase = true;
+            options.Password.RequireNonAlphanumeric = true;
+            options.SignIn.RequireConfirmedAccount = true;
+        })
+        .AddRoles<IdentityRole>()
+        .AddEntityFrameworkStores<ProductManagementDbContext>()
+        .AddSignInManager()
+        .AddDefaultTokenProviders();
 
         services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ISeederService, SeederService>();
 
         return services;
     }
 
-    public static IServiceProvider MigrateDatabase(this IServiceProvider serviceProvider)
+    public static async Task<IServiceProvider> MigrateDatabaseAsync(this IServiceProvider serviceProvider)
     {
-        using var context = serviceProvider.GetRequiredService<ProductManagementDbContext>();
-        context.Database.Migrate();
+        var context = serviceProvider.GetRequiredService<ProductManagementDbContext>();
+        await context.Database.MigrateAsync();
 
         return serviceProvider;
     }
 
-    private static void SeedDatabase(DbContext context)
+    public static async Task<IServiceProvider> SeedDatabaseAsync(this IServiceProvider serviceProvider)
     {
-        var products = context.Set<Product>();
-        if (products.Any())
-        {
-            return;
-        }
+        var seeder = serviceProvider.GetRequiredService<ISeederService>();
+        await seeder.SeedDatabaseAsync();
 
-        var fakeProducts = new Faker<Product>()
-            .UseSeed(Seed)
-            .CustomInstantiator(f =>
-            {
-                return new Product(
-                    f.Random.Guid(),
-                    ProductName.Create(f.Commerce.ProductName()).Value,
-                    f.Commerce.ProductDescription(),
-                    ProductPrice.Create(decimal.Parse(f.Commerce.Price())).Value);
-            });
-
-        foreach (var fakeProduct in fakeProducts.Generate(100))
-        {
-            products.Add(fakeProduct);
-        }
-
-        context.SaveChanges();
+        return serviceProvider;
     }
 }
