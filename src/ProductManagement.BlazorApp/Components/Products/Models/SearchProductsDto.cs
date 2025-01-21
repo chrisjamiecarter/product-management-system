@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using ProductManagement.Application.Products.Queries.GetProductById;
 
 namespace ProductManagement.BlazorApp.Components.Products.Models;
 

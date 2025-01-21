@@ -97,14 +97,12 @@
                         </th>
                         <th scope="col" class="col-2 table-dark align-middle sortable" @onclick="() => SortTable(nameof(GetProductsPaginatedQueryResponse.AddedOnUtc))">
                             <div class="d-flex align-items-center justify-content-between">
-
                                 Added
                                 <DynamicComponent Type="GetSortIcon(nameof(GetProductsPaginatedQueryResponse.AddedOnUtc))" />
                             </div>
                         </th>
                         <th scope="col" class="col-2 table-dark align-middle sortable" @onclick="() => SortTable(nameof(GetProductsPaginatedQueryResponse.Price))">
                             <div class="d-flex align-items-center justify-content-between">
-
                                 Price
                                 <DynamicComponent Type="GetSortIcon(nameof(GetProductsPaginatedQueryResponse.Price))" />
                             </div>
@@ -156,6 +154,7 @@
                     }
                 </tbody>
             </table>
+
             <div class="pagination flex-column-reverse align-items-center flex-md-row align-items-md-start justify-content-md-between">
                 <span class="small text-muted ms-md-2">
                     Showing @(ProductsPage.TotalCount) results
