@@ -27,7 +27,7 @@ internal sealed class GetUsersPaginatedQueryHandler : IQueryHandler<GetUsersPagi
             return Result.Failure<PaginatedList<GetUsersPaginatedQueryResponse>>(ApplicationErrors.PaginatedList.InvalidPageSize);
         }
 
-        var users = await _userRepository.ReturnByPageAsync(request.SearchUserName,
+        var users = await _userRepository.ReturnByPageAsync(request.SearchUsername,
                                                             request.SearchEmailConfirmed,
                                                             request.SortOrder,
                                                             request.PageNumber,

@@ -3,7 +3,7 @@ using ProductManagement.Application.Models;
 
 namespace ProductManagement.Application.Users.Queries.GetUsersPaginated;
 
-public sealed record GetUsersPaginatedQuery(string? SearchUserName,
+public sealed record GetUsersPaginatedQuery(string? SearchUsername,
                                             bool? SearchEmailConfirmed,
                                             string? SortOrder,
                                             int PageNumber = 1,

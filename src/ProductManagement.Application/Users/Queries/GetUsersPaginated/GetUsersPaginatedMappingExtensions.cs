@@ -7,7 +7,7 @@ internal static class GetUsersPaginatedMappingExtensions
     public static GetUsersPaginatedQueryResponse ToQueryResponse(this User user)
     {
         return new GetUsersPaginatedQueryResponse(user.Id,
-                                                  user.UserName,
+                                                  user.Username,
                                                   user.EmailConfirmed);
     }
 }
