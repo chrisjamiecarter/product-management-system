@@ -2,7 +2,6 @@
 
 namespace ProductManagement.Application.Products.Commands.CreateProduct;
 
-public sealed record CreateProductCommand(
-    string Name,
-    string Description,
-    decimal Price) : ICommand;
+public sealed record CreateProductCommand(string Name,
+                                          string Description,
+                                          decimal Price) : ICommand;

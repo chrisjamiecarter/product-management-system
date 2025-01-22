@@ -19,24 +19,21 @@ internal sealed class CreateProductCommandHandler : ICommandHandler<CreateProduc
     public async Task<Result> Handle(CreateProductCommand request, CancellationToken cancellationToken)
     {
         var name = ProductName.Create(request.Name);
-        var description = request.Description;
-        var price = ProductPrice.Create(request.Price);
-
         if (name.IsFailure)
         {
             return Result.Failure(name.Error);
         }
 
+        var price = ProductPrice.Create(request.Price);
         if (price.IsFailure)
         {
             return Result.Failure(price.Error);
         }
 
-        var product = new Product(
-            Guid.CreateVersion7(),
-            name.Value,
-            description,
-            price.Value);
+        var product = new Product(Guid.CreateVersion7(),
+                                  name.Value,
+                                  request.Description,
+                                  price.Value);
 
         var isCreated = await _productRepository.CreateAsync(product, cancellationToken);
 

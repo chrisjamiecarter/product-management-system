@@ -16,10 +16,7 @@ internal class DeleteProductCommandHandler : ICommandHandler<DeleteProductComman
 
     public async Task<Result> Handle(DeleteProductCommand request, CancellationToken cancellationToken)
     {
-        var id = request.Id;
-
-        var product = await _productRepository.ReturnByIdAsync(id, cancellationToken);
-
+        var product = await _productRepository.ReturnByIdAsync(request.Id, cancellationToken);
         if (product is null)
         {
             return Result.Failure(ApplicationErrors.Product.NotFound);

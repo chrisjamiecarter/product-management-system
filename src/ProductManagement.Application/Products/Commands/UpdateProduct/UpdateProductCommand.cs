@@ -2,9 +2,8 @@
 
 namespace ProductManagement.Application.Products.Commands.UpdateProduct;
 
-public sealed record UpdateProductCommand(
-    Guid Id,
-    string Name,
-    string Description,
-    bool IsActive,
-    decimal Price) : ICommand;
+public sealed record UpdateProductCommand(Guid Id,
+                                          string Name,
+                                          string Description,
+                                          bool IsActive,
+                                          decimal Price) : ICommand;
