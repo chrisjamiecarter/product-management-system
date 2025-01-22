@@ -31,7 +31,7 @@
             <EditForm EditContext="EditContext" FormName="AddProduct" OnValidSubmit="AddProductAsync">
                 <DataAnnotationsValidator />
                 <div class="form-floating mb-3">
-                    <InputText id="createProductName" class=@($"form-control {EditContext?.GetValidationClass(() => CreateProductDto.Name)}") placeholder="name" @bind-Value="CreateProductDto.Name" aria-describedby="createProductNameValidationMessage" />
+                    <InputText id="createProductName" class=@($"form-control {EditContext?.GetValidationClass(() => CreateProductDto.Name)}") placeholder="name" @bind-Value="CreateProductDto.Name" />
                     <label for="createProductName" class="form-label">Name</label>
                     <ValidationMessage For="() => CreateProductDto.Name" class="invalid-feedback" />
                 </div>
