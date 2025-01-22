@@ -1,0 +1,115 @@
+﻿@page "/users/delete/{Id}"
+@attribute [Authorize(Roles = "Admin")]
+@inject NavigationManager NavigationManager
+@inject IUserService UserService
+@inject IToastService ToastService
+@rendermode InteractiveServer
+
+<PageTitle>Delete User</PageTitle>
+
+<div class="container-md py-3">
+
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><NavLink class="link-dark link-underline-opacity-0 link-underline-opacity-100-hover" href="users">Users</NavLink></li>
+            <li class="breadcrumb-item active" aria-current="page">Delete</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex gap-3 align-items-center mb-4">
+        <PersonFillXSvg Height="1.5rem" Width="1.5rem" />
+        <h1 class="h2 mb-0">Delete User</h1>
+    </div>
+
+    @if (DeleteUserDto is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
+        <div class="form-group col-lg-6">
+            <EditForm Model="DeleteUserDto" FormName="DeleteUser" OnValidSubmit="ShowConfirmation">
+                <div class="form-floating mb-3">
+                    <InputText id="deleteUserUsername" class="form-control" placeholder="username" disabled readonly @bind-Value="DeleteUserDto.Username" />
+                    <label for="deleteUserUsername" class="form-label">Username</label>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <InputCheckbox id="deleteUserEmailConfirmed" class="form-check-input" disabled readonly @bind-Value="DeleteUserDto.EmailConfirmed" />
+                    <label for="deleteUserEmailConfirmed" class="form-check-label">Email Confirmed</label>
+                </div>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-outline-dark w-100" type="submit">Delete</button>
+                    <button class="btn btn-dark w-100" type="button" @onclick="() => NavigateToUsers()">Cancel</button>
+                </div>
+            </EditForm>
+        </div>
+
+        @if (ShowConfirmationModal)
+        {
+            <ConfirmationModal Title="Delete this user?"
+                               Message="Do you really want to delete this user? This action cannot be undone."
+                               OnCancelCallback="HideConfirmation"
+                               OnConfirmCallback="DeleteUserAsync" />
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public string Id { get; set; } = string.Empty;
+
+    private DeleteUserDto? DeleteUserDto;
+    private bool ShowConfirmationModal { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var query = new GetUserByIdQuery(Id);
+        var response = await UserService.ReturnByIdAsync(query);
+
+        if (response.IsSuccess)
+        {
+            DeleteUserDto = new DeleteUserDto(response.Value);
+        }
+        else
+        {
+            // TODO: Log.
+            ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
+        }
+    }
+
+    private async Task DeleteUserAsync()
+    {
+        if (DeleteUserDto is null)
+        {
+            return;
+        }
+
+        var command = new DeleteUserCommand(DeleteUserDto.Id);
+        var response = await UserService.DeleteAsync(command);
+
+        if (response.IsSuccess)
+        {
+            ToastService.ShowToast("User deleted", ToastLevel.Success);
+            NavigateToUsers();
+        }
+        else
+        {
+            // TODO: Log.
+            ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
+        }
+    }
+
+    private void NavigateToUsers()
+    {
+        NavigationManager.NavigateTo("/users");
+    }
+
+    private void ShowConfirmation()
+    {
+        ShowConfirmationModal = true;
+    }
+
+    private void HideConfirmation()
+    {
+        ShowConfirmationModal = false;
+    }
+}

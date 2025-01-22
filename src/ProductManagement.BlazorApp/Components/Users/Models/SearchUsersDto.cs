@@ -5,7 +5,7 @@ namespace ProductManagement.BlazorApp.Components.Users.Models;
 public class SearchUsersDto
 {
     [DataType(DataType.Text)]
-    public string? SearchUserName { get; set; }
+    public string? SearchUsername { get; set; }
 
     public bool? SearchEmailConfirmed { get; set; }
 

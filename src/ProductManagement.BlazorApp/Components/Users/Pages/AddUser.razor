@@ -1,0 +1,77 @@
+﻿@page "/users/add"
+@attribute [Authorize(Roles = "Admin")]
+@inject NavigationManager NavigationManager
+@inject IUserService UserService
+@inject IToastService ToastService
+@rendermode InteractiveServer
+
+<PageTitle>Add User</PageTitle>
+
+<div class="container-md py-3">
+
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><NavLink class="link-dark link-underline-opacity-0 link-underline-opacity-100-hover" href="users">Users</NavLink></li>
+            <li class="breadcrumb-item active" aria-current="page">Add</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex gap-3 align-items-center mb-4">
+        <CartPlusFillSvg Height="1.5rem" Width="1.5rem" />
+        <h1 class="h2 mb-0">Add New User</h1>
+    </div>
+
+    @if (EditContext is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
+        <div class="form-group col-lg-6">
+            <EditForm EditContext="EditContext" FormName="AddUser" OnValidSubmit="AddUserAsync">
+                <DataAnnotationsValidator />
+                <div class="form-floating mb-3">
+                    <InputText id="createUserUsername" class=@($"form-control {EditContext?.GetValidationClass(() => CreateUserDto.Username)}") placeholder="username" @bind-Value="CreateUserDto.Username" />
+                    <label for="createUserUsername" class="form-label">Username</label>
+                    <ValidationMessage For="() => CreateUserDto.Username" class="invalid-feedback" />
+                </div>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-outline-dark w-100" type="submit">Create</button>
+                    <button class="btn btn-dark w-100" type="button" @onclick="() => NavigateToUsers()">Cancel</button>
+                </div>
+            </EditForm>
+        </div>
+    }
+</div>
+
+@code {
+    private CreateUserDto CreateUserDto = new();
+    private EditContext? EditContext;
+
+    protected override void OnInitialized()
+    {
+        EditContext = new EditContext(CreateUserDto);
+    }
+
+    private async Task AddUserAsync()
+    {
+        var command = new CreateUserCommand(CreateUserDto.Username);
+        var response = await UserService.CreateAsync(command);
+
+        if (response.IsSuccess)
+        {
+            ToastService.ShowToast("User created", ToastLevel.Success);
+            NavigateToUsers();
+        }
+        else
+        {
+            // TODO: Log.
+            ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
+        }
+    }
+
+    private void NavigateToUsers()
+    {
+        NavigationManager.NavigateTo("/users");
+    }
+}
