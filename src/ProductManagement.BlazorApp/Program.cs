@@ -40,7 +40,7 @@ public class Program
             .AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"))
             .AddPolicy("RequireUserRole", policy => policy.RequireRole("User"));
 
-        builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+        builder.Services.AddScoped<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
         var app = builder.Build();
         await app.SetUpDatabaseAsync();

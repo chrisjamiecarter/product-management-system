@@ -3,10 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ProductManagement.Application.Repositories;
+using ProductManagement.Application.Services;
 using ProductManagement.Infrastructure.Database.Contexts;
 using ProductManagement.Infrastructure.Database.Identity;
 using ProductManagement.Infrastructure.Database.Repositories;
 using ProductManagement.Infrastructure.Database.Services;
+using ProductManagement.Infrastructure.Email.Options;
+using ProductManagement.Infrastructure.Email.Services;
 
 namespace ProductManagement.Infrastructure.Installers;
 
@@ -38,6 +41,9 @@ public static class InfrastructureInstaller
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ISeederService, SeederService>();
+
+        services.Configure<EmailOptions>(configuration.GetSection(nameof(EmailOptions)));
+        services.AddScoped<IEmailService, EmailService>();
 
         return services;
     }
