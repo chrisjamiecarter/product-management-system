@@ -7,21 +7,21 @@
 
 <PageTitle>Users</PageTitle>
 
-<div class="container-md py-3">
+@if (UsersPage is null)
+{
+    <LoadingSpinner />
+}
+else
+{
+    <div class="container-md py-3">
 
-    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-        <ol class="breadcrumb mb-1">
-            <li class="breadcrumb-item active" aria-current="page">Users</li>
-            <li class="breadcrumb-item active" aria-current="page">List</li>
-        </ol>
-    </nav>
+        <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item active" aria-current="page">Users</li>
+                <li class="breadcrumb-item active" aria-current="page">List</li>
+            </ol>
+        </nav>
 
-    @if (UsersPage is null)
-    {
-        <LoadingSpinner />
-    }
-    else
-    {
         <div class="d-flex justify-content-between mb-4">
             <div class="d-flex gap-3 align-items-center">
                 <PeopleFillSvg Height="1.5rem" Width="1.5rem" />
@@ -158,8 +158,8 @@
                 </nav>
             </div>
         </div>
-    }
-</div>
+    </div>
+}
 
 @code {
     private PaginatedList<GetUsersPaginatedQueryResponse>? UsersPage { get; set; }
