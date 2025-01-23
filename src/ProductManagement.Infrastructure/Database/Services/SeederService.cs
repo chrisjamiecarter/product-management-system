@@ -1,14 +1,19 @@
 ﻿using Bogus;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using ProductManagement.Domain.Entities;
 using ProductManagement.Domain.ValueObjects;
 using ProductManagement.Infrastructure.Database.Contexts;
 using ProductManagement.Infrastructure.Database.Identity;
+using ProductManagement.Infrastructure.Database.Models;
+using ProductManagement.Infrastructure.Email.Options;
 
 namespace ProductManagement.Infrastructure.Database.Services;
 
 internal class SeederService : ISeederService
 {
+    private static readonly string[] Roles = ["Owner", "Admin", "User"];
+
     private static readonly int Seed = 19890309;
 
     private readonly ProductManagementDbContext _dbContext;
@@ -17,12 +22,14 @@ internal class SeederService : ISeederService
     private readonly IUserEmailStore<ApplicationUser> _userEmailStore;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IRoleStore<IdentityRole> _roleStore;
+    private readonly SeederOptions _seederOptions;
 
     public SeederService(ProductManagementDbContext dbContext,
                          UserManager<ApplicationUser> userManager,
                          IUserStore<ApplicationUser> userStore,
                          RoleManager<IdentityRole> roleManager,
-                         IRoleStore<IdentityRole> roleStore)
+                         IRoleStore<IdentityRole> roleStore,
+                         IOptions<SeederOptions> seederOptions)
     {
         _dbContext = dbContext;
         _userManager = userManager;
@@ -30,56 +37,53 @@ internal class SeederService : ISeederService
         _userEmailStore = (IUserEmailStore<ApplicationUser>)userStore;
         _roleManager = roleManager;
         _roleStore = roleStore;
+        _seederOptions = seederOptions.Value;
     }
 
     public async Task SeedDatabaseAsync()
     {
-        await SeedRolesAsync();
-        await SeedUsersAsync();
+        if (!_seederOptions.SeedDatabase)
+        {
+            return;
+        }
+
+        await SeedRolesAsync(Roles);
+
+        await SeedUserAsync(_seederOptions.Owner, "Owner");
+        await SeedUserAsync(_seederOptions.Admin, "Admin");
+        await SeedUserAsync(_seederOptions.User, "User");
+
         await SeedProductsAsync();
     }
 
-    private async Task SeedRolesAsync()
+    private async Task SeedRolesAsync(IEnumerable<string> roles)
     {
-        if (!await _roleManager.RoleExistsAsync("Admin"))
+        foreach (var role in roles)
         {
-            var role = Activator.CreateInstance<IdentityRole>();
-            await _roleStore.SetRoleNameAsync(role, "Admin", CancellationToken.None);
-            var roleResult = await _roleManager.CreateAsync(role);
-        }
+            if (!await _roleManager.RoleExistsAsync(role))
+            {
+                var identityRole = Activator.CreateInstance<IdentityRole>();
+                await _roleStore.SetRoleNameAsync(identityRole, role, CancellationToken.None);
 
-        if (!await _roleManager.RoleExistsAsync("User"))
-        {
-            var role = Activator.CreateInstance<IdentityRole>();
-            await _roleStore.SetRoleNameAsync(role, "User", CancellationToken.None);
-            var roleResult = await _roleManager.CreateAsync(role);
+                await _roleManager.CreateAsync(identityRole);
+            }
         }
     }
 
-    private async Task SeedUsersAsync()
+    private async Task SeedUserAsync(SeedUser user, string role)
     {
-        var adminEmail = "admin@email.com";
-        var adminPassword = "Admin123###";
-        if (await _userManager.FindByEmailAsync(adminEmail) is null)
+        if (await _userManager.FindByEmailAsync(user.Username) is null)
         {
-            var user = Activator.CreateInstance<ApplicationUser>();
-            await _userStore.SetUserNameAsync(user, adminEmail, CancellationToken.None);
-            await _userEmailStore.SetEmailAsync(user, adminEmail, CancellationToken.None);
-            await _userEmailStore.SetEmailConfirmedAsync(user, true, CancellationToken.None);
-            var userResult = await _userManager.CreateAsync(user, adminPassword);
-            var roleResult = await _userManager.AddToRoleAsync(user, "Admin");
-        }
-
-        var userEmail = "user@email.com";
-        var userPassword = "User123###";
-        if (await _userManager.FindByEmailAsync(userEmail) is null)
-        {
-            var user = Activator.CreateInstance<ApplicationUser>();
-            await _userStore.SetUserNameAsync(user, userEmail, CancellationToken.None);
-            await _userEmailStore.SetEmailAsync(user, userEmail, CancellationToken.None);
-            await _userEmailStore.SetEmailConfirmedAsync(user, true, CancellationToken.None);
-            var userResult = await _userManager.CreateAsync(user, userPassword);
-            var roleResult = await _userManager.AddToRoleAsync(user, "User");
+            var applicationUser = Activator.CreateInstance<ApplicationUser>();
+            await _userStore.SetUserNameAsync(applicationUser, user.Username, CancellationToken.None);
+            await _userEmailStore.SetEmailAsync(applicationUser, user.Username, CancellationToken.None);
+            await _userEmailStore.SetEmailConfirmedAsync(applicationUser, true, CancellationToken.None);
+            
+            var result = await _userManager.CreateAsync(applicationUser, user.Password);
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(applicationUser, role);
+            }
         }
     }
 
@@ -101,7 +105,7 @@ internal class SeederService : ISeederService
                     ProductPrice.Create(decimal.Parse(f.Commerce.Price())).Value);
             });
 
-        foreach (var fakeProduct in fakeProducts.Generate(100))
+        foreach (var fakeProduct in fakeProducts.Generate(_seederOptions.NumberOfProducts))
         {
             _dbContext.Products.Add(fakeProduct);
         }

@@ -32,6 +32,7 @@ public static class InfrastructureInstaller
             options.Password.RequireUppercase = true;
             options.Password.RequireNonAlphanumeric = true;
             options.SignIn.RequireConfirmedAccount = true;
+            options.User.RequireUniqueEmail = true;
         })
         .AddRoles<IdentityRole>()
         .AddEntityFrameworkStores<ProductManagementDbContext>()
@@ -40,6 +41,8 @@ public static class InfrastructureInstaller
 
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+
+        services.Configure<SeederOptions>(configuration.GetSection(nameof(SeederOptions)));
         services.AddScoped<ISeederService, SeederService>();
 
         services.Configure<EmailOptions>(configuration.GetSection(nameof(EmailOptions)));
