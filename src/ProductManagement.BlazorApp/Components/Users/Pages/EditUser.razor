@@ -1,5 +1,5 @@
 ﻿@page "/users/edit/{Id}"
-@attribute [Authorize(Roles = "Admin")]
+@attribute [Authorize(Roles = "Owner,Admin")]
 @inject NavigationManager NavigationManager
 @inject IUserService UserService
 @inject IToastService ToastService
