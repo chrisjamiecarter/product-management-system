@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using ProductManagement.Application.Services;
 
 namespace ProductManagement.Application.Installers;
 
@@ -10,7 +11,9 @@ public static class ApplicationInstaller
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddMediatR(config => config.RegisterServicesFromAssembly(AssemblyReference.Assembly));
-            
+        
+        services.AddScoped<IAuthService, AuthService>();
+
         return services;
     }
 }
