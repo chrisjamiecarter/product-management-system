@@ -2,4 +2,5 @@
 
 public sealed record GetUserByIdQueryResponse(string Id,
                                               string? Username,
+                                              string? Role,
                                               bool EmailConfirmed);

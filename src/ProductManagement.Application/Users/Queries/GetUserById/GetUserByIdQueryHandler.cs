@@ -22,7 +22,7 @@ internal sealed class GetUserByIdQueryHandler : IQueryHandler<GetUserByIdQuery, 
             return Result.Failure<GetUserByIdQueryResponse>(ApplicationErrors.User.NotFound);
         }
 
-        var response = new GetUserByIdQueryResponse(user.Id, user.Username, user.EmailConfirmed);
+        var response = new GetUserByIdQueryResponse(user.Id, user.Username, user.Role, user.EmailConfirmed);
         return Result.Success(response);
     }
 }
