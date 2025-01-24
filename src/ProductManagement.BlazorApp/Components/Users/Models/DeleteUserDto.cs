@@ -9,6 +9,7 @@ public class DeleteUserDto
     {
         Id = user.Id;
         Username = user.Username;
+        Role = user.Role;
         EmailConfirmed = user.EmailConfirmed;
     }
 
@@ -19,9 +20,9 @@ public class DeleteUserDto
     [DataType(DataType.EmailAddress)]
     public string? Username { get; set; }
 
-    [Required]
+    [Editable(false)]
     [DataType(DataType.Text)]
-    public string Role { get; set; } = string.Empty;
+    public string? Role { get; set; } = string.Empty;
 
     [Editable(false)]
     public bool EmailConfirmed { get; set; }

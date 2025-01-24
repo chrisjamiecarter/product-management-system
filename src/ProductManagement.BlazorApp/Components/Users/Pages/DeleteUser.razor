@@ -33,6 +33,10 @@ else
                     <InputText id="deleteUserUsername" class="form-control" placeholder="username" disabled readonly @bind-Value="DeleteUserDto.Username" />
                     <label for="deleteUserUsername" class="form-label">Username</label>
                 </div>
+                <div class="form-floating mb-3">
+                    <InputText id="deleteUserRole" class="form-control" placeholder="role" disabled readonly @bind-Value="DeleteUserDto.Role" />
+                    <label for="deleteUserRole" class="form-label">Role</label>
+                </div>
                 <div class="form-check form-switch mb-3">
                     <InputCheckbox id="deleteUserEmailConfirmed" class="form-check-input" disabled readonly @bind-Value="DeleteUserDto.EmailConfirmed" />
                     <label for="deleteUserEmailConfirmed" class="form-check-label">Email Confirmed</label>
