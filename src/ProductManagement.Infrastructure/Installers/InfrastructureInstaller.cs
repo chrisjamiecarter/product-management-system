@@ -26,13 +26,13 @@ public static class InfrastructureInstaller
 
         services.AddIdentityCore<ApplicationUser>(options =>
         {
-            options.Password.RequiredLength = 8;
-            options.Password.RequireDigit = true;
-            options.Password.RequireLowercase = true;
-            options.Password.RequireUppercase = true;
-            options.Password.RequireNonAlphanumeric = true;
-            options.SignIn.RequireConfirmedAccount = true;
-            options.User.RequireUniqueEmail = true;
+            options.Password.RequiredLength = Application.Constants.PasswordOptions.RequiredLength;
+            options.Password.RequireDigit = Application.Constants.PasswordOptions.RequireDigit;
+            options.Password.RequireLowercase = Application.Constants.PasswordOptions.RequireLowercase;
+            options.Password.RequireUppercase = Application.Constants.PasswordOptions.RequireUppercase;
+            options.Password.RequireNonAlphanumeric = Application.Constants.PasswordOptions.RequireNonAlphanumeric;
+            options.SignIn.RequireConfirmedAccount = Application.Constants.SignInOptions.RequireConfirmedAccount;
+            options.User.RequireUniqueEmail = Application.Constants.UserOptions.RequireUniqueEmail;
         })
         .AddRoles<IdentityRole>()
         .AddEntityFrameworkStores<ProductManagementDbContext>()

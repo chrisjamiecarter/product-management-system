@@ -20,7 +20,7 @@
             </div>
             <div class="col-md-8 col-lg-6 col-xl-5">
                 <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
-                <StatusMessage Message="@errorMessage" />
+                <StatusMessage Message="@errorMessage" Level="ToastLevel.Error" />
                 <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
                     <DataAnnotationsValidator />
                     <div class="form-floating mb-3">
@@ -101,7 +101,7 @@
         }
         else
         {
-            errorMessage = "Error: Invalid login attempt.";
+            errorMessage = "Invalid login attempt.";
         }
     }
 
