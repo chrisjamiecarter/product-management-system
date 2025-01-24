@@ -20,19 +20,23 @@ internal sealed class UpdateUserCommandHandler : ICommandHandler<UpdateUserComma
         // - Can't update self.
         // - Handle Email send.
 
-        var usernameTaken = await _userRepository.ReturnByUsernameAsync(request.Username, cancellationToken);
-        if (usernameTaken != null)
-        {
-            return Result.Failure(ApplicationErrors.User.UsernameTaken);
-        }
-
         var user = await _userRepository.ReturnByIdAsync(request.UserId, cancellationToken);
         if (user is null)
         {
             return Result.Failure(ApplicationErrors.User.NotFound);
         }
+        
+        if (user.Username != request.Username)
+        {
+            var usernameTaken = await _userRepository.ReturnByUsernameAsync(request.Username, cancellationToken);
+            if (usernameTaken != null)
+            {
+                return Result.Failure(ApplicationErrors.User.UsernameTaken);
+            }
+        }
 
         user.Username = request.Username;
+        user.Role = request.Role;
         user.EmailConfirmed = request.EmailConfirmed;
 
         var isUpdated = await _userRepository.UpdateAsync(user, cancellationToken);

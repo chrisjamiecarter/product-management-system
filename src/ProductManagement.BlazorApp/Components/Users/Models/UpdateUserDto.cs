@@ -9,6 +9,7 @@ public class UpdateUserDto
     {
         Id = user.Id;
         Username = user.Username;
+        Role = user.Role;
         EmailConfirmed = user.EmailConfirmed;
     }
 
@@ -17,13 +18,14 @@ public class UpdateUserDto
     public string Id { get; set; }
 
     [Required]
+    [Editable(false)]
     [DataType(DataType.EmailAddress)]
     [EmailAddress]
     public string? Username { get; set; }
 
     [Required]
     [DataType(DataType.Text)]
-    public string Role { get; set; } = string.Empty;
+    public string? Role { get; set; } = string.Empty;
 
     [Editable(false)]
     public bool EmailConfirmed { get; set; }

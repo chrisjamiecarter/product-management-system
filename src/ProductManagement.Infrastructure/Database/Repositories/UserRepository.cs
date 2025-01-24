@@ -144,32 +144,20 @@ internal class UserRepository : IUserRepository
         var userUpdated = await _userManager.UpdateAsync(applicationUser);
 
         var roles = await _userManager.GetRolesAsync(applicationUser);
-        var role = roles.Any() ? roles.FirstOrDefault() : null;
-
-        if (role != null && role != user.Role)
+        if (roles.Count > 1)
         {
-            var roleRemoved = await _userManager.RemoveFromRoleAsync(applicationUser, role);
-            if (roleRemoved.Succeeded && user.HasRole)
+            foreach(var role in roles)
             {
-                var roleAdded = await _userManager.AddToRoleAsync(applicationUser, user.Role!);
-                
-                return roleAdded.Succeeded;
+                await _userManager.RemoveFromRoleAsync(applicationUser, role);
             }
-            
-            return roleRemoved.Succeeded;
+        }
+
+        var existingRole = roles.Any() ? roles.FirstOrDefault() : null;
+        if (existingRole != user.Role && user.HasRole)
+        {
+            await _userManager.AddToRoleAsync(applicationUser, user.Role!);
         }
 
         return userUpdated.Succeeded;
-    }
-
-    private static Expression<Func<ApplicationUser, object>> GetSortProperty(string? sortColumn)
-    {
-        return sortColumn?.ToLower() switch
-        {
-            "username" => user => user.UserName!,
-            "role" => user => user.UserRoles,
-            "emailconfirmed" => user => user.EmailConfirmed,
-            _ => user => user.Id,
-        };
     }
 }
