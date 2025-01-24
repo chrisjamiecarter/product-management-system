@@ -28,7 +28,9 @@ internal sealed class GetUsersPaginatedQueryHandler : IQueryHandler<GetUsersPagi
         }
 
         var users = await _userRepository.ReturnByPageAsync(request.SearchUsername,
+                                                            request.SearchRole,
                                                             request.SearchEmailConfirmed,
+                                                            request.SortColumn,
                                                             request.SortOrder,
                                                             request.PageNumber,
                                                             request.PageSize,

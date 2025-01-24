@@ -32,7 +32,7 @@
                                     </NavLink>
                                 </li>
 
-                                <AuthorizeView Context="Products" Roles="User">
+                                <AuthorizeView Context="Products" Roles="Owner,User">
                                     <Authorized>
                                         <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
                                             <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="products">
@@ -49,7 +49,7 @@
                                         </li>
                                     </Authorized>
                                 </AuthorizeView>
-                                <AuthorizeView Context="Users" Roles="Admin">
+                                <AuthorizeView Context="Users" Roles="Owner,Admin">
                                     <Authorized>
                                         <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
                                             <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="users">
@@ -185,6 +185,11 @@
 
         if (urlParts.FirstOrDefault() == "account")
         {
+            if (urlParts.Length <= 1)
+            {
+                return AppPages.Manage;
+            }
+
             return urlParts[1] switch
             {
                 "login" => AppPages.Signin,

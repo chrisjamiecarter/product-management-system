@@ -62,9 +62,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var query = new GetUserByIdQuery(Id);
-        var response = await UserService.ReturnByIdAsync(query);
-
+        var response = await UserService.ReturnByIdAsync(Id);
         if (response.IsSuccess)
         {
             DeleteUserDto = new DeleteUserDto(response.Value);
@@ -83,9 +81,7 @@ else
             return;
         }
 
-        var command = new DeleteUserCommand(DeleteUserDto.Id);
-        var response = await UserService.DeleteAsync(command);
-
+        var response = await UserService.DeleteAsync(DeleteUserDto.Id);
         if (response.IsSuccess)
         {
             ToastService.ShowToast("User deleted", ToastLevel.Success);

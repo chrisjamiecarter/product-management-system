@@ -65,9 +65,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var query = new GetUserByIdQuery(Id);
-        var response = await UserService.ReturnByIdAsync(query);
-
+        var response = await UserService.ReturnByIdAsync(Id);
         if (response.IsSuccess)
         {
             UpdateUserDto = new UpdateUserDto(response.Value);
@@ -87,9 +85,7 @@ else
             return;
         }
 
-        var command = new UpdateUserCommand(UpdateUserDto.Id, UpdateUserDto.Username!, false);
-        var response = await UserService.UpdateAsync(command);
-
+        var response = await UserService.UpdateAsync(UpdateUserDto.Id, UpdateUserDto.Username!, UpdateUserDto.Role, false);
         if (response.IsSuccess)
         {
             ToastService.ShowToast("User updated", ToastLevel.Success);

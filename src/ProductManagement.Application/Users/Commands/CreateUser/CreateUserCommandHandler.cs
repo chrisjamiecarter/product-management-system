@@ -25,7 +25,7 @@ internal sealed class CreateUserCommandHandler : ICommandHandler<CreateUserComma
             return Result.Failure(ApplicationErrors.User.UsernameTaken);
         }
 
-        var isCreated = await _userRepository.CreateAsync(request.Username, cancellationToken);
+        var isCreated = await _userRepository.CreateAsync(request.Username, request.Role, cancellationToken);
 
         return isCreated ? Result.Success() : Result.Failure(ApplicationErrors.User.NotCreated);
     }

@@ -2,6 +2,7 @@
 
 namespace ProductManagement.Application.Users.Commands.UpdateUser;
 
-public sealed record UpdateUserCommand(string Id,
+public sealed record UpdateUserCommand(string UserId,
                                        string Username,
+                                       string Role,
                                        bool EmailConfirmed) : ICommand;

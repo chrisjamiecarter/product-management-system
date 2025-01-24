@@ -19,6 +19,10 @@ public class DeleteUserDto
     [DataType(DataType.EmailAddress)]
     public string? Username { get; set; }
 
+    [Required]
+    [DataType(DataType.Text)]
+    public string Role { get; set; } = string.Empty;
+
     [Editable(false)]
     public bool EmailConfirmed { get; set; }
 }

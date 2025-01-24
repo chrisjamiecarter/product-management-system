@@ -55,8 +55,7 @@ else
 
     private async Task AddUserAsync()
     {
-        var command = new CreateUserCommand(CreateUserDto.Username);
-        var response = await UserService.CreateAsync(command);
+        var response = await UserService.CreateAsync(CreateUserDto.Username, CreateUserDto.Role);
 
         if (response.IsSuccess)
         {

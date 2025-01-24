@@ -1,16 +1,22 @@
 ﻿namespace ProductManagement.Application.Models;
 
-public class User
+public class ApplicationUserDto
 {
-    public User(string id, string? username, bool emailConfirmed)
+    public ApplicationUserDto(string id, string? username, string? role, bool emailConfirmed)
     {
         Id = id;
         Username = username;
+        Role = role;
         EmailConfirmed = emailConfirmed;
     }
 
     public string Id { get; set; }
+    
     public string? Username { get; set; }
+    
+    public string? Role { get; set; }
+    
     public bool EmailConfirmed { get; set; }
-    //public IList<string> Roles { get; set; }
+
+    public bool HasRole => !string.IsNullOrWhiteSpace(Role);
 }

@@ -2,4 +2,5 @@
 
 public sealed record GetUsersPaginatedQueryResponse(string Id,
                                                     string? Username,
+                                                    string? Role,
                                                     bool EmailConfirmed);

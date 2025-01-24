@@ -2,4 +2,5 @@
 
 namespace ProductManagement.Application.Users.Commands.CreateUser;
 
-public sealed record CreateUserCommand(string Username) : ICommand;
+public sealed record CreateUserCommand(string Username,
+                                       string Role) : ICommand;

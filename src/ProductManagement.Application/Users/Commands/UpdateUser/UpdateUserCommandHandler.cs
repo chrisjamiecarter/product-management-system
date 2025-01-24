@@ -26,7 +26,7 @@ internal sealed class UpdateUserCommandHandler : ICommandHandler<UpdateUserComma
             return Result.Failure(ApplicationErrors.User.UsernameTaken);
         }
 
-        var user = await _userRepository.ReturnByIdAsync(request.Id, cancellationToken);
+        var user = await _userRepository.ReturnByIdAsync(request.UserId, cancellationToken);
         if (user is null)
         {
             return Result.Failure(ApplicationErrors.User.NotFound);

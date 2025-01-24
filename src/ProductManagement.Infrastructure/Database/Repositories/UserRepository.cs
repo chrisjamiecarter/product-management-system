@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Linq.Expressions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ProductManagement.Application.Models;
 using ProductManagement.Application.Repositories;
+using ProductManagement.Domain.Entities;
 using ProductManagement.Infrastructure.Database.Identity;
 
 namespace ProductManagement.Infrastructure.Database.Repositories;
@@ -11,24 +13,33 @@ internal class UserRepository : IUserRepository
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IUserStore<ApplicationUser> _userStore;
     private readonly IUserEmailStore<ApplicationUser> _userEmailStore;
+    private readonly RoleManager<IdentityRole> _roleManager;
 
-    public UserRepository(UserManager<ApplicationUser> userManager, IUserStore<ApplicationUser> userStore)
+    public UserRepository(UserManager<ApplicationUser> userManager, IUserStore<ApplicationUser> userStore, RoleManager<IdentityRole> roleManager)
     {
         _userManager = userManager;
         _userStore = userStore;
         _userEmailStore = (IUserEmailStore<ApplicationUser>)userStore;
+        _roleManager = roleManager;
     }
 
-    public async Task<bool> CreateAsync(string username, CancellationToken cancellationToken = default)
+    public async Task<bool> CreateAsync(string username, string role, CancellationToken cancellationToken = default)
     {
         var applicationUser = Activator.CreateInstance<ApplicationUser>();
         await _userStore.SetUserNameAsync(applicationUser, username, cancellationToken);
         await _userEmailStore.SetEmailAsync(applicationUser, username, cancellationToken);
-        var created = await _userManager.CreateAsync(applicationUser);
-        return created.Succeeded;
+
+        var userCreated = await _userManager.CreateAsync(applicationUser);
+        if (userCreated.Succeeded && !string.IsNullOrWhiteSpace(role))
+        {
+            var addedToRole = await _userManager.AddToRoleAsync(applicationUser, role);
+            return addedToRole.Succeeded;
+        }
+
+        return userCreated.Succeeded;
     }
 
-    public async Task<bool> DeleteAsync(User user, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(ApplicationUserDto user, CancellationToken cancellationToken = default)
     {
         var applicationUser = await _userManager.FindByIdAsync(user.Id);
         if (applicationUser is null)
@@ -40,49 +51,71 @@ internal class UserRepository : IUserRepository
         return deleted.Succeeded;
     }
 
-    public async Task<User?> ReturnByIdAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<ApplicationUserDto?> ReturnByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         var applicationUser = await _userManager.FindByIdAsync(id);
         if (applicationUser is null)
         {
             return null;
         }
+        
+        var roles = await _userManager.GetRolesAsync(applicationUser);
+        var role = roles.Any() ? roles.FirstOrDefault() : null;
 
-        return new User(applicationUser.Id, applicationUser.UserName, applicationUser.EmailConfirmed);
+        return new ApplicationUserDto(applicationUser.Id, applicationUser.UserName, role, applicationUser.EmailConfirmed);
     }
 
-    public async Task<PaginatedList<User>> ReturnByPageAsync(string? searchUsername, bool? searchEmailConfirmed, string? sortOrder, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<PaginatedList<ApplicationUserDto>> ReturnByPageAsync(string? searchUsername, string? searchRole, bool? searchEmailConfirmed, string? sortColumn, string? sortOrder, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
-        var query = _userManager.Users;
+        var query = _userManager.Users.Select(u => new
+        {
+            User = u,
+            RoleNames = _userManager.Users.Where(w => w.Id == u.Id)
+            .SelectMany(s => s.UserRoles)
+            .Join(_roleManager.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Name)
+            .ToList()
+        });
 
         if (!string.IsNullOrWhiteSpace(searchUsername))
         {
-            query = query.Where(u => u.UserName != null && u.UserName.Contains(searchUsername));
+            query = query.Where(q => q.User.UserName != null && q.User.UserName.Contains(searchUsername));
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchRole))
+        {
+            query = query.Where(q => q.RoleNames.Contains(searchRole));
         }
 
         if (searchEmailConfirmed != null)
         {
-            query = query.Where(u => u.EmailConfirmed == searchEmailConfirmed);
+            query = query.Where(q => q.User.EmailConfirmed == searchEmailConfirmed);
         }
 
-        if (sortOrder?.ToLower() == "desc")
+        var isDesc = sortOrder?.ToLower() == "desc";
+        query = sortColumn?.ToLower() switch
         {
-            query = query.OrderByDescending(u => u.UserName);
-        }
-        else
-        {
-            query = query.OrderBy(u => u.UserName);
-        }
+            "emailconfirmed" when isDesc => query.OrderByDescending(q => q.User.EmailConfirmed).ThenBy(q => q.User.UserName),
+            "emailconfirmed" => query.OrderBy(q => q.User.EmailConfirmed).ThenBy(q => q.User.UserName),
+            "role" when isDesc => query.OrderByDescending(q => q.RoleNames.FirstOrDefault()).ThenBy(q => q.User.UserName),
+            "role" => query.OrderBy(q => q.RoleNames.FirstOrDefault()).ThenBy(q => q.User.UserName),
+            "username" when isDesc => query.OrderByDescending(q => q.User.UserName),
+            _ => query.OrderBy(q => q.User.UserName),
+        };
 
         var count = await query.CountAsync(cancellationToken);
         var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
 
-        var users = items.Select(u => new User(u.Id, u.UserName, u.EmailConfirmed));
+        var users = items.Select(item => new ApplicationUserDto(
+            item.User.Id,
+            item.User.UserName,
+            item.RoleNames.FirstOrDefault() ?? null,
+            item.User.EmailConfirmed))
+            .ToList();
 
-        return PaginatedList<User>.Create(users, count, pageNumber, pageSize);
+        return PaginatedList<ApplicationUserDto>.Create(users, count, pageNumber, pageSize);
     }
 
-    public async Task<User?> ReturnByUsernameAsync(string username, CancellationToken cancellationToken = default)
+    public async Task<ApplicationUserDto?> ReturnByUsernameAsync(string username, CancellationToken cancellationToken = default)
     {
         var applicationUser = await _userManager.FindByNameAsync(username);
         if (applicationUser is null)
@@ -90,10 +123,13 @@ internal class UserRepository : IUserRepository
             return null;
         }
 
-        return new User(applicationUser.Id, applicationUser.UserName, applicationUser.EmailConfirmed);
+        var roles = await _userManager.GetRolesAsync(applicationUser);
+        var role = roles.Any() ? roles.FirstOrDefault() : null;
+
+        return new ApplicationUserDto(applicationUser.Id, applicationUser.UserName, role, applicationUser.EmailConfirmed);
     }
 
-    public async Task<bool> UpdateAsync(User user, CancellationToken cancellationToken = default)
+    public async Task<bool> UpdateAsync(ApplicationUserDto user, CancellationToken cancellationToken = default)
     {
         var applicationUser = await _userManager.FindByIdAsync(user.Id);
         if (applicationUser is null)
@@ -105,7 +141,35 @@ internal class UserRepository : IUserRepository
         await _userEmailStore.SetEmailAsync(applicationUser, user.Username, cancellationToken);
         await _userEmailStore.SetEmailConfirmedAsync(applicationUser, user.EmailConfirmed, cancellationToken);
 
-        var updated = await _userManager.UpdateAsync(applicationUser);
-        return updated.Succeeded;
+        var userUpdated = await _userManager.UpdateAsync(applicationUser);
+
+        var roles = await _userManager.GetRolesAsync(applicationUser);
+        var role = roles.Any() ? roles.FirstOrDefault() : null;
+
+        if (role != null && role != user.Role)
+        {
+            var roleRemoved = await _userManager.RemoveFromRoleAsync(applicationUser, role);
+            if (roleRemoved.Succeeded && user.HasRole)
+            {
+                var roleAdded = await _userManager.AddToRoleAsync(applicationUser, user.Role!);
+                
+                return roleAdded.Succeeded;
+            }
+            
+            return roleRemoved.Succeeded;
+        }
+
+        return userUpdated.Succeeded;
+    }
+
+    private static Expression<Func<ApplicationUser, object>> GetSortProperty(string? sortColumn)
+    {
+        return sortColumn?.ToLower() switch
+        {
+            "username" => user => user.UserName!,
+            "role" => user => user.UserRoles,
+            "emailconfirmed" => user => user.EmailConfirmed,
+            _ => user => user.Id,
+        };
     }
 }

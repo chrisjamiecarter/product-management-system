@@ -16,7 +16,12 @@ internal class ProductManagementDbContext(DbContextOptions<ProductManagementDbCo
     {
         base.OnModelCreating(builder);
 
-        builder.Entity<ApplicationUser>().ToTable("Users", SchemaConstants.IdentitySchema);
+        builder.Entity<ApplicationUser>(a =>
+        {
+            a.ToTable("Users", SchemaConstants.IdentitySchema);
+            a.HasMany(e => e.UserRoles).WithOne().HasForeignKey(fk => fk.UserId).IsRequired();
+        });
+            
         builder.Entity<IdentityRole>().ToTable("Roles", SchemaConstants.IdentitySchema);
         builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims", SchemaConstants.IdentitySchema);
         builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles", SchemaConstants.IdentitySchema);

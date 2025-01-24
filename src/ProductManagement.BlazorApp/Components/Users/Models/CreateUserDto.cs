@@ -8,5 +8,9 @@ public class CreateUserDto
     [DataType(DataType.EmailAddress)]
     [EmailAddress]
     public string Username { get; set; } = string.Empty;
+    
+    [Required]
+    [DataType(DataType.Text)]
+    public string Role { get; set; } = string.Empty;
 
 }

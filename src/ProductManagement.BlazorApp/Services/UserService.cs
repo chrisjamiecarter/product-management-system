@@ -7,7 +7,6 @@ using ProductManagement.Application.Users.Commands.UpdateUser;
 using ProductManagement.Application.Users.Queries.GetUserById;
 using ProductManagement.Application.Users.Queries.GetUsersPaginated;
 using ProductManagement.Domain.Shared;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ProductManagement.BlazorApp.Services;
 
@@ -20,28 +19,33 @@ public class UserService : IUserService
         _sender = sender;
     }
 
-    public async Task<Result> CreateAsync(CreateUserCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result> CreateAsync(string userName, string role, CancellationToken cancellationToken = default)
     {
+        var command = new CreateUserCommand(userName, role);
         return await _sender.Send(command, cancellationToken);
     }
 
-    public async Task<Result> DeleteAsync(DeleteUserCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(string userId, CancellationToken cancellationToken = default)
     {
+        var command = new DeleteUserCommand(userId);
         return await _sender.Send(command, cancellationToken);
     }
 
-    public async Task<Result<GetUserByIdQueryResponse>> ReturnByIdAsync(GetUserByIdQuery query, CancellationToken cancellationToken = default)
+    public async Task<Result<GetUserByIdQueryResponse>> ReturnByIdAsync(string userId, CancellationToken cancellationToken = default)
     {
+        var query = new GetUserByIdQuery(userId);
         return await _sender.Send(query, cancellationToken);
     }
 
-    public async Task<Result<PaginatedList<GetUsersPaginatedQueryResponse>>> ReturnByPageAsync(GetUsersPaginatedQuery query, CancellationToken cancellationToken = default)
+    public async Task<Result<PaginatedList<GetUsersPaginatedQueryResponse>>> ReturnByPageAsync(string? searchUsername, string? searchRole, bool? searchEmailConfirmed, string? sortColumn, string? sortOrder, int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
     {
+        var query = new GetUsersPaginatedQuery(searchUsername, searchRole, searchEmailConfirmed, sortColumn, sortOrder, pageNumber, pageSize);
         return await _sender.Send(query, cancellationToken);
     }
 
-    public async Task<Result> UpdateAsync(UpdateUserCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result> UpdateAsync(string userId, string userName, string role, bool emailConfirmed, CancellationToken cancellationToken = default)
     {
+        var command = new UpdateUserCommand(userId, userName, role, emailConfirmed);
         return await _sender.Send(command, cancellationToken);
     }
 }
