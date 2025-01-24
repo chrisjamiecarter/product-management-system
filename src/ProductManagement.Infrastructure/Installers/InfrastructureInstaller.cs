@@ -48,6 +48,8 @@ public static class InfrastructureInstaller
         services.Configure<EmailOptions>(configuration.GetSection(nameof(EmailOptions)));
         services.AddScoped<IEmailService, EmailService>();
 
+        services.AddMediatR(config => config.RegisterServicesFromAssembly(AssemblyReference.Assembly));
+
         return services;
     }
 
