@@ -1,7 +1,7 @@
 ﻿using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using ProductManagement.Application.Services;
+using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Infrastructure.Email.Options;
 
 namespace ProductManagement.Infrastructure.Email.Services;

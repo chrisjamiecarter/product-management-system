@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Identity;
-using ProductManagement.Application.Services;
+using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Infrastructure.Database.Identity;
 
 namespace ProductManagement.BlazorApp.Components.Account;

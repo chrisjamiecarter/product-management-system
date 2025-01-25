@@ -1,4 +1,6 @@
-﻿using ProductManagement.Application.Services;
+﻿using ProductManagement.Application.Interfaces.Application;
+using ProductManagement.Application.Interfaces.Infrastructure;
+using ProductManagement.Application.Services;
 using ProductManagement.BlazorApp.Services;
 using ProductManagement.Infrastructure.Installers;
 

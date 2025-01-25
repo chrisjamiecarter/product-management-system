@@ -18,6 +18,10 @@ internal static class InfrastructureErrors
             "User.NotAllowed",
             "The user is not allowed to sign in.");
 
+        internal static readonly Error NotFound = new(
+            "User.NotFound",
+            "The user was not found.");
+
         internal static readonly Error NotRegistered = new(
             "User.NotRegistered",
             "The user was not registered.");

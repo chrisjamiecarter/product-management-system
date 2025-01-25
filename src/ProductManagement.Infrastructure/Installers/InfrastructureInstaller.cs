@@ -2,8 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using ProductManagement.Application.Repositories;
-using ProductManagement.Application.Services;
+using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Infrastructure.Database.Contexts;
 using ProductManagement.Infrastructure.Database.Identity;
 using ProductManagement.Infrastructure.Database.Repositories;
@@ -43,7 +42,7 @@ public static class InfrastructureInstaller
         services.AddScoped<IUserRepository, UserRepository>();
 
         services.Configure<SeederOptions>(configuration.GetSection(nameof(SeederOptions)));
-        services.AddScoped<ISeederService, SeederService>();
+        services.AddScoped<SeederService>();
 
         services.Configure<EmailOptions>(configuration.GetSection(nameof(EmailOptions)));
         services.AddScoped<IEmailService, EmailService>();
@@ -63,7 +62,7 @@ public static class InfrastructureInstaller
 
     public static async Task<IServiceProvider> SeedDatabaseAsync(this IServiceProvider serviceProvider)
     {
-        var seeder = serviceProvider.GetRequiredService<ISeederService>();
+        var seeder = serviceProvider.GetRequiredService<SeederService>();
         await seeder.SeedDatabaseAsync();
 
         return serviceProvider;

@@ -1,8 +1,8 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
-using ProductManagement.Application.Repositories;
 using ProductManagement.Domain.Entities;
 using ProductManagement.Infrastructure.Database.Identity;
 

@@ -10,8 +10,9 @@ using ProductManagement.Infrastructure.Email.Options;
 
 namespace ProductManagement.Infrastructure.Database.Services;
 
-internal class SeederService : ISeederService
+internal class SeederService
 {
+    // TODO: Refactor.
     private static readonly string[] Roles = ["Owner", "Admin", "User"];
 
     private static readonly int Seed = 19890309;
@@ -78,7 +79,7 @@ internal class SeederService : ISeederService
             await _userStore.SetUserNameAsync(applicationUser, user.Username, CancellationToken.None);
             await _userEmailStore.SetEmailAsync(applicationUser, user.Username, CancellationToken.None);
             await _userEmailStore.SetEmailConfirmedAsync(applicationUser, true, CancellationToken.None);
-            
+
             var result = await _userManager.CreateAsync(applicationUser, user.Password);
             if (result.Succeeded)
             {

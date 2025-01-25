@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using ProductManagement.Application.Users.Queries.GetUserById;
+using ProductManagement.Application.Features.Users.Queries.GetUserById;
 
 namespace ProductManagement.BlazorApp.Components.Users.Models;
 

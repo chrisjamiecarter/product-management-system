@@ -64,7 +64,6 @@ else
     private async Task AddUserAsync()
     {
         var response = await UserService.CreateAsync(CreateUserDto.Username, CreateUserDto.Role);
-
         if (response.IsSuccess)
         {
             ToastService.ShowToast("User created", ToastLevel.Success);

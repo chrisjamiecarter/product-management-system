@@ -1,6 +1,7 @@
 ﻿using MediatR;
-using ProductManagement.Application.Users.Commands.RegisterUser;
-using ProductManagement.Application.Users.Commands.SignInUser;
+using ProductManagement.Application.Features.Users.Commands.RegisterUser;
+using ProductManagement.Application.Features.Users.Commands.SignInUser;
+using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;
 
 namespace ProductManagement.Application.Services;

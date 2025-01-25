@@ -1,12 +1,12 @@
 ﻿using MediatR;
+using ProductManagement.Application.Features.Products.Commands.CreateProduct;
+using ProductManagement.Application.Features.Products.Commands.DeleteProduct;
+using ProductManagement.Application.Features.Products.Commands.UpdateProduct;
+using ProductManagement.Application.Features.Products.Queries.GetProductById;
+using ProductManagement.Application.Features.Products.Queries.GetProducts;
+using ProductManagement.Application.Features.Products.Queries.GetProductsPaginated;
+using ProductManagement.Application.Interfaces.Application;
 using ProductManagement.Application.Models;
-using ProductManagement.Application.Products.Commands.CreateProduct;
-using ProductManagement.Application.Products.Commands.DeleteProduct;
-using ProductManagement.Application.Products.Commands.UpdateProduct;
-using ProductManagement.Application.Products.Queries.GetProductById;
-using ProductManagement.Application.Products.Queries.GetProducts;
-using ProductManagement.Application.Products.Queries.GetProductsPaginated;
-using ProductManagement.Application.Services;
 using ProductManagement.Domain.Shared;
 
 namespace ProductManagement.BlazorApp.Services;

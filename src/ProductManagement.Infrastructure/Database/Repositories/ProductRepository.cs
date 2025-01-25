@@ -1,8 +1,8 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
-using ProductManagement.Application.Repositories;
 using ProductManagement.Domain.Entities;
 using ProductManagement.Infrastructure.Database.Contexts;
 
