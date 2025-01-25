@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using ProductManagement.Application.Users.Commands.RegisterUser;
+using ProductManagement.Application.Users.Commands.SignInUser;
 using ProductManagement.Domain.Shared;
 
 namespace ProductManagement.Application.Services;
@@ -17,6 +18,11 @@ internal class AuthService : IAuthService
     {
         var command = new RegisterUserCommand(email, password, confirmUrl, returnUrl);
         return await _sender.Send(command, cancellationToken);
+    }
 
+    public async Task<Result> SignInUserAsync(string email, string password, bool remember, CancellationToken cancellationToken = default)
+    {
+        var command = new SignInUserCommand(email, password, remember);
+        return await _sender.Send(command, cancellationToken);
     }
 }
