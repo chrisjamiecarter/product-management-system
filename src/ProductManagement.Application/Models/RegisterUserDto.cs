@@ -8,7 +8,7 @@ public sealed class RegisterUserDto
     [Required]
     [EmailAddress]
     [Display(Name = "Email")]
-    public string Email { get; set; } = "";
+    public string Email { get; set; } = string.Empty;
 
     [Required]
     [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = PasswordOptions.RequiredLength)]

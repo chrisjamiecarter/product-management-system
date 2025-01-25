@@ -3,6 +3,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using ProductManagement.Application.Abstractions.Messaging;
+using ProductManagement.Application.Errors;
 using ProductManagement.Application.Services;
 using ProductManagement.Application.Users.Commands.RegisterUser;
 using ProductManagement.Domain.Shared;
@@ -30,21 +31,28 @@ internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserC
             EmailConfirmed = false,
         };
 
-        var userResult = await _userManager.CreateAsync(user, request.Password);
-        //var errors = string.Join(", ", userResult.Errors.Select(e => e.Description));
-
-        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        var confirmationToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-
-        var uriBuilder = new UriBuilder(request.ConfirmEmailUrl)
+        var result = await _userManager.CreateAsync(user, request.Password);
+        if (result.Succeeded)
         {
-            Query = $"userId={user.Id}&code={confirmationToken}&returnUrl={request.ReturnUrl}"
-        };
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var confirmationToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-        var confirmationLink = HtmlEncoder.Default.Encode(uriBuilder.ToString());
-        await _emailService.SendEmailAsync(user.Email, "Confirm your email", $"Please confirm your account by <a href='{confirmationLink}'>clicking here</a>.", CancellationToken.None);
+            var uriBuilder = new UriBuilder(request.ConfirmEmailUrl)
+            {
+                Query = $"userId={user.Id}&code={confirmationToken}&returnUrl={request.ReturnUrl}"
+            };
 
-        // TODO: ERRORS.
-        return userResult.Succeeded ? Result.Success() : Result.Failure(new Error("User.NotRegistered", "The user was not registered."));
+            var confirmationLink = HtmlEncoder.Default.Encode(uriBuilder.ToString());
+            await _emailService.SendEmailAsync(user.Email, "Confirm your email", $"Please confirm your account by <a href='{confirmationLink}'>clicking here</a>.", CancellationToken.None);
+
+            return Result.Success();
+        }
+        else
+        {
+            var identityError = result.Errors.First();
+            return identityError != null
+                ? Result.Failure(new Error(identityError.Code, identityError.Description))
+                : Result.Failure(InfrastructureErrors.User.NotRegistered);
+        }
     }
 }

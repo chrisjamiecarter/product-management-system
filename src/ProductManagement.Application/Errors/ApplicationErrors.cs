@@ -48,6 +48,10 @@ internal static class ApplicationErrors
             "User.NotFound",
             "The user was not found.");
 
+        internal static readonly Error NotRegistered = new(
+            "User.NotRegistered",
+            "The user was not registered.");
+
         internal static readonly Error NotUpdated = new(
             "User.NotUpdated",
             "The user was not updated.");
