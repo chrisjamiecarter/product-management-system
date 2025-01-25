@@ -22,22 +22,21 @@
             </div>
             <div class="col-md-8 col-lg-6 col-xl-5">
                 <h1 class="h3 mb-3 fw-normal">Please register</h1>
-                <StatusMessage Message="@ErrorMessage" Level="ToastLevel.Error" />
-                <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
+                <AuthStatusMessage Error="@error" />
+                <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" OnInvalidSubmit="HandleInvalidSubmit" FormName="register">
                     <DataAnnotationsValidator />
-                    <ValidationSummary class="text-danger" role="alert" />
                     <div class="form-floating mb-3">
-                        <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control form-control-lg" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                        <InputText @bind-Value="Input.Email" id="Input.Email" class=@($"form-control form-control-lg {ValidationHelper.GetValidationCssClass(Input, nameof(Input.Email), showValidation)}") autocomplete="username" aria-required="true" placeholder="name@example.com" />
                         <label for="Input.Email">Email</label>
                         <ValidationMessage For="() => Input.Email" class="text-danger" />
                     </div>
                     <div class="form-floating mb-3">
-                        <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control form-control-lg" autocomplete="new-password" aria-required="true" placeholder="password" />
+                        <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class=@($"form-control form-control-lg {ValidationHelper.GetValidationCssClass(Input, nameof(Input.Password), showValidation)}") autocomplete="new-password" aria-required="true" placeholder="password" />
                         <label for="Input.Password">Password</label>
                         <ValidationMessage For="() => Input.Password" class="text-danger" />
                     </div>
                     <div class="form-floating mb-3">
-                        <InputText type="password" @bind-Value="Input.ConfirmPassword" id="Input.ConfirmPassword" class="form-control form-control-lg" autocomplete="new-password" aria-required="true" placeholder="password" />
+                        <InputText type="password" @bind-Value="Input.ConfirmPassword" id="Input.ConfirmPassword" class=@($"form-control form-control-lg {ValidationHelper.GetValidationCssClass(Input, nameof(Input.ConfirmPassword), showValidation)}") autocomplete="new-password" aria-required="true" placeholder="password" />
                         <label for="Input.ConfirmPassword">Confirm Password</label>
                         <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
                     </div>
@@ -56,7 +55,8 @@
 </section>
 
 @code {
-    private IEnumerable<IdentityError>? identityErrors;
+    private AuthError? error;
+    private bool showValidation = false;
 
     [SupplyParameterFromForm]
     private RegisterUserDto Input { get; set; } = new();
@@ -64,12 +64,13 @@
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
 
-    private string? ErrorMessage { get; set; } = null;
-
-    public async Task RegisterUser(EditContext editContext)
+    public async Task RegisterUser()
     {
         try
         {
+            error = null;
+            showValidation = true;
+
             var confirmUrl = NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri;
             var returnUrl = ReturnUrl ?? string.Empty;
 
@@ -82,13 +83,18 @@
             else
             {
                 Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
-                ErrorMessage = $"Registration failed: {result.Error.Message}";
+                error = new AuthError { Message = result.Error.Message, Level = MessageLevel.Error };
             }
         }
-        catch (Exception exception)
+        catch (Exception exception) when (exception is not NavigationException)
         {
             Logger.LogWarning("Exception throw in {method}: {exceptionMessage}", nameof(RegisterUser), exception.Message);
-            ErrorMessage = $"Registration failed: {exception.Message}";
+            error = new AuthError { Message = "Error during registration.", Level = MessageLevel.Error };
         }
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        showValidation = true;
     }
 }
