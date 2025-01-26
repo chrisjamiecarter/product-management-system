@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using ProductManagement.Application.Features.Users.Commands.ForgotPassword;
 using ProductManagement.Application.Features.Users.Commands.RegisterUser;
 using ProductManagement.Application.Features.Users.Commands.SignInUser;
 using ProductManagement.Application.Interfaces.Infrastructure;
@@ -18,6 +19,12 @@ internal class AuthService : IAuthService
     public async Task<Result> RegisterUserAsync(string email, string password, string confirmUrl, string returnUrl, CancellationToken cancellationToken = default)
     {
         var command = new RegisterUserCommand(email, password, confirmUrl, returnUrl);
+        return await _sender.Send(command, cancellationToken);
+    }
+
+    public async Task<Result> ForgotPasswordAsync(string email, string resetUrl, CancellationToken cancellationToken = default)
+    {
+        var command = new ForgotPasswordCommand(email, resetUrl);
         return await _sender.Send(command, cancellationToken);
     }
 
