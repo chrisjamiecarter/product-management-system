@@ -5,16 +5,26 @@
 @using Microsoft.AspNetCore.WebUtilities
 @using ProductManagement.Infrastructure.Database.Identity
 
-@inject UserManager<ApplicationUser> UserManager
+@inject IAuthService AuthService
+@inject IUserService UserService
+@inject ILogger<ConfirmEmail> Logger
 @inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Confirm email</PageTitle>
 
-<h1>Confirm email</h1>
-<StatusMessage Message="@statusMessage" />
+<section class="container-md py-3">
+
+    <div class="d-flex gap-3 align-items-center mb-4">
+        <PersonFillSvg Height="1.5rem" Width="1.5rem" />
+        <h1 class="h2 mb-0">Confirm Email</h1>
+    </div>
+    
+    <StatusMessage Status="@status" />
+</section>
+
 
 @code {
-    private string? statusMessage;
+    private StatusDto? status;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -32,17 +42,16 @@
             RedirectManager.RedirectTo("");
         }
 
-        var user = await UserManager.FindByIdAsync(UserId);
-        if (user is null)
+        var result = await AuthService.ConfirmEmailAsync(UserId, Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code)));
+        if (result.IsSuccess)
         {
-            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            statusMessage = $"Error loading user with ID {UserId}";
+            status = new StatusDto { Message = "Thank you for confirming your email.", Level = MessageLevel.Success };
+            Logger.LogWarning("User email confirmed.");
         }
         else
         {
-            var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
-            var result = await UserManager.ConfirmEmailAsync(user, code);
-            statusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
+            status = new StatusDto { Message = "Error confirming your email.", Level = MessageLevel.Error };
+            Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
         }
     }
 }

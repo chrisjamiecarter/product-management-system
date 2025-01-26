@@ -10,6 +10,10 @@ internal static class InfrastructureErrors
             "User.EmailNotConfirmed",
             "The user does not have a confirmed email.");
 
+        internal static readonly Error ErrorConfirmingEmail = new(
+            "User.ErrorConfirmingEmail",
+            "There was an error when confirming the users email.");
+
         internal static readonly Error InvalidSignInAttempt = new(
             "User.InvalidSignInAttempt",
             "Invalid sign in attempt.");
