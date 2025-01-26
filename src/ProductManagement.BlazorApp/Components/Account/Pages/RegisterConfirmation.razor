@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.WebUtilities
 @using ProductManagement.Infrastructure.Database.Identity
 
+@inject ILogger<RegisterConfirmation> Logger
 @inject IUserService UserService
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
@@ -21,7 +22,7 @@
     <AuthStatusMessage Error="@error" />
     @if (error is null)
     {
-        <p class="alert alert-dark" role="alert">Please check your email to confirm your account.</p>
+        <p class="alert alert-success" role="alert">Please check your email to confirm your account.</p>
     }
 
 </section>
@@ -49,8 +50,9 @@
         var result = await UserService.ReturnByEmailAsync(Email);
         if (result.IsFailure)
         {
+            Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            error = new AuthError { Message = result.Error.Message, Level = MessageLevel.Error };
+            error = new AuthError { Message = "There was an error during register confirmation.", Level = MessageLevel.Error };
         }
     }
 }
