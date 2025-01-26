@@ -36,8 +36,8 @@ public class UserService : IUserService
     {
         var query = new GetUserByEmailQuery(email);
         var result = await _sender.Send(query, cancellationToken);
-     
-        return result.IsSuccess 
+
+        return result.IsSuccess
             ? Result.Success(result.Value.ToDto())
             : Result.Failure<ApplicationUserDto>(result.Error);
     }

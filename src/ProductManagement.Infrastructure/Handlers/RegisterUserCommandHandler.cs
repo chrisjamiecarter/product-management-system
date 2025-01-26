@@ -3,11 +3,11 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using ProductManagement.Application.Abstractions.Messaging;
-using ProductManagement.Application.Errors;
 using ProductManagement.Application.Features.Users.Commands.RegisterUser;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;
 using ProductManagement.Infrastructure.Database.Identity;
+using ProductManagement.Infrastructure.Errors;
 
 namespace ProductManagement.Infrastructure.Handlers;
 

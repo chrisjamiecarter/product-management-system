@@ -1,11 +1,15 @@
 ﻿using ProductManagement.Domain.Shared;
 
-namespace ProductManagement.Application.Errors;
+namespace ProductManagement.Infrastructure.Errors;
 
 internal static class InfrastructureErrors
 {
     internal static class User
     {
+        internal static readonly Error EmailNotConfirmed = new(
+            "User.EmailNotConfirmed",
+            "The user does not have a confirmed email.");
+
         internal static readonly Error InvalidSignInAttempt = new(
             "User.InvalidSignInAttempt",
             "Invalid sign in attempt.");

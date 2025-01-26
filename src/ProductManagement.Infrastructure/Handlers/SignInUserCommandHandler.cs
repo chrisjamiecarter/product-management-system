@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using ProductManagement.Application.Abstractions.Messaging;
-using ProductManagement.Application.Errors;
 using ProductManagement.Application.Features.Users.Commands.SignInUser;
 using ProductManagement.Domain.Shared;
 using ProductManagement.Infrastructure.Database.Identity;
+using ProductManagement.Infrastructure.Errors;
 
 namespace ProductManagement.Infrastructure.Handlers;
 

@@ -17,6 +17,8 @@ internal class EmailService : IEmailService
 
     public async Task SendEmailAsync(string toEmailAddress, string subject, string body, CancellationToken cancellationToken = default)
     {
+        // TODO: Errors?
+
         var email = new MimeMessage();
         email.From.Add(new MailboxAddress(_emailOptions.FromName, _emailOptions.FromEmailAddress));
         email.To.Add(new MailboxAddress(toEmailAddress, toEmailAddress));
