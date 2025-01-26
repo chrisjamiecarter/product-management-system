@@ -20,7 +20,7 @@
             </div>
             <div class="col-md-8 col-lg-6 col-xl-5">
                 <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
-                <AuthStatusMessage Error="@error" />
+                <StatusMessage Status="@status" />
                 <EditForm Model="Input" method="post" OnValidSubmit="SignInUserAsync" OnInvalidSubmit="HandleInvalidSubmit" FormName="login">
                     <DataAnnotationsValidator />
                     <div class="form-floating mb-3">
@@ -58,7 +58,7 @@
 </section>
 
 @code {
-    private AuthError? error;
+    private StatusDto? status;
     private bool showValidation = false;
 
     [CascadingParameter]
@@ -83,10 +83,10 @@
     {
         try
         {
-            error = null;
+            status = null;
             showValidation = true;
 
-            var result = await AuthService.SignInUserAsync(Input.Email, Input.Password, Input.RememberMe, CancellationToken.None);
+            var result = await AuthService.SignInAsync(Input.Email, Input.Password, Input.RememberMe, CancellationToken.None);
             if (result.IsSuccess)
             {
                 Logger.LogInformation("User signed in.");
@@ -95,13 +95,13 @@
             else
             {
                 Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
-                error = new AuthError { Message = result.Error.Message, Level = MessageLevel.Error };
+                status = new StatusDto { Message = result.Error.Message, Level = MessageLevel.Error };
             }
         }
         catch (Exception exception) when (exception is not NavigationException)
         {
             Logger.LogWarning("Exception throw in {method}: {exceptionMessage}", nameof(SignInUserAsync), exception.Message);
-            error = new AuthError { Message = "Error during sign in.", Level = MessageLevel.Error };
+            status = new StatusDto { Message = "Error during sign in.", Level = MessageLevel.Error };
         }
     }
 

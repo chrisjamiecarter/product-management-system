@@ -1,8 +1,8 @@
 ﻿using ProductManagement.BlazorApp.Enums;
 
-namespace ProductManagement.BlazorApp.Components.Account.Shared;
+namespace ProductManagement.BlazorApp.Components.Shared;
 
-public class AuthError
+public class StatusDto
 {
     public string? Message { get; set; }
 

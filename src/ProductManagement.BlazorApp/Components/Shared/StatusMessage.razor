@@ -9,32 +9,12 @@
 }
 
 @code {
-    private string? messageFromCookie;
-
     [Parameter]
-    public AuthError? Error { get; set; }
+    public StatusDto? Status { get; set; }
 
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
+    private string? DisplayMessage => Status?.Message ?? string.Empty;
 
-    private string? DisplayMessage => Error?.Message ?? messageFromCookie;
-
-    private MessageLevel Level => Error?.Level ?? MessageLevel.Primary;
-
-    protected override void OnInitialized()
-    {
-        messageFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusCookieName];
-
-        if (messageFromCookie is not null)
-        {
-            if (messageFromCookie.StartsWith("Error"))
-            {
-                Error = new AuthError { Message = messageFromCookie, Level = MessageLevel.Error };
-            }
-
-            HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusCookieName);
-        }
-    }
+    private MessageLevel Level => Status?.Level ?? MessageLevel.Primary;
 
     private string GetStatusMessageCssClass(MessageLevel level)
     {

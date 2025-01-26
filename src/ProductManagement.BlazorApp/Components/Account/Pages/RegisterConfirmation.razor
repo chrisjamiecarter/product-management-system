@@ -19,8 +19,8 @@
         <h1 class="h2 mb-0">Register Confirmation</h1>
     </div>
     
-    <AuthStatusMessage Error="@error" />
-    @if (error is null)
+    <StatusMessage Status="@status" />
+    @if (status is null)
     {
         <p class="alert alert-success" role="alert">Please check your email to confirm your account.</p>
     }
@@ -29,7 +29,7 @@
 
 @code {
     private string? emailConfirmationLink;
-    private AuthError? error;
+    private StatusDto? status;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -52,7 +52,7 @@
         {
             Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            error = new AuthError { Message = "There was an error during register confirmation.", Level = MessageLevel.Error };
+            status = new StatusDto { Message = "There was an error during register confirmation.", Level = MessageLevel.Error };
         }
     }
 }
