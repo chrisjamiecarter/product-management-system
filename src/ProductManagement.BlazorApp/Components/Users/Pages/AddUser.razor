@@ -3,7 +3,7 @@
 @attribute [Authorize(Roles = "Owner,Admin")]
 
 @inject NavigationManager NavigationManager
-@inject IUserService UserService
+@inject SenderService Sender
 @inject ToastService ToastService
 
 @rendermode InteractiveServer
@@ -34,17 +34,17 @@ else
             <EditForm EditContext="EditContext" FormName="AddUser" OnValidSubmit="AddUserAsync">
                 <DataAnnotationsValidator />
                 <div class="form-floating mb-3">
-                    <InputText id="createUserUsername" class=@($"form-control {EditContext?.GetValidationClass(() => CreateUserDto.Username)}") placeholder="username" @bind-Value="CreateUserDto.Username" />
-                    <label for="createUserUsername" class="form-label">Username</label>
-                    <ValidationMessage For="() => CreateUserDto.Username" class="invalid-feedback" />
+                    <InputText id="Input.Username" class=@($"form-control {EditContext?.GetValidationClass(() => Input.Username)}") placeholder="username" @bind-Value="Input.Username" />
+                    <label for="Input.Username" class="form-label">Username</label>
+                    <ValidationMessage For="() => Input.Username" class="invalid-feedback" />
                 </div>
                 <div class="form-floating mb-3">
-                    <FixedInputSelect id="createUserRole" class=@($"form-select {EditContext?.GetValidationClass(() => CreateUserDto.Role)}") @bind-Value="CreateUserDto.Role">
+                    <FixedInputSelect id="Input.Role" class=@($"form-select {EditContext?.GetValidationClass(() => Input.Role)}") @bind-Value="Input.Role">
                         <option value="Admin">Admin</option>
                         <option value="User">User</option>
                     </FixedInputSelect>
-                    <label for="createUserRole">Role</label>
-                    <ValidationMessage For="() => CreateUserDto.Role" class="invalid-feedback" />
+                    <label for="Input.Role">Role</label>
+                    <ValidationMessage For="() => Input.Role" class="invalid-feedback" />
                 </div>
                 <div class="d-flex gap-1">
                     <button class="btn btn-outline-dark w-100" type="submit">Create</button>
@@ -56,17 +56,20 @@ else
 }
 
 @code {
-    private CreateUserDto CreateUserDto = new();
+    private CreateUserInputModel Input = new();
     private EditContext? EditContext;
 
     protected override void OnInitialized()
     {
-        EditContext = new EditContext(CreateUserDto);
+        EditContext = new EditContext(Input);
     }
 
     private async Task AddUserAsync()
     {
-        var response = await UserService.CreateAsync(CreateUserDto.Username, CreateUserDto.Role);
+        var command = new CreateUserCommand(Input.Username,
+                                            Input.Role);
+
+        var response = await Sender.SendAsync(command);
         if (response.IsSuccess)
         {
             ToastService.ShowToast("User created", ToastLevel.Success);

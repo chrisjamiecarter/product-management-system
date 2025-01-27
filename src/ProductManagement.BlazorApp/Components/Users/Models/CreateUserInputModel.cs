@@ -2,7 +2,7 @@
 
 namespace ProductManagement.BlazorApp.Components.Users.Models;
 
-public class CreateUserDto
+public class CreateUserInputModel
 {
     [Required]
     [DataType(DataType.EmailAddress)]

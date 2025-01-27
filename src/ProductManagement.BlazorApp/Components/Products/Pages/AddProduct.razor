@@ -34,19 +34,19 @@ else
             <EditForm EditContext="EditContext" FormName="AddProduct" OnValidSubmit="AddProductAsync">
                 <DataAnnotationsValidator />
                 <div class="form-floating mb-3">
-                    <InputText id="createProductName" class=@($"form-control {EditContext?.GetValidationClass(() => CreateProductDto.Name)}") placeholder="name" @bind-Value="CreateProductDto.Name" />
-                    <label for="createProductName" class="form-label">Name</label>
-                    <ValidationMessage For="() => CreateProductDto.Name" class="invalid-feedback" />
+                    <InputText id="Input.Name" class=@($"form-control {EditContext?.GetValidationClass(() => Input.Name)}") placeholder="name" @bind-Value="Input.Name" />
+                    <label for="Input.Name" class="form-label">Name</label>
+                    <ValidationMessage For="() => Input.Name" class="invalid-feedback" />
                 </div>
                 <div class="form-floating mb-3">
-                    <InputTextArea id="createProductDescription" class=@($"form-control {EditContext?.GetValidationClass(() => CreateProductDto.Description)}") placeholder="description" @bind-Value="CreateProductDto.Description" />
-                    <label for="createProductDescription" class="form-label">Description</label>
-                    <ValidationMessage For="() => CreateProductDto.Description" class="invalid-feedback" />
+                    <InputTextArea id="Input.Description" class=@($"form-control {EditContext?.GetValidationClass(() => Input.Description)}") placeholder="description" @bind-Value="Input.Description" />
+                    <label for="Input.Description" class="form-label">Description</label>
+                    <ValidationMessage For="() => Input.Description" class="invalid-feedback" />
                 </div>
                 <div class="form-floating mb-3">
-                    <InputNumber id="createProductPrice" class=@($"form-control {EditContext?.GetValidationClass(() => CreateProductDto.Price)}") @bind-Value="CreateProductDto.Price" />
-                    <label for="createProductPrice" class="form-label">Price</label>
-                    <ValidationMessage For="() => CreateProductDto.Price" class="invalid-feedback" />
+                    <InputNumber id="Input.Price" class=@($"form-control {EditContext?.GetValidationClass(() => Input.Price)}") @bind-Value="Input.Price" />
+                    <label for="Input.Price" class="form-label">Price</label>
+                    <ValidationMessage For="() => Input.Price" class="invalid-feedback" />
                 </div>
                 <div class="d-flex gap-1">
                     <button class="btn btn-outline-dark w-100" type="submit">Create</button>
@@ -58,17 +58,20 @@ else
 }
 
 @code {
-    private CreateProductDto CreateProductDto = new();
+    private CreateProductInputModel Input = new();
     private EditContext? EditContext;
 
     protected override void OnInitialized()
     {
-        EditContext = new EditContext(CreateProductDto);
+        EditContext = new EditContext(Input);
     }
 
     private async Task AddProductAsync()
     {
-        var command = new CreateProductCommand(CreateProductDto.Name, CreateProductDto.Description, CreateProductDto.Price);
+        var command = new CreateProductCommand(Input.Name,
+                                               Input.Description,
+                                               Input.Price);
+
         var response = await Sender.SendAsync(command);
         if (response.IsSuccess)
         {

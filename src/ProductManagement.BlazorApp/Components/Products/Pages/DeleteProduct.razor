@@ -10,7 +10,7 @@
 
 <PageTitle>Delete Product</PageTitle>
 
-@if (DeleteProductDto is null)
+@if (Input is null)
 {
     <LoadingSpinner />
 }
@@ -31,26 +31,26 @@ else
         </div>
 
         <div class="form-group col-lg-6">
-            <EditForm Model="DeleteProductDto" FormName="DeleteProduct" OnValidSubmit="ShowConfirmation">
+            <EditForm Model="Input" FormName="DeleteProduct" OnValidSubmit="ShowConfirmation">
                 <div class="form-floating mb-3">
-                    <InputText id="deleteProductName" class="form-control" placeholder="name" disabled readonly @bind-Value="DeleteProductDto.Name" />
-                    <label for="deleteProductName" class="form-label">Name</label>
+                    <InputText id="Input.Name" class="form-control" placeholder="name" disabled readonly @bind-Value="Input.Name" />
+                    <label for="Input.Name" class="form-label">Name</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <InputTextArea id="deleteProductDescription" class="form-control" placeholder="description" disabled readonly @bind-Value="DeleteProductDto.Description" />
-                    <label for="deleteProductDescription" class="form-label">Description</label>
+                    <InputTextArea id="Input.Description" class="form-control" placeholder="description" disabled readonly @bind-Value="Input.Description" />
+                    <label for="Input.Description" class="form-label">Description</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <InputNumber id="deleteProductPrice" class="form-control" placeholder="name" disabled readonly @bind-Value="DeleteProductDto.Price" />
-                    <label for="deleteProductPrice" class="form-label">Price</label>
+                    <InputNumber id="Input.Price" class="form-control" placeholder="name" disabled readonly @bind-Value="Input.Price" />
+                    <label for="Input.Price" class="form-label">Price</label>
                 </div>
                 <div class="form-check form-switch mb-3">
-                    <InputCheckbox id="deleteProductIsActive" class="form-check-input" disabled readonly @bind-Value="DeleteProductDto.IsActive" />
-                    <label for="deleteProductIsActive" class="form-check-label">Is Active</label>
+                    <InputCheckbox id="Input.IsActive" class="form-check-input" disabled readonly @bind-Value="Input.IsActive" />
+                    <label for="Input.IsActive" class="form-check-label">Is Active</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <InputDate id="deleteProductAddedOnUtc" class="form-control" placeholder="name" disabled readonly @bind-Value="DeleteProductDto.AddedOnUtc" />
-                    <label for="deleteProductAddedOnUtc" class="form-label">Added On</label>
+                    <InputDate id="Input.AddedOnUtc" class="form-control" placeholder="name" disabled readonly @bind-Value="Input.AddedOnUtc" />
+                    <label for="Input.AddedOnUtc" class="form-label">Added On</label>
                 </div>
                 <div class="d-flex gap-1">
                     <button class="btn btn-outline-dark w-100" type="submit">Delete</button>
@@ -72,7 +72,7 @@ else
 @code {
     [Parameter] public Guid Id { get; set; }
 
-    private DeleteProductDto? DeleteProductDto;
+    private DeleteProductinputModel? Input;
     private bool ShowConfirmationModal { get; set; }
 
     protected override async Task OnInitializedAsync()
@@ -81,7 +81,7 @@ else
         var response = await Sender.SendAsync(query);
         if (response.IsSuccess)
         {
-            DeleteProductDto = new DeleteProductDto(response.Value);
+            Input = new DeleteProductinputModel(response.Value);
         }
         else
         {
@@ -92,12 +92,13 @@ else
 
     private async Task DeleteProductAsync()
     {
-        if (DeleteProductDto is null)
+        if (Input is null)
         {
             return;
         }
 
-        var command = new DeleteProductCommand(DeleteProductDto.Id);
+        var command = new DeleteProductCommand(Input.Id);
+
         var response = await Sender.SendAsync(command);
         if (response.IsSuccess)
         {

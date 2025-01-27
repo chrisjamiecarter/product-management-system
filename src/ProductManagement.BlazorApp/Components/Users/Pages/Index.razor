@@ -3,7 +3,7 @@
 @attribute [Authorize(Roles = "Owner,Admin")]
 
 @inject NavigationManager NavigationManager
-@inject IUserService UserService
+@inject SenderService Sender
 @inject ToastService ToastService
 
 @rendermode InteractiveServer
@@ -38,17 +38,17 @@ else
         </div>
 
         <div id="userSearchForm" class="collapse pb-3">
-            <EditForm Model="SearchUsersDto" OnValidSubmit="() => GetUsersAsync()" FormName="SearchUsers">
+            <EditForm Model="Input" OnValidSubmit="() => GetUsersAsync()" FormName="SearchUsers">
                 <div class="row">
                     <div class="col-12 col-lg-6">
                         <div class="form-floating mb-3">
-                            <InputText id="searchUsername" class="form-control" placeholder="username" @bind-Value="SearchUsersDto.SearchUsername" />
+                            <InputText id="searchUsername" class="form-control" placeholder="username" @bind-Value="Input.SearchUsername" />
                             <label for="searchUsername" class="form-label">Username</label>
                         </div>
                     </div>
                     <div class="col-12 col-md-6 col-lg-3">
                         <div class="form-floating mb-3">
-                            <FixedInputSelect id="searchEmailConfirmed" class="form-select" @bind-Value="SearchUsersDto.SearchEmailConfirmed">
+                            <FixedInputSelect id="searchEmailConfirmed" class="form-select" @bind-Value="Input.SearchEmailConfirmed">
                                 <option value="">All</option>
                                 <option value="true">Yes</option>
                                 <option value="false">No</option>
@@ -58,7 +58,7 @@ else
                     </div>
                     <div class="col-12 col-md-6 col-lg-3">
                         <div class="form-floating mb-3">
-                            <FixedInputSelect id="searchRole" class="form-select" @bind-Value="SearchUsersDto.SearchRole">
+                            <FixedInputSelect id="searchRole" class="form-select" @bind-Value="Input.SearchRole">
                                 <option value="">All</option>
                                 <option value="Owner">Owner</option>
                                 <option value="Admin">Admin</option>
@@ -189,7 +189,7 @@ else
 @code {
     private PaginatedList<GetUsersPaginatedQueryResponse>? UsersPage { get; set; }
 
-    private SearchUsersDto SearchUsersDto { get; set; } = new();
+    private SearchUsersInputModel Input { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -198,16 +198,23 @@ else
 
     private async Task GetUsersAsync(int pageNumber = 1)
     {
-        if (string.IsNullOrWhiteSpace(SearchUsersDto.SortColumn))
+        if (string.IsNullOrWhiteSpace(Input.SortColumn))
         {
-            SearchUsersDto.SortColumn = nameof(GetUsersPaginatedQueryResponse.Username);
+            Input.SortColumn = nameof(GetUsersPaginatedQueryResponse.Username);
         }
-        if (string.IsNullOrWhiteSpace(SearchUsersDto.SortOrder))
+        if (string.IsNullOrWhiteSpace(Input.SortOrder))
         {
-            SearchUsersDto.SortOrder = "asc";
+            Input.SortOrder = "asc";
         }
 
-        var response = await UserService.ReturnByPageAsync(SearchUsersDto.SearchUsername, SearchUsersDto.SearchRole, SearchUsersDto.SearchEmailConfirmed, SearchUsersDto.SortColumn, SearchUsersDto.SortOrder, pageNumber);
+        var query = new GetUsersPaginatedQuery(Input.SearchUsername,
+                                               Input.SearchRole,
+                                               Input.SearchEmailConfirmed,
+                                               Input.SortColumn,
+                                               Input.SortOrder,
+                                               pageNumber);
+
+        var response = await Sender.SendAsync(query);
         if (response.IsSuccess)
         {
             UsersPage = response.Value;
@@ -221,9 +228,9 @@ else
 
     private Type GetSortIcon(string columnName)
     {
-        if (SearchUsersDto.SortColumn == columnName)
+        if (Input.SortColumn == columnName)
         {
-            if (SearchUsersDto.SortOrder == "desc")
+            if (Input.SortOrder == "desc")
             {
                 return typeof(SortDownSvg);
             }
@@ -255,14 +262,14 @@ else
 
     private async Task ResetSearchUsersDto()
     {
-        SearchUsersDto = new();
+        Input = new();
         await GetUsersAsync();
     }
 
     private async Task SortTable(string columnName)
     {
-        SearchUsersDto.SortColumn = columnName;
-        SearchUsersDto.SortOrder = SearchUsersDto.SortOrder == "asc" ? "desc" : "asc";
+        Input.SortColumn = columnName;
+        Input.SortOrder = Input.SortOrder == "asc" ? "desc" : "asc";
         await GetUsersAsync();
     }
 }

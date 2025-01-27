@@ -3,14 +3,14 @@
 @attribute [Authorize(Roles = "Owner,Admin")]
 
 @inject NavigationManager NavigationManager
-@inject IUserService UserService
+@inject SenderService Sender
 @inject ToastService ToastService
 
 @rendermode InteractiveServer
 
 <PageTitle>Edit User</PageTitle>
 
-@if (UpdateUserDto is null || EditContext is null)
+@if (Input is null || EditContext is null)
 {
     <LoadingSpinner />
 }
@@ -34,21 +34,21 @@ else
             <EditForm EditContext="EditContext" FormName="UpdateUser" OnValidSubmit="EditUserAsync">
                 <DataAnnotationsValidator />
                 <div class="form-floating mb-3">
-                    <InputText id="updateUserUsername" class="form-control" placeholder="username" disabled readonly @bind-Value="UpdateUserDto.Username" />
+                    <InputText id="updateUserUsername" class="form-control" placeholder="username" disabled readonly @bind-Value="Input.Username" />
                     <label for="updateUserUsername" class="form-label">Username</label>
-                    <ValidationMessage For="() => UpdateUserDto.Username" class="invalid-feedback" />
+                    <ValidationMessage For="() => Input.Username" class="invalid-feedback" />
                 </div>
                 <div class="form-floating mb-3">
-                    <FixedInputSelect id="updateUserRole" class=@($"form-select {EditContext?.GetValidationClass(() => UpdateUserDto.Role)}") @bind-Value="UpdateUserDto.Role">
+                    <FixedInputSelect id="updateUserRole" class=@($"form-select {EditContext?.GetValidationClass(() => Input.Role)}") @bind-Value="Input.Role">
                         <option value=""></option>
                         <option value="Admin">Admin</option>
                         <option value="User">User</option>
                     </FixedInputSelect>
                     <label for="updateUserRole">Role</label>
-                    <ValidationMessage For="() => UpdateUserDto.Role" class="invalid-feedback" />
+                    <ValidationMessage For="() => Input.Role" class="invalid-feedback" />
                 </div>
                 <div class="form-check form-switch mb-3">
-                    <InputCheckbox id="updateUserEmailConfirmed" class="form-check-input" disabled readonly @bind-Value="UpdateUserDto.EmailConfirmed" />
+                    <InputCheckbox id="updateUserEmailConfirmed" class="form-check-input" disabled readonly @bind-Value="Input.EmailConfirmed" />
                     <label for="updateUserEmailConfirmed" class="form-check-label">Email Confirmed</label>
                 </div>
                 <div class="d-flex gap-1">
@@ -63,16 +63,18 @@ else
 @code {
     [Parameter] public string Id { get; set; } = string.Empty;
 
-    private UpdateUserDto? UpdateUserDto;
+    private UpdateUserInputModel? Input;
     private EditContext? EditContext;
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await UserService.ReturnByIdAsync(Id);
+        var query = new GetUserByIdQuery(Id);
+
+        var response = await Sender.SendAsync(query);
         if (response.IsSuccess)
         {
-            UpdateUserDto = new UpdateUserDto(response.Value);
-            EditContext = new EditContext(UpdateUserDto);
+            Input = new UpdateUserInputModel(response.Value);
+            EditContext = new EditContext(Input);
         }
         else
         {
@@ -83,12 +85,17 @@ else
 
     private async Task EditUserAsync()
     {
-        if (UpdateUserDto is null)
+        if (Input is null || Input.Username is null || Input.Role is null)
         {
             return;
         }
+        
+        var command = new UpdateUserCommand(Input.Id,
+                                            Input.Username,
+                                            Input.Role,
+                                            Input.EmailConfirmed);
 
-        var response = await UserService.UpdateAsync(UpdateUserDto.Id, UpdateUserDto.Username!, UpdateUserDto.Role!, UpdateUserDto.EmailConfirmed);
+        var response = await Sender.SendAsync(command);
         if (response.IsSuccess)
         {
             ToastService.ShowToast("User updated", ToastLevel.Success);

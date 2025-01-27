@@ -2,7 +2,7 @@
 
 namespace ProductManagement.BlazorApp.Components.Users.Models;
 
-public class SearchUsersDto
+public class SearchUsersInputModel
 {
     [DataType(DataType.Text)]
     public string? SearchUsername { get; set; }

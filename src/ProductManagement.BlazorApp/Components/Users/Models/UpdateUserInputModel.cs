@@ -3,9 +3,9 @@ using ProductManagement.Application.Features.Users.Queries.GetUserById;
 
 namespace ProductManagement.BlazorApp.Components.Users.Models;
 
-public class DeleteUserDto
+public class UpdateUserInputModel
 {
-    public DeleteUserDto(GetUserByIdQueryResponse user)
+    public UpdateUserInputModel(GetUserByIdQueryResponse user)
     {
         Id = user.Id;
         Username = user.Username;
@@ -13,14 +13,17 @@ public class DeleteUserDto
         EmailConfirmed = user.EmailConfirmed;
     }
 
+    [Required]
     [Editable(false)]
     public string Id { get; set; }
 
+    [Required]
     [Editable(false)]
     [DataType(DataType.EmailAddress)]
+    [EmailAddress]
     public string? Username { get; set; }
 
-    [Editable(false)]
+    [Required]
     [DataType(DataType.Text)]
     public string? Role { get; set; } = string.Empty;
 

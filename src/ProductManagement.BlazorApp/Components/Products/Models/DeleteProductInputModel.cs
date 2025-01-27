@@ -3,9 +3,9 @@ using ProductManagement.Application.Features.Products.Queries.GetProductById;
 
 namespace ProductManagement.BlazorApp.Components.Products.Models;
 
-public class UpdateProductDto
+public class DeleteProductinputModel
 {
-    public UpdateProductDto(GetProductByIdQueryResponse product)
+    public DeleteProductinputModel(GetProductByIdQueryResponse product)
     {
         Id = product.Id;
         Name = product.Name;
@@ -15,26 +15,25 @@ public class UpdateProductDto
         Price = product.Price;
     }
 
-    [Required]
     [Editable(false)]
     public Guid Id { get; set; }
 
-    [Required]
+    [Editable(false)]
     [DataType(DataType.Text)]
     public string Name { get; set; }
 
+    [Editable(false)]
     [DataType(DataType.Text)]
     public string Description { get; set; } = string.Empty;
 
-    [Required]
+    [Editable(false)]
     public bool IsActive { get; set; }
 
     [Editable(false)]
     [DataType(DataType.Date)]
     public DateOnly AddedOnUtc { get; set; }
 
-    [Required]
+    [Editable(false)]
     [DataType(DataType.Currency)]
-    [Range(0, 999_999_999_999_999.99)]
     public decimal Price { get; set; }
 }

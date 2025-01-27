@@ -38,46 +38,46 @@ else
         </div>
 
         <div id="productSearchForm" class="collapse pb-3">
-            <EditForm Model="SearchProductsDto" OnValidSubmit="() => GetProductsAsync()" FormName="SearchProducts">
+            <EditForm Model="Input" OnValidSubmit="() => GetProductsAsync()" FormName="SearchProducts">
                 <div class="row">
                     <div class="col-8 col-lg-10">
                         <div class="form-floating mb-3">
-                            <InputText id="searchProductName" class="form-control" placeholder="name" @bind-Value="SearchProductsDto.SearchName" />
-                            <label for="searchProductName" class="form-label">Name</label>
+                            <InputText id="Input.SearchName" class="form-control" placeholder="name" @bind-Value="Input.SearchName" />
+                            <label for="Input.SearchName" class="form-label">Name</label>
                         </div>
                     </div>
                     <div class="col-4 col-lg-2">
                         <div class="form-floating mb-3">
-                            <FixedInputSelect id="searchIsActive" class="form-select" @bind-Value="SearchProductsDto.SearchIsActive">
+                            <FixedInputSelect id="Input.SearchIsActive" class="form-select" @bind-Value="Input.SearchIsActive">
                                 <option value="">All</option>
                                 <option value="true">Yes</option>
                                 <option value="false">No</option>
                             </FixedInputSelect>
-                            <label for="searchIsActive">Active</label>
+                            <label for="Input.SearchIsActive">Active</label>
                         </div>
                     </div>
                     <div class="col-6 col-lg-3">
                         <div class="form-floating mb-3">
-                            <InputDate id="searchFromAddedOnDateUtc" class="form-control" @bind-Value="SearchProductsDto.SearchFromAddedOnDateUtc" />
-                            <label for="searchFromAddedOnDateUtc">Added From</label>
+                            <InputDate id="Input.SearchFromAddedOnDateUtc" class="form-control" @bind-Value="Input.SearchFromAddedOnDateUtc" />
+                            <label for="Input.SearchFromAddedOnDateUtc">Added From</label>
                         </div>
                     </div>
                     <div class="col-6 col-lg-3">
                         <div class="form-floating mb-3">
-                            <InputDate id="searchToAddedOnDateUtc" class="form-control" @bind-Value="SearchProductsDto.SearchToAddedOnDateUtc" />
-                            <label for="searchToAddedOnDateUtc">Added To</label>
+                            <InputDate id="Input.SearchToAddedOnDateUtc" class="form-control" @bind-Value="Input.SearchToAddedOnDateUtc" />
+                            <label for="Input.SearchToAddedOnDateUtc">Added To</label>
                         </div>
                     </div>
                     <div class="col-6 col-lg-3">
                         <div class="form-floating mb-3">
-                            <InputNumber id="searchFromPrice" class="form-control" @bind-Value="SearchProductsDto.SearchFromPrice" />
-                            <label for="searchFromPrice">Price From</label>
+                            <InputNumber id="Input.SearchFromPrice" class="form-control" @bind-Value="Input.SearchFromPrice" />
+                            <label for="Input.SearchFromPrice">Price From</label>
                         </div>
                     </div>
                     <div class="col-6 col-lg-3">
                         <div class="form-floating mb-3">
-                            <InputNumber id="searchToPrice" class="form-control" @bind-Value="SearchProductsDto.SearchToPrice" />
-                            <label for="searchToPrice">Price To</label>
+                            <InputNumber id="Input.SearchToPrice" class="form-control" @bind-Value="Input.SearchToPrice" />
+                            <label for="Input.SearchToPrice">Price To</label>
                         </div>
                     </div>
                 </div>
@@ -205,7 +205,7 @@ else
 @code {
     private PaginatedList<GetProductsPaginatedQueryResponse>? ProductsPage { get; set; }
 
-    private SearchProductsDto SearchProductsDto { get; set; } = new();
+    private SearchProductsInputModel Input { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -214,25 +214,26 @@ else
 
     private async Task GetProductsAsync(int pageNumber = 1)
     {
-        if (string.IsNullOrWhiteSpace(SearchProductsDto.SortColumn))
+        if (string.IsNullOrWhiteSpace(Input.SortColumn))
         {
-            SearchProductsDto.SortColumn = nameof(GetProductsPaginatedQueryResponse.Name);
+            Input.SortColumn = nameof(GetProductsPaginatedQueryResponse.Name);
         }
 
-        if (string.IsNullOrWhiteSpace(SearchProductsDto.SortOrder))
+        if (string.IsNullOrWhiteSpace(Input.SortOrder))
         {
-            SearchProductsDto.SortOrder = "asc";
+            Input.SortOrder = "asc";
         }
 
-        var query = new GetProductsPaginatedQuery(SearchProductsDto.SearchName,
-                                                  SearchProductsDto.SearchIsActive,
-                                                  SearchProductsDto.SearchFromAddedOnDateUtc,
-                                                  SearchProductsDto.SearchToAddedOnDateUtc,
-                                                  SearchProductsDto.SearchFromPrice,
-                                                  SearchProductsDto.SearchToPrice,
-                                                  SearchProductsDto.SortColumn,
-                                                  SearchProductsDto.SortOrder,
+        var query = new GetProductsPaginatedQuery(Input.SearchName,
+                                                  Input.SearchIsActive,
+                                                  Input.SearchFromAddedOnDateUtc,
+                                                  Input.SearchToAddedOnDateUtc,
+                                                  Input.SearchFromPrice,
+                                                  Input.SearchToPrice,
+                                                  Input.SortColumn,
+                                                  Input.SortOrder,
                                                   pageNumber);
+
         var response = await Sender.SendAsync(query);
         if (response.IsSuccess)
         {
@@ -247,9 +248,9 @@ else
 
     private Type GetSortIcon(string columnName)
     {
-        if (SearchProductsDto.SortColumn == columnName)
+        if (Input.SortColumn == columnName)
         {
-            if (SearchProductsDto.SortOrder == "desc")
+            if (Input.SortOrder == "desc")
             {
                 return typeof(SortDownSvg);
             }
@@ -281,14 +282,14 @@ else
 
     private async Task ResetSearchProductsDto()
     {
-        SearchProductsDto = new();
+        Input = new();
         await GetProductsAsync();
     }
 
     private async Task SortTable(string columnName)
     {
-        SearchProductsDto.SortColumn = columnName;
-        SearchProductsDto.SortOrder = SearchProductsDto.SortOrder == "asc" ? "desc" : "asc";
+        Input.SortColumn = columnName;
+        Input.SortOrder = Input.SortOrder == "asc" ? "desc" : "asc";
         await GetProductsAsync();
     }
 }

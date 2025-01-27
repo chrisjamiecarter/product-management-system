@@ -2,7 +2,7 @@
 
 namespace ProductManagement.BlazorApp.Components.Products.Models;
 
-public class SearchProductsDto
+public class SearchProductsInputModel
 {
     [DataType(DataType.Text)]
     public string? SearchName { get; set; }

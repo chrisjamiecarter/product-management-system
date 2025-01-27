@@ -2,7 +2,7 @@
 
 namespace ProductManagement.BlazorApp.Components.Products.Models;
 
-public class CreateProductDto
+public class CreateProductInputModel
 {
     [Required]
     [DataType(DataType.Text)]

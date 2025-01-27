@@ -3,14 +3,14 @@
 @attribute [Authorize(Roles = "Owner,Admin")]
 
 @inject NavigationManager NavigationManager
-@inject IUserService UserService
+@inject SenderService Sender
 @inject ToastService ToastService
 
 @rendermode InteractiveServer
 
 <PageTitle>Delete User</PageTitle>
 
-@if (DeleteUserDto is null)
+@if (Input is null)
 {
     <LoadingSpinner />
 }
@@ -31,18 +31,18 @@ else
         </div>
 
         <div class="form-group col-lg-6">
-            <EditForm Model="DeleteUserDto" FormName="DeleteUser" OnValidSubmit="ShowConfirmation">
+            <EditForm Model="Input" FormName="DeleteUser" OnValidSubmit="ShowConfirmation">
                 <div class="form-floating mb-3">
-                    <InputText id="deleteUserUsername" class="form-control" placeholder="username" disabled readonly @bind-Value="DeleteUserDto.Username" />
-                    <label for="deleteUserUsername" class="form-label">Username</label>
+                    <InputText id="Input.Username" class="form-control" placeholder="username" disabled readonly @bind-Value="Input.Username" />
+                    <label for="Input.Username" class="form-label">Username</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <InputText id="deleteUserRole" class="form-control" placeholder="role" disabled readonly @bind-Value="DeleteUserDto.Role" />
-                    <label for="deleteUserRole" class="form-label">Role</label>
+                    <InputText id="Input.Role" class="form-control" placeholder="role" disabled readonly @bind-Value="Input.Role" />
+                    <label for="Input.Role" class="form-label">Role</label>
                 </div>
                 <div class="form-check form-switch mb-3">
-                    <InputCheckbox id="deleteUserEmailConfirmed" class="form-check-input" disabled readonly @bind-Value="DeleteUserDto.EmailConfirmed" />
-                    <label for="deleteUserEmailConfirmed" class="form-check-label">Email Confirmed</label>
+                    <InputCheckbox id="Input.EmailConfirmed" class="form-check-input" disabled readonly @bind-Value="Input.EmailConfirmed" />
+                    <label for="Input.EmailConfirmed" class="form-check-label">Email Confirmed</label>
                 </div>
                 <div class="d-flex gap-1">
                     <button class="btn btn-outline-dark w-100" type="submit">Delete</button>
@@ -64,15 +64,17 @@ else
 @code {
     [Parameter] public string Id { get; set; } = string.Empty;
 
-    private DeleteUserDto? DeleteUserDto;
+    private DeleteUserInputModel? Input;
     private bool ShowConfirmationModal { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await UserService.ReturnByIdAsync(Id);
+        var query = new GetUserByIdQuery(Id);
+
+        var response = await Sender.SendAsync(query);
         if (response.IsSuccess)
         {
-            DeleteUserDto = new DeleteUserDto(response.Value);
+            Input = new DeleteUserInputModel(response.Value);
         }
         else
         {
@@ -83,12 +85,14 @@ else
 
     private async Task DeleteUserAsync()
     {
-        if (DeleteUserDto is null)
+        if (Input is null)
         {
             return;
         }
 
-        var response = await UserService.DeleteAsync(DeleteUserDto.Id);
+        var command = new DeleteUserCommand(Input.Id);
+
+        var response = await Sender.SendAsync(command);
         if (response.IsSuccess)
         {
             ToastService.ShowToast("User deleted", ToastLevel.Success);
