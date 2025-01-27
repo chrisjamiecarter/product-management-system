@@ -1,14 +1,11 @@
 ﻿@page "/Account/ConfirmEmail"
 
 @using System.Text
-@using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
-@using ProductManagement.Infrastructure.Database.Identity
 
-@inject IAuthService AuthService
-@inject IUserService UserService
 @inject ILogger<ConfirmEmail> Logger
 @inject IdentityRedirectManager RedirectManager
+@inject SenderService Sender
 
 <PageTitle>Confirm email</PageTitle>
 
@@ -18,13 +15,13 @@
         <PersonFillSvg Height="1.5rem" Width="1.5rem" />
         <h1 class="h2 mb-0">Confirm Email</h1>
     </div>
-    
+
     <StatusMessage Status="@status" />
+
 </section>
 
-
 @code {
-    private StatusDto? status;
+    private StatusModel status = StatusModel.None;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -42,15 +39,17 @@
             RedirectManager.RedirectTo("");
         }
 
-        var result = await AuthService.ConfirmEmailAsync(UserId, Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code)));
+        var token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
+        var command = new ConfirmEmailCommand(UserId, token);
+        var result = await Sender.SendAsync(command);
         if (result.IsSuccess)
         {
-            status = new StatusDto { Message = "Thank you for confirming your email.", Level = MessageLevel.Success };
-            Logger.LogWarning("User email confirmed.");
+            status = new StatusModel("Thank you for confirming your email.", MessageLevel.Success);
+            Logger.LogInformation("User email confirmed.");
         }
         else
         {
-            status = new StatusDto { Message = "Error confirming your email.", Level = MessageLevel.Error };
+            status = new StatusModel("Error confirming your email.", MessageLevel.Error);
             Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
         }
     }

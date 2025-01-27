@@ -1,18 +1,20 @@
 ﻿using MailKit.Net.Smtp;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using ProductManagement.Application.Interfaces.Infrastructure;
+using ProductManagement.Infrastructure.Database.Models;
 using ProductManagement.Infrastructure.Email.Options;
 
 namespace ProductManagement.Infrastructure.Email.Services;
 
-internal class EmailService : IEmailService
+internal class EmailService(IOptions<EmailOptions> emailOptions) : IEmailService, IEmailSender<ApplicationUser>
 {
-    private readonly EmailOptions _emailOptions;
+    private readonly EmailOptions _emailOptions = emailOptions.Value;
 
-    public EmailService(IOptions<EmailOptions> emailOptions)
+    public async Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink)
     {
-        _emailOptions = emailOptions.Value;
+        await SendEmailAsync(email, "Confirm your email", $"Please confirm your account by <a href='{confirmationLink}'>clicking here</a>.", CancellationToken.None);
     }
 
     public async Task SendEmailAsync(string toEmailAddress, string subject, string body, CancellationToken cancellationToken = default)
@@ -47,5 +49,15 @@ internal class EmailService : IEmailService
         {
             await client.DisconnectAsync(true, cancellationToken);
         }
+    }
+
+    public async Task SendPasswordResetCodeAsync(ApplicationUser user, string email, string resetCode)
+    {
+        await SendEmailAsync(email, "Reset your password", $"Please reset your password using the following code: {resetCode}", CancellationToken.None);
+    }
+
+    public async Task SendPasswordResetLinkAsync(ApplicationUser user, string email, string resetLink)
+    {
+        await SendEmailAsync(email, "Reset your password", $"Please reset your password by <a href='{resetLink}'>clicking here</a>.", CancellationToken.None);
     }
 }

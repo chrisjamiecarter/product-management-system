@@ -1,8 +1,11 @@
 ﻿@page "/products"
+
 @attribute [Authorize(Roles = "Owner,User")]
+
 @inject NavigationManager NavigationManager
-@inject IProductService ProductService
-@inject IToastService ToastService
+@inject SenderService Sender
+@inject ToastService ToastService
+
 @rendermode InteractiveServer
 
 <PageTitle>Products</PageTitle>
@@ -230,8 +233,7 @@ else
                                                   SearchProductsDto.SortColumn,
                                                   SearchProductsDto.SortOrder,
                                                   pageNumber);
-
-        var response = await ProductService.ReturnByPageAsync(query);
+        var response = await Sender.SendAsync(query);
         if (response.IsSuccess)
         {
             ProductsPage = response.Value;

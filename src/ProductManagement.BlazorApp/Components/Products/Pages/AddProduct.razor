@@ -1,8 +1,11 @@
 ﻿@page "/products/add"
+
 @attribute [Authorize(Roles = "Owner,User")]
+
 @inject NavigationManager NavigationManager
-@inject IProductService ProductService
-@inject IToastService ToastService
+@inject SenderService Sender
+@inject ToastService ToastService
+
 @rendermode InteractiveServer
 
 <PageTitle>Add Product</PageTitle>
@@ -66,8 +69,7 @@ else
     private async Task AddProductAsync()
     {
         var command = new CreateProductCommand(CreateProductDto.Name, CreateProductDto.Description, CreateProductDto.Price);
-        var response = await ProductService.CreateAsync(command);
-
+        var response = await Sender.SendAsync(command);
         if (response.IsSuccess)
         {
             ToastService.ShowToast("Product created", ToastLevel.Success);

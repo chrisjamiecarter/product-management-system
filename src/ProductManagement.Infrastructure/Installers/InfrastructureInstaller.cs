@@ -4,11 +4,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Infrastructure.Database.Contexts;
-using ProductManagement.Infrastructure.Database.Identity;
+using ProductManagement.Infrastructure.Database.Models;
 using ProductManagement.Infrastructure.Database.Repositories;
 using ProductManagement.Infrastructure.Database.Services;
 using ProductManagement.Infrastructure.Email.Options;
 using ProductManagement.Infrastructure.Email.Services;
+using ProductManagement.Infrastructure.Services;
 
 namespace ProductManagement.Infrastructure.Installers;
 
@@ -46,6 +47,9 @@ public static class InfrastructureInstaller
 
         services.Configure<EmailOptions>(configuration.GetSection(nameof(EmailOptions)));
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IEmailSender<ApplicationUser>, EmailService>();
+
+        services.AddScoped<IAuthService, AuthService>();
 
         services.AddMediatR(config => config.RegisterServicesFromAssembly(AssemblyReference.Assembly));
 

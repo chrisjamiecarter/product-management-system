@@ -11,6 +11,7 @@ using ProductManagement.Domain.Shared;
 
 namespace ProductManagement.Application.Services;
 
+// TODO: Move to Infrastructure layer.
 public class UserService : IUserService
 {
     private readonly ISender _sender;

@@ -1,6 +1,6 @@
-﻿using ProductManagement.Application.Interfaces.Application;
-using ProductManagement.Application.Interfaces.Infrastructure;
+﻿using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Services;
+using ProductManagement.BlazorApp.Abstractions.Messaging;
 using ProductManagement.BlazorApp.Services;
 using ProductManagement.Infrastructure.Installers;
 
@@ -13,10 +13,10 @@ public static class PresentationInstaller
 {
     public static IServiceCollection AddPresentation(this IServiceCollection services)
     {
-        services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IUserService, UserService>();
 
-        services.AddScoped<IToastService, ToastService>();
+        services.AddScoped<SenderService>();
+        services.AddScoped<ToastService>();
 
         return services;
     }

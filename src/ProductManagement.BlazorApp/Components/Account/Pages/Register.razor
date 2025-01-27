@@ -1,16 +1,13 @@
 ﻿@page "/Account/Register"
 
-@using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
-@using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
-@using ProductManagement.Infrastructure.Database.Identity
 
-@inject IAuthService AuthService
 @inject ILogger<Register> Logger
-@inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject NavigationManager NavigationManager
+@inject SenderService Sender
 
 <PageTitle>Register</PageTitle>
 
@@ -45,7 +42,7 @@
                             Register
                         </button>
                         <div class="d-flex justify-content-between mt-3">
-                            <a class="link-dark small text-muted link-underline-opacity-0" href="Account/Login">Already have an account?</a>
+                            <a class="link-dark small text-muted link-underline-opacity-0" href="Account/Signin">Already have an account?</a>
                         </div>
                     </div>
                 </EditForm>
@@ -55,7 +52,7 @@
 </section>
 
 @code {
-    private StatusDto? status;
+    private StatusModel status = StatusModel.None;
     private bool showValidation = false;
 
     [SupplyParameterFromForm]
@@ -68,13 +65,14 @@
     {
         try
         {
-            status = null;
+            status = StatusModel.None;
             showValidation = true;
 
             var confirmUrl = NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri;
             var returnUrl = ReturnUrl ?? string.Empty;
 
-            var result = await AuthService.RegisterAsync(Input.Email, Input.Password, confirmUrl, returnUrl, CancellationToken.None);
+            var command = new RegisterCommand(Input.Email, Input.Password, confirmUrl, returnUrl);
+            var result = await Sender.SendAsync(command);
             if (result.IsSuccess)
             {
                 Logger.LogInformation("User created a new account with password.");
@@ -82,14 +80,14 @@
             }
             else
             {
+                status = new StatusModel(result.Error.Message, MessageLevel.Error);
                 Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
-                status = new StatusDto { Message = result.Error.Message, Level = MessageLevel.Error };
             }
         }
         catch (Exception exception) when (exception is not NavigationException)
         {
             Logger.LogWarning("Exception throw in {method}: {exceptionMessage}", nameof(RegisterUser), exception.Message);
-            status = new StatusDto { Message = "Error during registration.", Level = MessageLevel.Error };
+            status = new StatusModel("Error during registration.", MessageLevel.Error);
         }
     }
 

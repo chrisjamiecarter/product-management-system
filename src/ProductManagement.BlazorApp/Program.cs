@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using ProductManagement.Application.Installers;
 using ProductManagement.BlazorApp.Components;
 using ProductManagement.BlazorApp.Components.Account;
-using ProductManagement.Infrastructure.Database.Identity;
 using ProductManagement.BlazorApp.Installers;
 using ProductManagement.Infrastructure.Installers;
 
@@ -17,7 +16,7 @@ public class Program
         builder.Services.AddApplication();
         builder.Services.AddInfrastructure(builder.Configuration);
         builder.Services.AddPresentation();
-        
+
         // TODO: Refactor the below.
 
         // Add services to the container.
@@ -36,11 +35,14 @@ public class Program
         })
         .AddIdentityCookies();
 
-        builder.Services.AddAuthorizationBuilder()
-            .AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"))
-            .AddPolicy("RequireUserRole", policy => policy.RequireRole("User"));
+        builder.Services.ConfigureApplicationCookie(options =>
+        {
+            options.LoginPath = "/Account/Signin";
+        });
 
-        builder.Services.AddScoped<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+        //builder.Services.AddAuthorizationBuilder()
+        //    .AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"))
+        //    .AddPolicy("RequireUserRole", policy => policy.RequireRole("User"));
 
         var app = builder.Build();
         await app.SetUpDatabaseAsync();

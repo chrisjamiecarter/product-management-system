@@ -1,77 +1,177 @@
 ﻿@page "/Account/Manage"
 
-@using System.ComponentModel.DataAnnotations
+@using System.Text
+@using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Identity
-@using ProductManagement.Infrastructure.Database.Identity
+@using Microsoft.AspNetCore.WebUtilities
 
-@inject UserManager<ApplicationUser> UserManager
-@inject SignInManager<ApplicationUser> SignInManager
-@inject IdentityUserAccessor UserAccessor
+@inject ILogger<Index> Logger
 @inject IdentityRedirectManager RedirectManager
+@inject NavigationManager NavigationManager
+@inject SenderService Sender
 
-<PageTitle>Profile</PageTitle>
+<PageTitle>Manage Account</PageTitle>
 
-<h3>Profile</h3>
-<StatusMessage />
+<div class="container-md py-3">
 
-<div class="row">
-    <div class="col-xl-6">
-        <EditForm Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="form-floating mb-3">
-                <input type="text" value="@username" id="username" class="form-control" placeholder="Choose your username." disabled />
-                <label for="username" class="form-label">Username</label>
-            </div>
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.PhoneNumber" id="Input.PhoneNumber" class="form-control" placeholder="Enter your phone number" />
-                <label for="Input.PhoneNumber" class="form-label">Phone number</label>
-                <ValidationMessage For="() => Input.PhoneNumber" class="text-danger" />
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
-        </EditForm>
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item active" aria-current="page">Account</li>
+            <li class="breadcrumb-item active" aria-current="page">Manage</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex gap-3 align-items-center mb-4">
+        <PersonGearFillSvg Height="1.5rem" Width="1.5rem" />
+        <h1 class="h2 mb-0">Manage Account</h1>
     </div>
+
+    <StatusMessage Status="@userStatus" />
+    @if (userStatus == StatusModel.None)
+    {
+        <div class="row">
+
+            <h3>Change email</h3>
+            <div class="row mb-4">
+                <div class="col-xl-6">
+                    <StatusMessage Status="@emailStatus" />
+                    <EditForm Model="EmailInput" FormName="change-email" OnValidSubmit="EditEmailAsync" method="post">
+                        <DataAnnotationsValidator />
+                        <div class="form-floating mb-3 input-group">
+                            <input type="text" value="@email" id="email" class="form-control" placeholder="Enter your email" disabled />
+                            <div class="input-group-append">
+                                <span class="h-100 input-group-text text-success font-weight-bold">✓</span>
+                            </div>
+                            <label for="email" class="form-label">Email</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <InputText @bind-Value="EmailInput.NewEmail" id="EmailInput.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Enter a new email" />
+                            <label for="Input.NewEmail" class="form-label">New email</label>
+                            <ValidationMessage For="() => EmailInput.NewEmail" class="text-danger" />
+                        </div>
+                        <button class="btn btn-dark w-100" type="submit">Update email</button>
+                    </EditForm>
+                </div>
+            </div>
+
+            <hr />
+
+            <h3>Change password</h3>
+            <div class="row mb-4">
+                <div class="col-xl-6">
+                    <StatusMessage Status="@passwordStatus" />
+                    <EditForm Model="PasswordInput" FormName="change-password" OnValidSubmit="EditPasswordAsync" method="post">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="text-danger" role="alert" />
+                        <div class="form-floating mb-3">
+                            <InputText type="password" @bind-Value="PasswordInput.OldPassword" id="PasswordInput.OldPassword" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Enter the old password" />
+                            <label for="PasswordInput.OldPassword" class="form-label">Old password</label>
+                            <ValidationMessage For="() => PasswordInput.OldPassword" class="text-danger" />
+                        </div>
+                        <div class="form-floating mb-3">
+                            <InputText type="password" @bind-Value="PasswordInput.NewPassword" id="PasswordInput.NewPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Enter the new password" />
+                            <label for="PasswordInput.NewPassword" class="form-label">New password</label>
+                            <ValidationMessage For="() => PasswordInput.NewPassword" class="text-danger" />
+                        </div>
+                        <div class="form-floating mb-3">
+                            <InputText type="password" @bind-Value="PasswordInput.ConfirmPassword" id="PasswordInput.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Enter the new password" />
+                            <label for="PasswordInput.ConfirmPassword" class="form-label">Confirm password</label>
+                            <ValidationMessage For="() => PasswordInput.ConfirmPassword" class="text-danger" />
+                        </div>
+                        <button class="btn btn-dark w-100" type="submit">Update password</button>
+                    </EditForm>
+                </div>
+            </div>
+
+        </div>
+    }
 </div>
 
 @code {
-    private ApplicationUser user = default!;
-    private string? username;
-    private string? phoneNumber;
+    private StatusModel emailStatus = StatusModel.None;
+    private StatusModel passwordStatus = StatusModel.None;
+    private StatusModel userStatus = StatusModel.None;
+    private ApplicationUserDto user = default!;
+
+    private string? email;
+    private bool isEmailConfirmed;
+    private bool hasPassword;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = new();
+    [SupplyParameterFromForm(FormName = "change-email")]
+    private ChangeEmailInputModel EmailInput { get; set; } = new();
+
+    [SupplyParameterFromForm(FormName = "change-password")]
+    private ChangePasswordInputModel PasswordInput { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
-        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
-        username = await UserManager.GetUserNameAsync(user);
-        phoneNumber = await UserManager.GetPhoneNumberAsync(user);
-
-        Input.PhoneNumber ??= phoneNumber;
-    }
-
-    private async Task OnValidSubmitAsync()
-    {
-        if (Input.PhoneNumber != phoneNumber)
+        var query = new GetCurrentUserQuery(HttpContext.User);
+        var result = await Sender.SendAsync(query);
+        if (result.IsFailure)
         {
-            var setPhoneResult = await UserManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
-            if (!setPhoneResult.Succeeded)
-            {
-                RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to set phone number.", HttpContext);
-            }
+            userStatus = new StatusModel("Unable to load user..", MessageLevel.Error);
         }
 
-        await SignInManager.RefreshSignInAsync(user);
-        RedirectManager.RedirectToCurrentPageWithStatus("Your profile has been updated", HttpContext);
+        user = new ApplicationUserDto(result.Value.UserId, result.Value.Email, result.Value.Role, result.Value.EmailConfirmed);
+
+        // TODO:
+        // Confirm what route I want to take regarding Username vs Email. They are the same in this app and the messaging should be consistent.
+        email = user.Username;
+        isEmailConfirmed = user.EmailConfirmed;
+
+        // TODO:
+        // This needs to be part of the user registration process.
+        // hasPassword = await UserManager.HasPasswordAsync(user);
+        // if (!hasPassword)
+        // {
+        //     RedirectManager.RedirectTo("Account/Manage/SetPassword");
+        // }
+
+        EmailInput.NewEmail ??= email;
     }
 
-    private sealed class InputModel
+    private async Task EditEmailAsync()
     {
-        [Phone]
-        [Display(Name = "Phone number")]
-        public string? PhoneNumber { get; set; }
+        if (EmailInput.NewEmail is null || EmailInput.NewEmail == email)
+        {
+            emailStatus = new StatusModel("Your email is unchanged.", MessageLevel.Info);
+            return;
+        }
+
+        var confirmUrl = NavigationManager.ToAbsoluteUri("Account/ConfirmEmailChange").AbsoluteUri;
+
+        var command = new GenerateEmailChangeCommand(HttpContext.User, EmailInput.NewEmail, confirmUrl);
+        var result = await Sender.SendAsync(command);
+        if (result.IsSuccess)
+        {
+            emailStatus = new StatusModel("Confirmation link to change email sent. Please check your email.", MessageLevel.Success);
+            Logger.LogInformation("Confirmation of email change link sent to user email.");
+        }
+        else
+        {
+            emailStatus = new StatusModel(result.Error.Message, MessageLevel.Error);
+            Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
+        }
     }
+
+    private async Task EditPasswordAsync()
+    {
+        var command = new ChangePasswordCommand(HttpContext.User, PasswordInput.OldPassword, PasswordInput.NewPassword);
+        var result = await Sender.SendAsync(command);
+        if (result.IsSuccess)
+        {
+            passwordStatus = new StatusModel("Your password has been changed.", MessageLevel.Success);
+            Logger.LogInformation("User changed their password successfully.");
+            //RedirectManager.RedirectToCurrentPageWithStatus("Your password has been changed", HttpContext);
+        }
+        else
+        {
+            passwordStatus = new StatusModel(result.Error.Message, MessageLevel.Error);
+            Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
+        }
+    }
+
 }

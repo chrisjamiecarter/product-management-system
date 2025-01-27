@@ -6,7 +6,7 @@ namespace ProductManagement.BlazorApp.Services;
 /// <summary>
 /// Provides a service for managing toast notifications.
 /// </summary>
-public class ToastService : IDisposable, IToastService
+internal class ToastService : IDisposable
 {
     private System.Timers.Timer? _countdown;
 

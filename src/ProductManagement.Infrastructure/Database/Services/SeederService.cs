@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using ProductManagement.Domain.Entities;
 using ProductManagement.Domain.ValueObjects;
 using ProductManagement.Infrastructure.Database.Contexts;
-using ProductManagement.Infrastructure.Database.Identity;
 using ProductManagement.Infrastructure.Database.Models;
 using ProductManagement.Infrastructure.Email.Options;
 

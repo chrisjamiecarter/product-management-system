@@ -3,12 +3,11 @@
 @using System.Text
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
-@using ProductManagement.Infrastructure.Database.Identity
 
 @inject ILogger<RegisterConfirmation> Logger
-@inject IUserService UserService
-@inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject NavigationManager NavigationManager
+@inject SenderService Sender
 
 <PageTitle>Register confirmation</PageTitle>
 
@@ -20,16 +19,12 @@
     </div>
     
     <StatusMessage Status="@status" />
-    @if (status is null)
-    {
-        <p class="alert alert-success" role="alert">Please check your email to confirm your account.</p>
-    }
 
 </section>
 
 @code {
     private string? emailConfirmationLink;
-    private StatusDto? status;
+    private StatusModel status = StatusModel.None;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -47,12 +42,18 @@
             RedirectManager.RedirectTo("");
         }
 
-        var result = await UserService.ReturnByEmailAsync(Email);
-        if (result.IsFailure)
+        var query = new GetUserByEmailQuery(Email);
+        var result = await Sender.SendAsync(query);
+        if (result.IsSuccess)
+        {
+            Logger.LogInformation("User register confirmation has been sent to their email.");
+            status = new StatusModel("Please check your email to confirm your account.", MessageLevel.Success);
+        }
+        else
         {
             Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            status = new StatusDto { Message = "There was an error during register confirmation.", Level = MessageLevel.Error };
+            status = new StatusModel("There was an error during register confirmation.", MessageLevel.Error);
         }
     }
 }

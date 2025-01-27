@@ -1,23 +1,22 @@
 ﻿@page "/Account/ResendEmailConfirmation"
 
-@using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
-@using ProductManagement.Infrastructure.Database.Identity
+@using ProductManagement.Application.Features.Auth.Commands.GenerateEmailConfirmation
 
-@inject UserManager<ApplicationUser> UserManager
-@inject IEmailSender<ApplicationUser> EmailSender
-@inject NavigationManager NavigationManager
+@inject ILogger<ResendEmailConfirmation> Logger
 @inject IdentityRedirectManager RedirectManager
+@inject NavigationManager NavigationManager
+@inject SenderService Sender
 
 <PageTitle>Resend email confirmation</PageTitle>
 
 <h1>Resend email confirmation</h1>
 <h2>Enter your email.</h2>
 <hr />
-<StatusMessage Message="@message" />
+<StatusMessage Status="@status" />
 <div class="row">
     <div class="col-md-4">
         <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
@@ -34,35 +33,26 @@
 </div>
 
 @code {
-    private string? message;
+    private StatusModel status = StatusModel.None;
 
     [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = new();
+    private ResendEmailConfirmationInputModel Input { get; set; } = new();
 
     private async Task OnValidSubmitAsync()
     {
-        var user = await UserManager.FindByEmailAsync(Input.Email!);
-        if (user is null)
+        var confirmUrl = NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri;
+        
+        var command = new GenerateEmailConfirmationCommand(Input.Email!, confirmUrl, string.Empty);
+        var result = await Sender.SendAsync(command);
+        if (result.IsSuccess)
         {
-            message = "Verification email sent. Please check your email.";
-            return;
+            Logger.LogInformation("Verification email sent to user.");
+            status = new StatusModel("Verification email sent. Please check your email.", MessageLevel.Success);
         }
-
-        var userId = await UserManager.GetUserIdAsync(user);
-        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
-            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
-            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
-        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
-
-        message = "Verification email sent. Please check your email.";
-    }
-
-    private sealed class InputModel
-    {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; } = "";
+        else
+        {
+            status = new StatusModel(result.Error.Message, MessageLevel.Error);
+            Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
+        }
     }
 }

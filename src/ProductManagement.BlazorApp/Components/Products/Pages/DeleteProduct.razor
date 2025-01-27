@@ -1,8 +1,11 @@
 ﻿@page "/products/delete/{Id:guid}"
+
 @attribute [Authorize(Roles = "Owner,User")]
+
 @inject NavigationManager NavigationManager
-@inject IProductService ProductService
-@inject IToastService ToastService
+@inject SenderService Sender
+@inject ToastService ToastService
+
 @rendermode InteractiveServer
 
 <PageTitle>Delete Product</PageTitle>
@@ -75,8 +78,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         var query = new GetProductByIdQuery(Id);
-        var response = await ProductService.ReturnByIdAsync(query);
-
+        var response = await Sender.SendAsync(query);
         if (response.IsSuccess)
         {
             DeleteProductDto = new DeleteProductDto(response.Value);
@@ -96,8 +98,7 @@ else
         }
 
         var command = new DeleteProductCommand(DeleteProductDto.Id);
-        var response = await ProductService.DeleteAsync(command);
-
+        var response = await Sender.SendAsync(command);
         if (response.IsSuccess)
         {
             ToastService.ShowToast("Product deleted", ToastLevel.Success);

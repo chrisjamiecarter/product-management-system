@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ProductManagement.Domain.Entities;
 using ProductManagement.Infrastructure.Database.Configurations;
 using ProductManagement.Infrastructure.Database.Constants;
-using ProductManagement.Infrastructure.Database.Identity;
+using ProductManagement.Infrastructure.Database.Models;
 
 namespace ProductManagement.Infrastructure.Database.Contexts;
 

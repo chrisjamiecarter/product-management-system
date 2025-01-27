@@ -1,0 +1,121 @@
+﻿@page "/Account/Signin"
+
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Identity
+
+@inject SenderService Sender
+@inject ILogger<Signin> Logger
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Sign in</PageTitle>
+
+<section class="d-flex w-100 h-100 p-3 mx-auto flex-column align-items-center">
+    <div class="mt-auto mb-auto w-100 px-3">
+        <div class="row d-flex flex-md-row-reverse justify-content-center align-items-center h-100 gap-2">
+            <div class="col-md-9 col-lg-6 col-xl-5 offset-xl-1 d-flex justify-content-center">
+                <img src="/img/product-management-system-logo-with-text.png" class="img-fluid p-5 overflow-hidden rounded-circle" alt="Application logo" />
+            </div>
+            <div class="col-md-8 col-lg-6 col-xl-5">
+                <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+                <StatusMessage Status="@status" />
+                <EditForm Model="Input" method="post" OnValidSubmit="SignInUserAsync" OnInvalidSubmit="HandleInvalidSubmit" FormName="signin">
+                    <DataAnnotationsValidator />
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="Input.Email" id="Input.Email" class=@($"form-control form-control-lg {ValidationHelper.GetValidationCssClass(Input, nameof(Input.Email), showValidation)}") autocomplete="email" aria-required="true" placeholder="name@example.com" />
+                        <label for="Input.Email" class="form-label">Email</label>
+                        <ValidationMessage For="() => Input.Email" class="invalid-feedback" />
+                    </div>
+                    <div class="form-floating mb-3">
+                        <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class=@($"form-control form-control-lg {ValidationHelper.GetValidationCssClass(Input, nameof(Input.Password), showValidation)}") autocomplete="current-password" aria-required="true" placeholder="password" />
+                        <label for="Input.Password" class="form-label">Password</label>
+                        <ValidationMessage For="() => Input.Password" class="invalid-feedback" />
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <div class="form-check mb-3">
+                            <label class="form-check-label">
+                                <InputCheckbox @bind-Value="Input.RememberMe" class="form-check-input me-2" />
+                                Remember me
+                            </label>
+                        </div>
+                        <a class="link-dark small text-muted link-underline-opacity-0" href="Account/ForgotPassword">Forgot password?</a>
+                    </div>
+                    <div class="text-center text-lg-start">
+                        <button id="signinSubmit" type="submit" class="btn btn-dark btn-lg w-100 px-3">
+                            Sign in
+                        </button>
+                        <div class="d-flex justify-content-between mt-3">
+                            <a class="link-dark small text-muted link-underline-opacity-0" href="Account/Register">Don't have an account?</a>
+                            <a class="link-dark small text-muted link-underline-opacity-0" href="Account/ResendEmailConfirmation">Resend email confirmation?</a>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private StatusModel status = StatusModel.None;
+    private bool showValidation = false;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnSignedOut { get; set; }
+
+    [SupplyParameterFromForm]
+    private SignInUserDto Input { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpMethods.IsGet(HttpContext.Request.Method))
+        {
+            // Clear the existing external cookie to ensure a clean login process.
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+            
+        }
+
+        var messageFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusCookieName];
+        if (!string.IsNullOrWhiteSpace(messageFromCookie))
+        {
+            status = new StatusModel(messageFromCookie, MessageLevel.Error);
+            HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusCookieName);
+        }
+    }
+
+    public async Task SignInUserAsync()
+    {
+        try
+        {
+            status = StatusModel.None;
+            showValidation = true;
+
+            var command = new SignInCommand(Input.Email, Input.Password, Input.RememberMe);
+            var result = await Sender.SendAsync(command);
+            if (result.IsSuccess)
+            {
+                Logger.LogInformation("User signed in.");
+                RedirectManager.RedirectTo(ReturnUrl);
+            }
+            else
+            {
+                Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
+                status = new StatusModel(result.Error.Message, MessageLevel.Error);
+            }
+        }
+        catch (Exception exception) when (exception is not NavigationException)
+        {
+            Logger.LogWarning("Exception throw in {method}: {exceptionMessage}", nameof(SignInUserAsync), exception.Message);
+            status = new StatusModel("Error during sign in.", MessageLevel.Error);
+        }
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        showValidation = true;
+    }
+}

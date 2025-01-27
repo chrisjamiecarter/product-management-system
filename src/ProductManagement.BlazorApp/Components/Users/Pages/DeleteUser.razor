@@ -1,8 +1,11 @@
 ﻿@page "/users/delete/{Id}"
+
 @attribute [Authorize(Roles = "Owner,Admin")]
+
 @inject NavigationManager NavigationManager
 @inject IUserService UserService
-@inject IToastService ToastService
+@inject ToastService ToastService
+
 @rendermode InteractiveServer
 
 <PageTitle>Delete User</PageTitle>

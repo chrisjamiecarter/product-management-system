@@ -4,10 +4,13 @@ using Microsoft.EntityFrameworkCore;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Entities;
-using ProductManagement.Infrastructure.Database.Identity;
+using ProductManagement.Infrastructure.Database.Models;
 
 namespace ProductManagement.Infrastructure.Database.Repositories;
 
+/// <summary>
+/// TODO: Turn into a thin repository for UserMananger only.
+/// </summary>
 internal class UserRepository : IUserRepository
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -49,6 +52,39 @@ internal class UserRepository : IUserRepository
 
         var deleted = await _userManager.DeleteAsync(applicationUser);
         return deleted.Succeeded;
+    }
+
+    public async Task<IReadOnlyList<ApplicationUserDto>> ReturnAllAsync(CancellationToken cancellationToken = default)
+    {
+        var query = _userManager.Users.Select(u => new
+        {
+            User = u,
+            RoleNames = _userManager.Users.Where(w => w.Id == u.Id)
+            .SelectMany(s => s.UserRoles)
+            .Join(_roleManager.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Name)
+            .ToList()
+        });
+
+        return await query.Select(item => new ApplicationUserDto(item.User.Id,
+                                                                 item.User.UserName,
+                                                                 item.RoleNames.FirstOrDefault() ?? null,
+                                                                 item.User.EmailConfirmed))
+                         .OrderBy(u => u.Username)
+                         .ToListAsync(cancellationToken);
+    }
+
+    public async Task<ApplicationUserDto?> ReturnByEmailAsync(string email, CancellationToken cancellationToken = default)
+    {
+        var applicationUser = await _userManager.FindByEmailAsync(email);
+        if (applicationUser is null)
+        {
+            return null;
+        }
+
+        var roles = await _userManager.GetRolesAsync(applicationUser);
+        var role = roles.Any() ? roles.FirstOrDefault() : null;
+
+        return new ApplicationUserDto(applicationUser.Id, applicationUser.UserName, role, applicationUser.EmailConfirmed);
     }
 
     public async Task<ApplicationUserDto?> ReturnByIdAsync(string id, CancellationToken cancellationToken = default)

@@ -1,0 +1,252 @@
+﻿using System.Security.Claims;
+using System.Text;
+using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
+using ProductManagement.Application.Interfaces.Infrastructure;
+using ProductManagement.Application.Models;
+using ProductManagement.Domain.Shared;
+using ProductManagement.Infrastructure.Database.Models;
+using ProductManagement.Infrastructure.Errors;
+
+namespace ProductManagement.Infrastructure.Services;
+
+internal class AuthService : IAuthService
+{
+    private readonly IEmailSender<ApplicationUser> _emailSender;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly UserManager<ApplicationUser> _userManager;
+
+    public AuthService(IEmailSender<ApplicationUser> emailSender, SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+    {
+        _emailSender = emailSender;
+        _signInManager = signInManager;
+        _userManager = userManager;
+    }
+
+    public async Task<Result> ChangePasswordAsync(ClaimsPrincipal principal, string currentPassword, string newPassword, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.GetUserAsync(principal);
+        if (user is null)
+        {
+            return Result.Success();
+        }
+
+        var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        if (!result.Succeeded)
+        {
+            // TODO: var passwordErrorMessage = $"Error: {string.Join(",", changePasswordResult.Errors.Select(error => error.Description))}";
+            return Result.Failure(InfrastructureErrors.User.ErrorChangingPassword);
+        }
+
+        await _signInManager.RefreshSignInAsync(user);
+        return Result.Success();
+    }
+
+    public async Task<Result> ConfirmEmailAsync(string userId, string token, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return Result.Failure(InfrastructureErrors.User.NotFound);
+        }
+
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+        return result.Succeeded
+            ? Result.Success()
+            : Result.Failure(InfrastructureErrors.User.ErrorConfirmingEmail);
+    }
+
+    public async Task<Result> ConfirmEmailChangeAsync(string userId, string email, string token, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return Result.Failure(InfrastructureErrors.User.NotFound);
+        }
+
+        var emailResult = await _userManager.ChangeEmailAsync(user, email, token);
+        if (!emailResult.Succeeded)
+        {
+            return Result.Failure(InfrastructureErrors.User.ErrorConfirmingEmailChange);
+        }
+
+        var usernameResult = await _userManager.SetUserNameAsync(user, email);
+        if (!usernameResult.Succeeded)
+        {
+            return Result.Failure(InfrastructureErrors.User.ErrorChangingUsername);
+        }
+
+        await _signInManager.RefreshSignInAsync(user);
+        return Result.Success();
+    }
+
+    public async Task<Result> ForgotPasswordAsync(string email, string resetUrl, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user is null)
+        {
+            return Result.Failure(InfrastructureErrors.User.NotFound);
+        }
+
+        if (!user.EmailConfirmed)
+        {
+            return Result.Failure(InfrastructureErrors.User.EmailNotConfirmed);
+        }
+
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+        var uriBuilder = new UriBuilder(resetUrl)
+        {
+            Query = $"code={code}"
+        };
+        var resetCode = HtmlEncoder.Default.Encode(uriBuilder.ToString());
+        
+        await _emailSender.SendPasswordResetCodeAsync(user, email, resetCode);
+        return Result.Success();
+    }
+
+    public async Task<Result> GenerateEmailChangeAsync(ClaimsPrincipal principal, string email, string confirmUrl, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.GetUserAsync(principal);
+        if (user is null)
+        {
+            return Result.Success();
+        }
+
+        var token = await _userManager.GenerateChangeEmailTokenAsync(user, email);
+        var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+        var uriBuilder = new UriBuilder(confirmUrl)
+        {
+            Query = $"userId={user.Id}&email={email}&code={code}"
+        };
+        var confirmationLink = HtmlEncoder.Default.Encode(uriBuilder.ToString());
+
+        await _emailSender.SendConfirmationLinkAsync(user, email, confirmationLink);
+        return Result.Success();
+    }
+
+    public async Task<Result> GenerateEmailConfirmationAsync(string email, string confirmUrl, string returnUrl, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user is null)
+        {
+            return Result.Success();
+        }
+
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+        var uriBuilder = new UriBuilder(confirmUrl)
+        {
+            Query = $"userId={user.Id}&code={code}&returnUrl={returnUrl}"
+        };
+        var confirmationLink = HtmlEncoder.Default.Encode(uriBuilder.ToString());
+
+        await _emailSender.SendConfirmationLinkAsync(user, email, confirmationLink);
+        return Result.Success();
+    }
+
+    public async Task<Result<ApplicationUserDto>> GetCurrentUserAsync(ClaimsPrincipal principal, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.GetUserAsync(principal);
+        if (user is null)
+        {
+            return Result.Failure<ApplicationUserDto>(InfrastructureErrors.User.NotFound);
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+
+        var response = new ApplicationUserDto(user.Id, user.UserName, roles.FirstOrDefault(), user.EmailConfirmed);
+        return Result.Success(response);
+    }
+
+    public async Task<Result> RegisterAsync(string email, string password, string confirmUrl, string returnUrl, CancellationToken cancellationToken = default)
+    {
+        var user = new ApplicationUser
+        {
+            UserName = email,
+            Email = email,
+        };
+
+        var result = await _userManager.CreateAsync(user, password);
+        if (!result.Succeeded)
+        {
+            var identityError = result.Errors.First();
+            return identityError != null
+                ? Result.Failure(new Error(identityError.Code, identityError.Description))
+                : Result.Failure(InfrastructureErrors.User.NotRegistered);
+        }
+
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+        var uriBuilder = new UriBuilder(confirmUrl)
+        {
+            Query = $"userId={user.Id}&code={code}&returnUrl={returnUrl}"
+        };
+        var confirmationLink = HtmlEncoder.Default.Encode(uriBuilder.ToString());
+
+        await _emailSender.SendConfirmationLinkAsync(user, email, confirmationLink);
+        return Result.Success();
+    }
+
+    public async Task<Result> ResetPasswordAsync(string email, string password, string token, CancellationToken cancellationToken = default)
+    {
+        // TODO: 
+        // Decide whether to pass the code around and decode centrally,
+        // or
+        // Decode the code before passing it to this method.
+        // Thinking Token token = Token.Encode(token); and Token.Decode(code);
+        // Token has a Value property that is always the decoded value.
+        // Token has a Code property that is always the encoded value.
+
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user is null)
+        {
+            // Log the invalid attempt. But return successful.
+            // AS to not reveal that the user does not exist.
+            return Result.Success();
+        }
+
+        // TODO: Log better info here?
+        var result = await _userManager.ResetPasswordAsync(user, token, password);
+        return result.Succeeded
+            ? Result.Success()
+            : Result.Failure(InfrastructureErrors.User.ErrorConfirmingEmail);
+    }
+
+    public async Task<Result> SignInAsync(string email, string password, bool remember, CancellationToken cancellationToken = default)
+    {
+        var result = await _signInManager.PasswordSignInAsync(email, password, remember, false);
+
+        if (result.Succeeded)
+        {
+            return Result.Success();
+        }
+
+        if (result.IsLockedOut)
+        {
+            return Result.Failure(InfrastructureErrors.User.LockedOut);
+        }
+
+        if (result.IsNotAllowed)
+        {
+            return Result.Failure(InfrastructureErrors.User.NotAllowed);
+        }
+
+        if (result.RequiresTwoFactor)
+        {
+            return Result.Failure(InfrastructureErrors.User.RequiresTwoFactor);
+        }
+
+        return Result.Failure(InfrastructureErrors.User.InvalidSignInAttempt);
+    }
+
+    public async Task<Result> SignOutAsync(CancellationToken cancellationToken = default)
+    {
+        await _signInManager.SignOutAsync();
+        return Result.Success();
+    }
+}

@@ -5,6 +5,7 @@ namespace ProductManagement.BlazorApp.Components.Account;
 internal sealed class IdentityRedirectManager(NavigationManager navigationManager)
 {
     public const string StatusCookieName = "Identity.StatusMessage";
+    // TODO: Maybe do StatusMessageCookieName and StatusLevelCookieName.
 
     private static readonly CookieBuilder StatusCookieBuilder = new()
     {

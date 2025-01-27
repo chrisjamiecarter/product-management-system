@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using ProductManagement.Infrastructure.Database.Identity;
+using ProductManagement.Infrastructure.Database.Models;
 
 namespace ProductManagement.BlazorApp.Components.Account;
 // This is a server-side AuthenticationStateProvider that revalidates the security stamp for the connected user

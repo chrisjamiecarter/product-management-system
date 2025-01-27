@@ -5,6 +5,8 @@ namespace ProductManagement.Application.Interfaces.Infrastructure;
 public interface IUserRepository
 {
     Task<bool> CreateAsync(string userName, string role, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ApplicationUserDto>> ReturnAllAsync(CancellationToken cancellationToken = default);
+    Task<ApplicationUserDto?> ReturnByEmailAsync(string email, CancellationToken cancellationToken = default);
     Task<ApplicationUserDto?> ReturnByIdAsync(string id, CancellationToken cancellationToken = default);
     Task<PaginatedList<ApplicationUserDto>> ReturnByPageAsync(string? searchUsername,
                                                               string? searchRole,
