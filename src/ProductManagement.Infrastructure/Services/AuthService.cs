@@ -121,15 +121,15 @@ internal class AuthService : IAuthService
             return Result.Failure(InfrastructureErrors.User.EmailNotConfirmed);
         }
 
-        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
         var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
         var uriBuilder = new UriBuilder(resetUrl)
         {
             Query = $"code={code}"
         };
-        var resetCode = HtmlEncoder.Default.Encode(uriBuilder.ToString());
+        var resetLink = HtmlEncoder.Default.Encode(uriBuilder.ToString());
         
-        await _emailSender.SendPasswordResetCodeAsync(user, email, resetCode);
+        await _emailSender.SendPasswordResetLinkAsync(user, email, resetLink);
         return Result.Success();
     }
 
@@ -233,7 +233,7 @@ internal class AuthService : IAuthService
         var result = await _userManager.ResetPasswordAsync(user, token, password);
         return result.Succeeded
             ? Result.Success()
-            : Result.Failure(InfrastructureErrors.User.ErrorConfirmingEmail);
+            : Result.Failure(InfrastructureErrors.User.ErrorResettingPassword);
     }
 
     public async Task<Result> SignInAsync(string email, string password, bool remember, CancellationToken cancellationToken = default)
