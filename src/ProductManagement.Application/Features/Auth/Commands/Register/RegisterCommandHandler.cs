@@ -1,6 +1,4 @@
-﻿using System.Text;
-using System.Text.Encodings.Web;
-using ProductManagement.Application.Abstractions.Messaging;
+﻿using ProductManagement.Application.Abstractions.Messaging;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;
 
@@ -17,6 +15,35 @@ internal sealed class RegisterCommandHandler : ICommandHandler<RegisterCommand>
 
     public async Task<Result> Handle(RegisterCommand request, CancellationToken cancellationToken = default)
     {
-        return await _authService.RegisterAsync(request.Email, request.Password, request.ConfirmUrl, request.ReturnUrl, cancellationToken);
+        // TODO:
+        // Maybe do:
+        //     var registerResult = await _authService.RegisterAsync(request.Email, request.Password, cancellationToken);
+        //
+        //     var userResult = await _userService.GetUserByEmail(request.Email, cancellationToken);
+        //     var user = userResult.Value;
+        // or
+        //     return the user as part of the registerResult.
+        //
+        //     var tokenResult = await _authService.GenerateEmailConfirmationTokenAsync(user, cancellationToken);
+        
+        var registerResult = await _authService.RegisterAsync(request.Email, request.Password, cancellationToken);
+        if (registerResult.IsFailure)
+        {
+            return registerResult;
+        }
+
+        var roleResult = await _authService.AddToRoleAsync(request.Email, request.Role, cancellationToken);
+        if (roleResult.IsFailure)
+        {
+            return roleResult;
+        }
+
+        var emailResult = await _authService.GenerateEmailConfirmationAsync(request.Email, request.ConfirmUrl, cancellationToken);
+        if (emailResult.IsFailure)
+        {
+            return emailResult;
+        }
+
+        return Result.Success();
     }
 }

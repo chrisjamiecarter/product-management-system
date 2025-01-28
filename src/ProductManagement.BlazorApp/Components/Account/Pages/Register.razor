@@ -8,6 +8,7 @@
 @inject IdentityRedirectManager RedirectManager
 @inject NavigationManager NavigationManager
 @inject SenderService Sender
+@inject IUrlService UrlService
 
 <PageTitle>Register</PageTitle>
 
@@ -56,7 +57,7 @@
     private bool showValidation = false;
 
     [SupplyParameterFromForm]
-    private RegisterUserDto Input { get; set; } = new();
+    private RegisterUserInputModel Input { get; set; } = new();
 
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
@@ -68,10 +69,10 @@
             status = StatusModel.None;
             showValidation = true;
 
-            var confirmUrl = NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri;
-            var returnUrl = ReturnUrl ?? string.Empty;
+            var role = string.Empty;
+            var confirmUrl = UrlService.GetConfirmEmailUrl();
 
-            var command = new RegisterCommand(Input.Email, Input.Password, confirmUrl, returnUrl);
+            var command = new RegisterCommand(Input.Email, Input.Password, role, confirmUrl);
             var result = await Sender.SendAsync(command);
             if (result.IsSuccess)
             {

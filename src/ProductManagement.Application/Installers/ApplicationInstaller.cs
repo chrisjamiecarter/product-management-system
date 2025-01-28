@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using ProductManagement.Application.Interfaces.Infrastructure;
-using ProductManagement.Application.Services;
 
 namespace ProductManagement.Application.Installers;
 

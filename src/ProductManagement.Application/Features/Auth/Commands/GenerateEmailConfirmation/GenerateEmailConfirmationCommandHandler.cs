@@ -15,6 +15,6 @@ internal sealed class GenerateEmailConfirmationCommandHandler : ICommandHandler<
 
     public async Task<Result> Handle(GenerateEmailConfirmationCommand request, CancellationToken cancellationToken)
     {
-        return await _authService.GenerateEmailConfirmationAsync(request.Email, request.ConfirmUrl, request.ReturnUrl, cancellationToken);
+        return await _authService.GenerateEmailConfirmationAsync(request.Email, request.ConfirmUrl, cancellationToken);
     }
 }

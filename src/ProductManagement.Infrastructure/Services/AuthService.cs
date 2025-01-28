@@ -24,6 +24,33 @@ internal class AuthService : IAuthService
         _userManager = userManager;
     }
 
+    public async Task<Result> AddToRoleAsync(string email, string? role, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user is null)
+        {
+            return Result.Success();
+        }
+
+        if (string.IsNullOrWhiteSpace(role))
+        {
+            return Result.Success();
+        }
+
+        var result = await _userManager.AddToRoleAsync(user, role);
+        if (result.Succeeded)
+        {
+            return Result.Success();
+        }
+        else
+        {
+            var identityError = result.Errors.First();
+            return identityError != null
+                ? Result.Failure(new Error(identityError.Code, identityError.Description))
+                : Result.Failure(InfrastructureErrors.User.NotAddedToRole);
+        }
+    }
+
     public async Task<Result> ChangePasswordAsync(ClaimsPrincipal principal, string currentPassword, string newPassword, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.GetUserAsync(principal);
@@ -127,7 +154,7 @@ internal class AuthService : IAuthService
         return Result.Success();
     }
 
-    public async Task<Result> GenerateEmailConfirmationAsync(string email, string confirmUrl, string returnUrl, CancellationToken cancellationToken = default)
+    public async Task<Result> GenerateEmailConfirmationAsync(string email, string confirmUrl, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByEmailAsync(email);
         if (user is null)
@@ -140,7 +167,7 @@ internal class AuthService : IAuthService
 
         var uriBuilder = new UriBuilder(confirmUrl)
         {
-            Query = $"userId={user.Id}&code={code}&returnUrl={returnUrl}"
+            Query = $"userId={user.Id}&code={code}"
         };
         var confirmationLink = HtmlEncoder.Default.Encode(uriBuilder.ToString());
 
@@ -162,7 +189,7 @@ internal class AuthService : IAuthService
         return Result.Success(response);
     }
 
-    public async Task<Result> RegisterAsync(string email, string password, string confirmUrl, string returnUrl, CancellationToken cancellationToken = default)
+    public async Task<Result> RegisterAsync(string email, string? password, CancellationToken cancellationToken = default)
     {
         var user = new ApplicationUser
         {
@@ -170,26 +197,18 @@ internal class AuthService : IAuthService
             Email = email,
         };
 
-        var result = await _userManager.CreateAsync(user, password);
-        if (!result.Succeeded)
+        var result = await (string.IsNullOrWhiteSpace(password) ? _userManager.CreateAsync(user) : _userManager.CreateAsync(user, password));
+        if (result.Succeeded)
         {
+            return Result.Success();
+        }
+        else 
+        { 
             var identityError = result.Errors.First();
             return identityError != null
                 ? Result.Failure(new Error(identityError.Code, identityError.Description))
                 : Result.Failure(InfrastructureErrors.User.NotRegistered);
         }
-
-        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-
-        var uriBuilder = new UriBuilder(confirmUrl)
-        {
-            Query = $"userId={user.Id}&code={code}&returnUrl={returnUrl}"
-        };
-        var confirmationLink = HtmlEncoder.Default.Encode(uriBuilder.ToString());
-
-        await _emailSender.SendConfirmationLinkAsync(user, email, confirmationLink);
-        return Result.Success();
     }
 
     public async Task<Result> ResetPasswordAsync(string email, string password, string token, CancellationToken cancellationToken = default)

@@ -3,7 +3,7 @@ using ProductManagement.Application.Constants;
 
 namespace ProductManagement.Application.Models;
 
-public sealed class RegisterUserDto
+public sealed class RegisterUserInputModel
 {
     [Required]
     [EmailAddress]

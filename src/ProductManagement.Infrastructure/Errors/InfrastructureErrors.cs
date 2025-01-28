@@ -37,6 +37,10 @@ internal static class InfrastructureErrors
         internal static readonly Error LockedOut = new(
             "User.LockedOut",
             "The user is locked out.");
+        
+        internal static readonly Error NotAddedToRole = new(
+            "User.NotAddedToRole",
+            "The user was not added to the role.");
 
         internal static readonly Error NotAllowed = new(
             "User.NotAllowed",
