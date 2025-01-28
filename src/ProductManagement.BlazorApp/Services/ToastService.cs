@@ -1,12 +1,13 @@
 ﻿using System.Timers;
 using ProductManagement.BlazorApp.Enums;
+using ProductManagement.BlazorApp.Interfaces;
 
 namespace ProductManagement.BlazorApp.Services;
 
 /// <summary>
 /// Provides a service for managing toast notifications.
 /// </summary>
-internal class ToastService : IDisposable
+internal class ToastService : IDisposable, IToastService
 {
     private System.Timers.Timer? _countdown;
 

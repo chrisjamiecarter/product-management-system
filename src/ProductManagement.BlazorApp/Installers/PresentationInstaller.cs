@@ -13,7 +13,7 @@ public static class PresentationInstaller
     public static IServiceCollection AddPresentation(this IServiceCollection services)
     {
         services.AddScoped<SenderService>();
-        services.AddScoped<ToastService>();
+        services.AddScoped<IToastService, ToastService>();
         services.AddScoped<IUrlService, UrlService>();
 
         return services;
