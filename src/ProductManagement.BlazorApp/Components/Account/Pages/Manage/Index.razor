@@ -113,6 +113,7 @@
         if (result.IsFailure)
         {
             userStatus = new StatusModel("Unable to load user..", MessageLevel.Error);
+            return;
         }
 
         user = new ApplicationUserDto(result.Value.UserId, result.Value.Email, result.Value.Role, result.Value.EmailConfirmed);

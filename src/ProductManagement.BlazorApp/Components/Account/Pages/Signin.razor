@@ -92,7 +92,7 @@
         try
         {
             status = StatusModel.None;
-            showValidation = true;
+            showValidation = false;
 
             var command = new SignInCommand(Input.Email, Input.Password, Input.RememberMe);
             var result = await Sender.SendAsync(command);

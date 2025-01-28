@@ -36,7 +36,7 @@
     {
         if (UserId is null || Code is null)
         {
-            RedirectManager.RedirectTo("");
+            RedirectManager.RedirectToWithStatus("Account/Signin", "Invalid email confirmation link.", HttpContext);
         }
 
         var token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));

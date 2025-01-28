@@ -1,48 +1,55 @@
 ﻿@page "/Account/ResendEmailConfirmation"
 
-@using System.Text
-@using System.Text.Encodings.Web
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.WebUtilities
-@using ProductManagement.Application.Features.Auth.Commands.GenerateEmailConfirmation
-
 @inject ILogger<ResendEmailConfirmation> Logger
-@inject IdentityRedirectManager RedirectManager
-@inject NavigationManager NavigationManager
 @inject ISenderService Sender
+@inject IUrlService UrlService
 
 <PageTitle>Resend email confirmation</PageTitle>
 
-<h1>Resend email confirmation</h1>
-<h2>Enter your email.</h2>
-<hr />
-<StatusMessage Status="@status" />
-<div class="row">
-    <div class="col-md-4">
-        <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" aria-required="true" placeholder="name@example.com" />
-                <label for="Input.Email" class="form-label">Email</label>
-                <ValidationMessage For="() => Input.Email" class="text-danger" />
+<section class="d-flex w-100 h-100 p-3 mx-auto flex-column align-items-center">
+    <div class="mt-auto mb-auto w-100 px-3">
+        <div class="row d-flex flex-md-row-reverse justify-content-center align-items-center h-100 gap-2">
+            <div class="col-md-9 col-lg-6 col-xl-5 offset-xl-1 d-flex justify-content-center">
+                <img src="/img/product-management-system-logo-with-text.png" class="img-fluid p-5 overflow-hidden rounded-circle" alt="Application logo" />
             </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Resend</button>
-        </EditForm>
+            <div class="col-md-8 col-lg-6 col-xl-5">
+                <h1 class="h3 mb-3 fw-normal">Please enter your email</h1>
+                <StatusMessage Status="@status" />
+                <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="ResendEmailConfirmationAsync" OnInvalidSubmit="ShowValidation" method="post">
+                    <DataAnnotationsValidator />
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="Input.Email" id="Input.Email" class=@($"form-control form-control-lg {ValidationHelper.GetValidationCssClass(Input, nameof(Input.Email), showValidation)}") aria-required="true" placeholder="name@example.com" />
+                        <label for="Input.Email" class="form-label">Email</label>
+                        <ValidationMessage For="() => Input.Email" class="invalid-feedback" />
+                    </div>
+                    <button type="submit" class="btn btn-dark btn-lg w-100 px-3">Resend</button>
+                </EditForm>
+            </div>
+        </div>
     </div>
-</div>
+</section>
 
 @code {
     private StatusModel status = StatusModel.None;
+    private bool showValidation = false;
 
     [SupplyParameterFromForm]
     private ResendEmailConfirmationInputModel Input { get; set; } = new();
 
-    private async Task OnValidSubmitAsync()
+    private async Task ResendEmailConfirmationAsync()
     {
-        var confirmUrl = NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri;
+        status = StatusModel.None;
+        showValidation = false;
+
+        if (Input.Email is null)
+        {
+            status = new StatusModel("The Email field is required.", MessageLevel.Error);
+            return;
+        }
+
+        var confirmUrl = UrlService.GetConfirmEmailUrl();
         
-        var command = new GenerateEmailConfirmationCommand(Input.Email!, confirmUrl, string.Empty);
+        var command = new GenerateEmailConfirmationCommand(Input.Email, confirmUrl);
         var result = await Sender.SendAsync(command);
         if (result.IsSuccess)
         {
@@ -54,5 +61,10 @@
             status = new StatusModel(result.Error.Message, MessageLevel.Error);
             Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
         }
+    }
+
+    private void ShowValidation()
+    {
+        showValidation = true;
     }
 }

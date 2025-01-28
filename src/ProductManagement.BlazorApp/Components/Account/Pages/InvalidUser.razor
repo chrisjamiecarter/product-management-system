@@ -2,6 +2,29 @@
 
 <PageTitle>Invalid user</PageTitle>
 
-<h3>Invalid user</h3>
+<section class="container-md py-3">
 
-<StatusMessage />
+    <div class="d-flex gap-3 align-items-center mb-4">
+        <PersonFillSvg Height="1.5rem" Width="1.5rem" />
+        <h1 class="h2 mb-0">Invalid User</h1>
+    </div>
+
+    <StatusMessage Status="status" />
+
+</section>
+@code {
+    private StatusModel status = StatusModel.None;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        var messageFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusCookieName];
+        if (!string.IsNullOrWhiteSpace(messageFromCookie))
+        {
+            status = new StatusModel(messageFromCookie, MessageLevel.Error);
+            HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusCookieName);
+        }
+    }
+}

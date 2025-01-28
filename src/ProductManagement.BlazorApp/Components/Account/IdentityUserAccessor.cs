@@ -6,6 +6,8 @@ internal sealed class IdentityUserAccessor(UserManager<ApplicationUser> userMana
 {
     public async Task<ApplicationUser> GetRequiredUserAsync(HttpContext context)
     {
+        // TODO:
+        // I probably want to handle this better than MS do currently.
         var user = await userManager.GetUserAsync(context.User);
 
         if (user is null)
