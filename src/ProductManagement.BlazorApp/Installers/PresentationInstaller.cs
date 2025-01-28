@@ -12,7 +12,7 @@ public static class PresentationInstaller
 {
     public static IServiceCollection AddPresentation(this IServiceCollection services)
     {
-        services.AddScoped<SenderService>();
+        services.AddScoped<ISenderService, SenderService>();
         services.AddScoped<IToastService, ToastService>();
         services.AddScoped<IUrlService, UrlService>();
 
