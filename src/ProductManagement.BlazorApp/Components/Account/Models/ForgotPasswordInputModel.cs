@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ProductManagement.Application.Models;
+namespace ProductManagement.BlazorApp.Components.Account.Models;
 
-public sealed class ForgotPasswordDto
+public sealed class ForgotPasswordInputModel
 {
     [Required]
     [EmailAddress]

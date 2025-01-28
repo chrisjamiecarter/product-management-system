@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using ProductManagement.Application.Constants;
 
-namespace ProductManagement.Application.Models;
+namespace ProductManagement.BlazorApp.Components.Account.Models;
 
 public sealed class RegisterUserInputModel
 {

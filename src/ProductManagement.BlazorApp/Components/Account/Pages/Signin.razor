@@ -1,7 +1,7 @@
 ﻿@page "/Account/Signin"
 
-@using Microsoft.AspNetCore.Authentication
-@using Microsoft.AspNetCore.Identity
+@    using Microsoft.AspNetCore.Authentication
+@    using Microsoft.AspNetCore.Identity
 
 @inject ISenderService Sender
 @inject ILogger<Signin> Logger
@@ -65,7 +65,7 @@
     public EventCallback OnSignedOut { get; set; }
 
     [SupplyParameterFromForm]
-    private SignInUserDto Input { get; set; } = new();
+    private SignInUserInputModel Input { get; set; } = new();
 
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
