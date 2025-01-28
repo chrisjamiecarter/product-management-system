@@ -47,7 +47,7 @@ internal class AuthService : IAuthService
             var identityError = result.Errors.First();
             return identityError != null
                 ? Result.Failure(new Error(identityError.Code, identityError.Description))
-                : Result.Failure(InfrastructureErrors.User.NotAddedToRole);
+                : Result.Failure(UserErrors.NotAddedToRole);
         }
     }
 
@@ -63,7 +63,7 @@ internal class AuthService : IAuthService
         if (!result.Succeeded)
         {
             // TODO: var passwordErrorMessage = $"Error: {string.Join(",", changePasswordResult.Errors.Select(error => error.Description))}";
-            return Result.Failure(InfrastructureErrors.User.ErrorChangingPassword);
+            return Result.Failure(UserErrors.PasswordNotChanged);
         }
 
         await _signInManager.RefreshSignInAsync(user);
@@ -75,37 +75,13 @@ internal class AuthService : IAuthService
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            return Result.Failure(InfrastructureErrors.User.NotFound);
+            return Result.Failure(UserErrors.NotFound);
         }
 
         var result = await _userManager.ConfirmEmailAsync(user, token);
         return result.Succeeded
             ? Result.Success()
-            : Result.Failure(InfrastructureErrors.User.ErrorConfirmingEmail);
-    }
-
-    public async Task<Result> ConfirmEmailChangeAsync(string userId, string email, string token, CancellationToken cancellationToken = default)
-    {
-        var user = await _userManager.FindByIdAsync(userId);
-        if (user is null)
-        {
-            return Result.Failure(InfrastructureErrors.User.NotFound);
-        }
-
-        var emailResult = await _userManager.ChangeEmailAsync(user, email, token);
-        if (!emailResult.Succeeded)
-        {
-            return Result.Failure(InfrastructureErrors.User.ErrorConfirmingEmailChange);
-        }
-
-        var usernameResult = await _userManager.SetUserNameAsync(user, email);
-        if (!usernameResult.Succeeded)
-        {
-            return Result.Failure(InfrastructureErrors.User.ErrorChangingUsername);
-        }
-
-        await _signInManager.RefreshSignInAsync(user);
-        return Result.Success();
+            : Result.Failure(UserErrors.EmailConfirmedNotChanged);
     }
 
     public async Task<Result> ForgotPasswordAsync(string email, string resetUrl, CancellationToken cancellationToken = default)
@@ -113,12 +89,12 @@ internal class AuthService : IAuthService
         var user = await _userManager.FindByEmailAsync(email);
         if (user is null)
         {
-            return Result.Failure(InfrastructureErrors.User.NotFound);
+            return Result.Failure(UserErrors.NotFound);
         }
 
         if (!user.EmailConfirmed)
         {
-            return Result.Failure(InfrastructureErrors.User.EmailNotConfirmed);
+            return Result.Failure(UserErrors.EmailNotConfirmed);
         }
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -180,13 +156,24 @@ internal class AuthService : IAuthService
         var user = await _userManager.GetUserAsync(principal);
         if (user is null)
         {
-            return Result.Failure<ApplicationUserDto>(InfrastructureErrors.User.NotFound);
+            return Result.Failure<ApplicationUserDto>(UserErrors.NotFound);
         }
 
         var roles = await _userManager.GetRolesAsync(user);
 
         var response = new ApplicationUserDto(user.Id, user.UserName, roles.FirstOrDefault(), user.EmailConfirmed);
         return Result.Success(response);
+    }
+
+    public async Task<Result> RefreshSignInAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return Result.Failure(UserErrors.NotFound);
+        }
+        await _signInManager.RefreshSignInAsync(user);
+        return Result.Success();
     }
 
     public async Task<Result> RegisterAsync(string email, string? password, CancellationToken cancellationToken = default)
@@ -207,7 +194,7 @@ internal class AuthService : IAuthService
             var identityError = result.Errors.First();
             return identityError != null
                 ? Result.Failure(new Error(identityError.Code, identityError.Description))
-                : Result.Failure(InfrastructureErrors.User.NotRegistered);
+                : Result.Failure(UserErrors.NotRegistered);
         }
     }
 
@@ -233,7 +220,7 @@ internal class AuthService : IAuthService
         var result = await _userManager.ResetPasswordAsync(user, token, password);
         return result.Succeeded
             ? Result.Success()
-            : Result.Failure(InfrastructureErrors.User.ErrorResettingPassword);
+            : Result.Failure(UserErrors.ErrorResettingPassword);
     }
 
     public async Task<Result> SignInAsync(string email, string password, bool remember, CancellationToken cancellationToken = default)
@@ -247,20 +234,20 @@ internal class AuthService : IAuthService
 
         if (result.IsLockedOut)
         {
-            return Result.Failure(InfrastructureErrors.User.LockedOut);
+            return Result.Failure(UserErrors.LockedOut);
         }
 
         if (result.IsNotAllowed)
         {
-            return Result.Failure(InfrastructureErrors.User.NotAllowed);
+            return Result.Failure(UserErrors.NotAllowed);
         }
 
         if (result.RequiresTwoFactor)
         {
-            return Result.Failure(InfrastructureErrors.User.RequiresTwoFactor);
+            return Result.Failure(UserErrors.RequiresTwoFactor);
         }
 
-        return Result.Failure(InfrastructureErrors.User.InvalidSignInAttempt);
+        return Result.Failure(UserErrors.InvalidSignInAttempt);
     }
 
     public async Task<Result> SignOutAsync(CancellationToken cancellationToken = default)

@@ -32,4 +32,8 @@
     <ProjectReference Include="..\ProductManagement.Domain\ProductManagement.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="ProductManagement.Infrastructure.Tests" />
+  </ItemGroup>
+
 </Project>

@@ -50,6 +50,7 @@ public static class InfrastructureInstaller
         services.AddScoped<IEmailSender<ApplicationUser>, EmailService>();
 
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserService, UserService>();
 
         services.AddMediatR(config => config.RegisterServicesFromAssembly(AssemblyReference.Assembly));
 
