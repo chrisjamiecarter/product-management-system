@@ -1,11 +1,8 @@
 ﻿@page "/Account/ConfirmEmail"
 
-@using System.Text
-@using Microsoft.AspNetCore.WebUtilities
-
 @inject ILogger<ConfirmEmail> Logger
-@inject IdentityRedirectManager RedirectManager
 @inject ISenderService Sender
+@inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Confirm email</PageTitle>
 
@@ -39,7 +36,7 @@
             RedirectManager.RedirectToWithStatus("Account/Signin", "Invalid email confirmation link.", HttpContext);
         }
 
-        var token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
+        var token = AuthToken.Decode(Code);
         var command = new ConfirmEmailCommand(UserId, token);
         var result = await Sender.SendAsync(command);
         if (result.IsSuccess)

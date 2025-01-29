@@ -18,7 +18,4 @@ public sealed class ResetPasswordInputModel
     [Display(Name = "Confirm password")]
     [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
     public string ConfirmPassword { get; set; } = string.Empty;
-
-    [Required]
-    public string Token { get; set; } = string.Empty;
 }

@@ -1,10 +1,7 @@
 ﻿@page "/Account/ConfirmEmailChange"
 
-@using System.Text
-@using Microsoft.AspNetCore.WebUtilities
-
-@inject ILogger<ConfirmEmailChange> Logger
 @inject IdentityRedirectManager RedirectManager
+@inject ILogger<ConfirmEmailChange> Logger
 @inject ISenderService Sender
 
 <PageTitle>Confirm email change</PageTitle>
@@ -42,7 +39,7 @@
             RedirectManager.RedirectToWithStatus("Account/Signin", "Invalid email change confirmation link.", HttpContext);
         }
 
-        var token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
+        var token = AuthToken.Decode(Code);
         var command = new ConfirmEmailChangeCommand(UserId, Email, token);
         var result = await Sender.SendAsync(command);
         if (result.IsSuccess)

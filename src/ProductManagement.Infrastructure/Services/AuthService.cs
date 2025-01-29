@@ -97,11 +97,10 @@ internal class AuthService : IAuthService
             return Result.Failure(UserErrors.EmailNotConfirmed);
         }
 
-        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+        var token = AuthToken.Encode(await _userManager.GeneratePasswordResetTokenAsync(user));
         var uriBuilder = new UriBuilder(resetUrl)
         {
-            Query = $"code={code}"
+            Query = $"code={token.Code}"
         };
         var resetLink = HtmlEncoder.Default.Encode(uriBuilder.ToString());
         
@@ -117,12 +116,10 @@ internal class AuthService : IAuthService
             return Result.Success();
         }
 
-        var token = await _userManager.GenerateChangeEmailTokenAsync(user, email);
-        var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-
+        var token = AuthToken.Encode(await _userManager.GenerateChangeEmailTokenAsync(user, email));
         var uriBuilder = new UriBuilder(confirmUrl)
         {
-            Query = $"userId={user.Id}&email={email}&code={code}"
+            Query = $"userId={user.Id}&email={email}&code={token.Code}"
         };
         var confirmationLink = HtmlEncoder.Default.Encode(uriBuilder.ToString());
 
@@ -138,12 +135,10 @@ internal class AuthService : IAuthService
             return Result.Success();
         }
 
-        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-
+        var token = AuthToken.Encode(await _userManager.GenerateEmailConfirmationTokenAsync(user));
         var uriBuilder = new UriBuilder(confirmUrl)
         {
-            Query = $"userId={user.Id}&code={code}"
+            Query = $"userId={user.Id}&code={token.Code}"
         };
         var confirmationLink = HtmlEncoder.Default.Encode(uriBuilder.ToString());
 

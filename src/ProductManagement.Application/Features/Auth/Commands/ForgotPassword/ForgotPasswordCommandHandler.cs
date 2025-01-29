@@ -15,6 +15,7 @@ internal sealed class ForgotPasswordCommandHandler : ICommandHandler<ForgotPassw
 
     public async Task<Result> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken = default)
     {
+        // TODO: Break out into GeneratePasswordResetTokenAsync and SendPasswordResetEmailAsync.
         return await _authService.ForgotPasswordAsync(request.Email, request.ResetPasswordUrl, cancellationToken);
     }
 }
