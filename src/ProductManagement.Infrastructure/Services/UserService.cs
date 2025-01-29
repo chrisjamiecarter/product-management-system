@@ -16,7 +16,7 @@ internal class UserService : IUserService
         _userManager = userManager;
     }
 
-    public async Task<Result> ChangeEmailAsync(string userId, string email, string token, CancellationToken cancellationToken = default)
+    public async Task<Result> ChangeEmailAsync(string userId, string email, AuthToken token, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
@@ -24,7 +24,7 @@ internal class UserService : IUserService
             return Result.Failure(UserErrors.NotFound);
         }
 
-        var emailResult = await _userManager.ChangeEmailAsync(user, email, token);
+        var emailResult = await _userManager.ChangeEmailAsync(user, email, token.Value);
         if (!emailResult.Succeeded)
         {
             return Result.Failure(UserErrors.EmailNotChanged);

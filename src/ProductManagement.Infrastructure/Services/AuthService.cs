@@ -1,8 +1,6 @@
 ﻿using System.Security.Claims;
-using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.WebUtilities;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Shared;
@@ -70,7 +68,7 @@ internal class AuthService : IAuthService
         return Result.Success();
     }
 
-    public async Task<Result> ConfirmEmailAsync(string userId, string token, CancellationToken cancellationToken = default)
+    public async Task<Result> ConfirmEmailAsync(string userId, AuthToken token, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
@@ -78,7 +76,7 @@ internal class AuthService : IAuthService
             return Result.Failure(UserErrors.NotFound);
         }
 
-        var result = await _userManager.ConfirmEmailAsync(user, token);
+        var result = await _userManager.ConfirmEmailAsync(user, token.Value);
         return result.Succeeded
             ? Result.Success()
             : Result.Failure(UserErrors.EmailConfirmedNotChanged);
@@ -103,7 +101,7 @@ internal class AuthService : IAuthService
             Query = $"code={token.Code}"
         };
         var resetLink = HtmlEncoder.Default.Encode(uriBuilder.ToString());
-        
+
         await _emailSender.SendPasswordResetLinkAsync(user, email, resetLink);
         return Result.Success();
     }
@@ -184,8 +182,8 @@ internal class AuthService : IAuthService
         {
             return Result.Success();
         }
-        else 
-        { 
+        else
+        {
             var identityError = result.Errors.First();
             return identityError != null
                 ? Result.Failure(new Error(identityError.Code, identityError.Description))
@@ -193,16 +191,8 @@ internal class AuthService : IAuthService
         }
     }
 
-    public async Task<Result> ResetPasswordAsync(string email, string password, string token, CancellationToken cancellationToken = default)
+    public async Task<Result> ResetPasswordAsync(string email, string password, AuthToken token, CancellationToken cancellationToken = default)
     {
-        // TODO: 
-        // Decide whether to pass the code around and decode centrally,
-        // or
-        // Decode the code before passing it to this method.
-        // Thinking Token token = Token.Encode(token); and Token.Decode(code);
-        // Token has a Value property that is always the decoded value.
-        // Token has a Code property that is always the encoded value.
-
         var user = await _userManager.FindByEmailAsync(email);
         if (user is null)
         {
@@ -212,7 +202,7 @@ internal class AuthService : IAuthService
         }
 
         // TODO: Log better info here?
-        var result = await _userManager.ResetPasswordAsync(user, token, password);
+        var result = await _userManager.ResetPasswordAsync(user, token.Value, password);
         return result.Succeeded
             ? Result.Success()
             : Result.Failure(UserErrors.ErrorResettingPassword);

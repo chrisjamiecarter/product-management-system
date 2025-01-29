@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Moq;
 using ProductManagement.Application.Interfaces.Infrastructure;
+using ProductManagement.Application.Models;
 using ProductManagement.Infrastructure.Database.Models;
 using ProductManagement.Infrastructure.Errors;
 using ProductManagement.Infrastructure.Services;
@@ -14,10 +15,6 @@ public class UserServiceTests
 
     public UserServiceTests()
     {
-        // Arrange.
-        // Act.
-        // Assert.
-
         _userManagerMock = new Mock<UserManager<ApplicationUser>>(
             Mock.Of<IUserStore<ApplicationUser>>(), null, null, null, null, null, null, null, null);
 
@@ -29,30 +26,31 @@ public class UserServiceTests
     {
         // Arrange.
         var userId = "userId";
+        var token = AuthToken.Encode("token");
 
         _userManagerMock.Setup(m => m.FindByIdAsync(userId))
                         .ReturnsAsync((ApplicationUser?)null);
 
         // Act.
-        var result = await _userService.ChangeEmailAsync(userId, "email", "token");
+        var result = await _userService.ChangeEmailAsync(userId, "email", token);
 
         // Assert.
         Assert.True(result.IsFailure);
         Assert.Equal(UserErrors.NotFound, result.Error);
     }
-    
+
     [Fact]
     public async Task ChangeEmailAsync_ReturnsFailure_WhenUserEmailNotChanged()
     {
         // Arrange.
         var user = new ApplicationUser();
         var newEmail = "newEmail";
-        var token = "token";
+        var token = AuthToken.Encode("token");
 
         _userManagerMock.Setup(m => m.FindByIdAsync(user.Id))
                         .ReturnsAsync(user);
 
-        _userManagerMock.Setup(m => m.ChangeEmailAsync(user, newEmail, token))
+        _userManagerMock.Setup(m => m.ChangeEmailAsync(user, newEmail, token.Value))
                         .ReturnsAsync(IdentityResult.Failed());
 
         // Act.
@@ -69,12 +67,12 @@ public class UserServiceTests
         // Arrange.
         var user = new ApplicationUser();
         var newEmail = "newEmail";
-        var token = "token";
+        var token = AuthToken.Encode("token");
 
         _userManagerMock.Setup(m => m.FindByIdAsync(user.Id))
                         .ReturnsAsync(user);
 
-        _userManagerMock.Setup(m => m.ChangeEmailAsync(user, newEmail, token))
+        _userManagerMock.Setup(m => m.ChangeEmailAsync(user, newEmail, token.Value))
                         .ReturnsAsync(IdentityResult.Success);
 
         _userManagerMock.Setup(m => m.SetUserNameAsync(user, newEmail))
@@ -94,12 +92,12 @@ public class UserServiceTests
         // Arrange.
         var user = new ApplicationUser { Id = "userId" };
         var newEmail = "newEmail";
-        var token = "token";
+        var token = AuthToken.Encode("token");
 
         _userManagerMock.Setup(m => m.FindByIdAsync(user.Id))
                         .ReturnsAsync(user);
 
-        _userManagerMock.Setup(m => m.ChangeEmailAsync(user, newEmail, token))
+        _userManagerMock.Setup(m => m.ChangeEmailAsync(user, newEmail, token.Value))
                         .ReturnsAsync(IdentityResult.Success);
 
         _userManagerMock.Setup(m => m.SetUserNameAsync(user, newEmail))
@@ -115,16 +113,16 @@ public class UserServiceTests
     [Fact]
     public async Task FindByEmailAsync_ReturnsFailure_WhenUserNotFound()
     {
-        // Arrange
+        // Arrange.
         var email = "user@example.com";
         ApplicationUser? nullUser = null;
 
         _userManagerMock.Setup(m => m.FindByEmailAsync(email)).ReturnsAsync(nullUser);
 
-        // Act
+        // Act.
         var result = await _userService.FindByEmailAsync(email);
 
-        // Assert
+        // Assert.
         Assert.True(result.IsFailure);
         Assert.Equal(UserErrors.NotFound, result.Error);
     }
@@ -132,17 +130,17 @@ public class UserServiceTests
     [Fact]
     public async Task FindByEmailAsync_ReturnsSuccess_WhenUserFound()
     {
-        // Arrange
+        // Arrange.
         var email = "user@example.com";
         var user = new ApplicationUser { Email = email, UserName = email };
-        
+
         _userManagerMock.Setup(m => m.FindByEmailAsync(email))
                         .ReturnsAsync(user);
 
-        // Act
+        // Act.
         var result = await _userService.FindByEmailAsync(email);
 
-        // Assert
+        // Assert.
         Assert.True(result.IsSuccess);
         Assert.Equal(email, result.Value.Username);
     }
@@ -150,17 +148,17 @@ public class UserServiceTests
     [Fact]
     public async Task FindByIdAsync_ReturnsFailure_WhenUserNotFound()
     {
-        // Arrange
+        // Arrange.
         var userId = "userId";
         ApplicationUser? nullUser = null;
 
         _userManagerMock.Setup(m => m.FindByIdAsync(userId))
                         .ReturnsAsync(nullUser);
 
-        // Act
+        // Act.
         var result = await _userService.FindByIdAsync(userId);
 
-        // Assert
+        // Assert.
         Assert.True(result.IsFailure);
         Assert.Equal(UserErrors.NotFound, result.Error);
     }
@@ -168,17 +166,17 @@ public class UserServiceTests
     [Fact]
     public async Task FindByIdAsync_ReturnsSuccess_WhenUserFound()
     {
-        // Arrange
+        // Arrange.
         var userId = "userId";
         var user = new ApplicationUser { Id = userId };
-        
+
         _userManagerMock.Setup(m => m.FindByIdAsync(userId))
                         .ReturnsAsync(user);
 
-        // Act
+        // Act.
         var result = await _userService.FindByIdAsync(userId);
 
-        // Assert
+        // Assert.
         Assert.True(result.IsSuccess);
         Assert.Equal(userId, result.Value.Id);
     }
