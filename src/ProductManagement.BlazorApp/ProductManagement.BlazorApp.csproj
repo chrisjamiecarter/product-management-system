@@ -28,4 +28,10 @@
     <ProjectReference Include="..\ProductManagement.Infrastructure\ProductManagement.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Components\Products\Pages\_Imports.razor">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+
 </Project>

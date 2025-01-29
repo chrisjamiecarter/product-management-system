@@ -1,7 +1,5 @@
 ﻿@page "/users/delete/{Id}"
 
-@attribute [Authorize(Roles = "Owner,Admin")]
-
 @inject NavigationManager NavigationManager
 @inject ISenderService Sender
 @inject IToastService ToastService

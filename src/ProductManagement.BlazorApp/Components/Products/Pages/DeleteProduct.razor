@@ -1,7 +1,5 @@
 ﻿@page "/products/delete/{Id:guid}"
 
-@attribute [Authorize(Roles = "Owner,User")]
-
 @inject NavigationManager NavigationManager
 @inject ISenderService Sender
 @inject IToastService ToastService

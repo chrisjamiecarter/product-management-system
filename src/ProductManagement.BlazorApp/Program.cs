@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
+using ProductManagement.Application.Constants;
 using ProductManagement.Application.Installers;
 using ProductManagement.BlazorApp.Components;
 using ProductManagement.BlazorApp.Components.Account;
@@ -40,9 +41,9 @@ public class Program
             options.LoginPath = "/Account/Signin";
         });
 
-        //builder.Services.AddAuthorizationBuilder()
-        //    .AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"))
-        //    .AddPolicy("RequireUserRole", policy => policy.RequireRole("User"));
+        builder.Services.AddAuthorizationBuilder()
+            .AddPolicy(Policies.RequireProductRole, policy => policy.RequireRole(Roles.ProductRoles))
+            .AddPolicy(Policies.RequireUserRole, policy => policy.RequireRole(Roles.UserRoles));
 
         var app = builder.Build();
         await app.SetUpDatabaseAsync();
