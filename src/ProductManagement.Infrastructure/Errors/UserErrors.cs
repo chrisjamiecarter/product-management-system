@@ -20,6 +20,10 @@ internal static class UserErrors
         "User.UsernameNotChanged",
         "There was an error when changing the users username value.");
 
+    internal static readonly Error PasswordNotAdded = new(
+        "User.PasswordNotAdded",
+        "There was an error when adding the users password.");
+
     // TODO: rationalise the below.
 
     internal static readonly Error EmailNotConfirmed = new(

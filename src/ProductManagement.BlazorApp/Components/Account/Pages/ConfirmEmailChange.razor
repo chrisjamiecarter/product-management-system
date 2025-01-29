@@ -36,7 +36,8 @@
     {
         if (UserId is null || Email is null || Code is null)
         {
-            RedirectManager.RedirectToWithStatus("Account/Signin", "Invalid email change confirmation link.", HttpContext);
+            var newStatus = new StatusModel("Invalid email change confirmation link.", MessageLevel.Error);
+            RedirectManager.RedirectToWithStatus("Account/Signin", newStatus, HttpContext);
         }
 
         var token = AuthToken.Decode(Code);

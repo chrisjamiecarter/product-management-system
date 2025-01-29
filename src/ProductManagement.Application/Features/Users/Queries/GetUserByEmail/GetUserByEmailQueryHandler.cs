@@ -1,12 +1,11 @@
 ﻿using ProductManagement.Application.Abstractions.Messaging;
 using ProductManagement.Application.Errors;
-using ProductManagement.Application.Features.Users.Queries.GetUserByEmail;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;
 
-namespace ProductManagement.Infrastructure.Handlers;
+namespace ProductManagement.Application.Features.Users.Queries.GetUserByEmail;
 
-internal class GetUserByEmailQueryHandler : IQueryHandler<GetUserByEmailQuery, GetUserByEmailQueryResponse>
+internal sealed class GetUserByEmailQueryHandler : IQueryHandler<GetUserByEmailQuery, GetUserByEmailQueryResponse>
 {
     private readonly IUserRepository _userRepository;
 

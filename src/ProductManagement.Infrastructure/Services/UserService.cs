@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Shared;
@@ -14,6 +15,20 @@ internal class UserService : IUserService
     public UserService(UserManager<ApplicationUser> userManager)
     {
         _userManager = userManager;
+    }
+
+    public async Task<Result> AddPasswordAsync(string userId, string password, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return Result.Failure(UserErrors.NotFound);
+        }
+
+        var result = await _userManager.AddPasswordAsync(user, password);
+        return result.Succeeded
+            ? Result.Success()
+            : Result.Failure(UserErrors.PasswordNotAdded);
     }
 
     public async Task<Result> ChangeEmailAsync(string userId, string email, AuthToken token, CancellationToken cancellationToken = default)
@@ -61,6 +76,18 @@ internal class UserService : IUserService
 
         var role = await GetUserRole(user);
         return Result.Success(user.ToDto(role));
+    }
+
+    public async Task<Result<bool>> HasPasswordAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return Result.Failure<bool>(UserErrors.NotFound);
+        }
+
+        var response = await _userManager.HasPasswordAsync(user);
+        return Result.Success(response);
     }
 
     private async Task<string?> GetUserRole(ApplicationUser user)

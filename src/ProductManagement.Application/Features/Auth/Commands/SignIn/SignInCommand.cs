@@ -2,6 +2,4 @@
 
 namespace ProductManagement.Application.Features.Auth.Commands.SignIn;
 
-public sealed record SignInCommand(string Email,
-                                   string Password,
-                                   bool Remember) : ICommand;
+public sealed record SignInCommand(string UserId) : ICommand;

@@ -158,6 +158,33 @@ internal class AuthService : IAuthService
         return Result.Success(response);
     }
 
+    public async Task<Result> PasswordSignInAsync(string email, string password, bool remember, CancellationToken cancellationToken = default)
+    {
+        var result = await _signInManager.PasswordSignInAsync(email, password, remember, false);
+
+        if (result.Succeeded)
+        {
+            return Result.Success();
+        }
+
+        if (result.IsLockedOut)
+        {
+            return Result.Failure(UserErrors.LockedOut);
+        }
+
+        if (result.IsNotAllowed)
+        {
+            return Result.Failure(UserErrors.NotAllowed);
+        }
+
+        if (result.RequiresTwoFactor)
+        {
+            return Result.Failure(UserErrors.RequiresTwoFactor);
+        }
+
+        return Result.Failure(UserErrors.InvalidSignInAttempt);
+    }
+
     public async Task<Result> RefreshSignInAsync(string userId, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId);
@@ -208,31 +235,16 @@ internal class AuthService : IAuthService
             : Result.Failure(UserErrors.ErrorResettingPassword);
     }
 
-    public async Task<Result> SignInAsync(string email, string password, bool remember, CancellationToken cancellationToken = default)
+    public async Task<Result> SignInAsync(string userId, CancellationToken cancellationToken = default)
     {
-        var result = await _signInManager.PasswordSignInAsync(email, password, remember, false);
-
-        if (result.Succeeded)
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
         {
-            return Result.Success();
+            return Result.Failure(UserErrors.NotFound);
         }
 
-        if (result.IsLockedOut)
-        {
-            return Result.Failure(UserErrors.LockedOut);
-        }
-
-        if (result.IsNotAllowed)
-        {
-            return Result.Failure(UserErrors.NotAllowed);
-        }
-
-        if (result.RequiresTwoFactor)
-        {
-            return Result.Failure(UserErrors.RequiresTwoFactor);
-        }
-
-        return Result.Failure(UserErrors.InvalidSignInAttempt);
+        await _signInManager.SignInAsync(user, false);
+        return Result.Success();
     }
 
     public async Task<Result> SignOutAsync(CancellationToken cancellationToken = default)

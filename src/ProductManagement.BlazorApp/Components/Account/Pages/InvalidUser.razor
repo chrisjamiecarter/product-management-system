@@ -20,11 +20,16 @@
 
     protected override void OnInitialized()
     {
-        var messageFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusCookieName];
-        if (!string.IsNullOrWhiteSpace(messageFromCookie))
+        var messageFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusMessageCookieName];
+        var levelFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusLevelCookieName];
+                
+        if (!string.IsNullOrWhiteSpace(messageFromCookie) && !string.IsNullOrWhiteSpace(levelFromCookie))
         {
+            status.Message = messageFromCookie;
+            status.Level = Enum.Parse<MessageLevel>(levelFromCookie);
             status = new StatusModel(messageFromCookie, MessageLevel.Error);
-            HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusCookieName);
+            HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusMessageCookieName);
+            HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusLevelCookieName);
         }
     }
 }

@@ -16,6 +16,6 @@ internal sealed class SignInCommandHandler : ICommandHandler<SignInCommand>
 
     public async Task<Result> Handle(SignInCommand request, CancellationToken cancellationToken)
     {
-        return await _authService.SignInAsync(request.Email, request.Password, request.Remember, cancellationToken);
+        return await _authService.SignInAsync(request.UserId, cancellationToken);
     }
 }

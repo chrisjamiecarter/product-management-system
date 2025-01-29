@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using Moq;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
@@ -179,5 +180,65 @@ public class UserServiceTests
         // Assert.
         Assert.True(result.IsSuccess);
         Assert.Equal(userId, result.Value.Id);
+    }
+
+    [Fact]
+    public async Task HasPasswordAsync_ReturnsFailure_WhenUserNotFound()
+    {
+        // Arrange.
+        var userId = "userId";
+        ApplicationUser? nullUser = null;
+
+        _userManagerMock.Setup(m => m.FindByIdAsync(userId))
+                        .ReturnsAsync(nullUser);
+
+        // Act.
+        var result = await _userService.HasPasswordAsync(userId);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(UserErrors.NotFound, result.Error);
+    }
+
+    [Fact]
+    public async Task HasPasswordAsync_ReturnsSuccessAndFalse_WhenUserFoundAndHasPasswordIsFalse()
+    {
+        // Arrange.
+        var userId = "userId";
+        var user = new ApplicationUser { Id = userId };
+
+        _userManagerMock.Setup(m => m.FindByIdAsync(userId))
+                        .ReturnsAsync(user);
+
+        _userManagerMock.Setup(m => m.HasPasswordAsync(user))
+                        .ReturnsAsync(false);
+
+        // Act.
+        var result = await _userService.HasPasswordAsync(userId);
+
+        // Assert.
+        Assert.True(result.IsSuccess);
+        Assert.False(result.Value);
+    }
+
+    [Fact]
+    public async Task HasPasswordAsync_ReturnsSuccessAndTrue_WhenUserFoundAndHasPasswordIsTrue()
+    {
+        // Arrange.
+        var userId = "userId";
+        var user = new ApplicationUser { Id = userId };
+
+        _userManagerMock.Setup(m => m.FindByIdAsync(userId))
+                        .ReturnsAsync(user);
+
+        _userManagerMock.Setup(m => m.HasPasswordAsync(user))
+                        .ReturnsAsync(true);
+
+        // Act.
+        var result = await _userService.HasPasswordAsync(userId);
+
+        // Assert.
+        Assert.True(result.IsSuccess);
+        Assert.True(result.Value);
     }
 }

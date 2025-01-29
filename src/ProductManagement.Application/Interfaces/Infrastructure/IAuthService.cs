@@ -13,9 +13,10 @@ public interface IAuthService
     Task<Result> GenerateEmailChangeAsync(ClaimsPrincipal principal, string email, string confirmUrl, CancellationToken cancellationToken = default);
     Task<Result> GenerateEmailConfirmationAsync(string email, string confirmUrl, CancellationToken cancellationToken = default);
     Task<Result<ApplicationUserDto>> GetCurrentUserAsync(ClaimsPrincipal principal, CancellationToken cancellationToken = default);
+    Task<Result> PasswordSignInAsync(string email, string password, bool remember, CancellationToken cancellationToken = default);
     Task<Result> RefreshSignInAsync(string userId, CancellationToken cancellationToken = default);
     Task<Result> RegisterAsync(string email, string? password, CancellationToken cancellationToken = default);
     Task<Result> ResetPasswordAsync(string email, string password, AuthToken token, CancellationToken cancellationToken = default);
-    Task<Result> SignInAsync(string email, string password, bool remember, CancellationToken cancellationToken = default);
+    Task<Result> SignInAsync(string userId, CancellationToken cancellationToken = default);
     Task<Result> SignOutAsync(CancellationToken cancellationToken = default);
 }

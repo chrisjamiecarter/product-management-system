@@ -76,14 +76,16 @@
         {
             // Clear the existing external cookie to ensure a clean login process.
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-            
         }
 
-        var messageFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusCookieName];
-        if (!string.IsNullOrWhiteSpace(messageFromCookie))
+        var messageFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusMessageCookieName];
+        var levelFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusLevelCookieName];
+        if (!string.IsNullOrWhiteSpace(messageFromCookie) && !string.IsNullOrWhiteSpace(levelFromCookie))
         {
-            status = new StatusModel(messageFromCookie, MessageLevel.Error);
-            HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusCookieName);
+            status.Message = messageFromCookie;
+            status.Level = Enum.Parse<MessageLevel>(levelFromCookie);
+            HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusMessageCookieName);
+            HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusLevelCookieName);
         }
     }
 
@@ -94,7 +96,7 @@
             status = StatusModel.None;
             showValidation = false;
 
-            var command = new SignInCommand(Input.Email, Input.Password, Input.RememberMe);
+            var command = new PasswordSignInCommand(Input.Email, Input.Password, Input.RememberMe);
             var result = await Sender.SendAsync(command);
             if (result.IsSuccess)
             {

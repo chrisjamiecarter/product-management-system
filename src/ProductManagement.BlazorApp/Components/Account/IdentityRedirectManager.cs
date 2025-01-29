@@ -1,11 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
+using ProductManagement.BlazorApp.Components.Models;
 
 namespace ProductManagement.BlazorApp.Components.Account;
 internal sealed class IdentityRedirectManager(NavigationManager navigationManager)
 {
-    public const string StatusCookieName = "Identity.StatusMessage";
-    // TODO: Maybe do StatusMessageCookieName and StatusLevelCookieName.
+    public const string StatusMessageCookieName = "Identity.StatusMessage";
+    public const string StatusLevelCookieName = "Identity.StatusLevel";
 
     private static readonly CookieBuilder StatusCookieBuilder = new()
     {
@@ -41,9 +42,11 @@ internal sealed class IdentityRedirectManager(NavigationManager navigationManage
     }
 
     [DoesNotReturn]
-    public void RedirectToWithStatus(string uri, string message, HttpContext context)
+    public void RedirectToWithStatus(string uri, StatusModel status, HttpContext context)
     {
-        context.Response.Cookies.Append(StatusCookieName, message, StatusCookieBuilder.Build(context));
+        var cookieOptions = StatusCookieBuilder.Build(context);
+        context.Response.Cookies.Append(StatusMessageCookieName, status.Message ?? string.Empty, cookieOptions);
+        context.Response.Cookies.Append(StatusLevelCookieName, status.Level.ToString() ?? string.Empty, cookieOptions);
         RedirectTo(uri);
     }
 
@@ -53,6 +56,6 @@ internal sealed class IdentityRedirectManager(NavigationManager navigationManage
     public void RedirectToCurrentPage() => RedirectTo(CurrentPath);
 
     [DoesNotReturn]
-    public void RedirectToCurrentPageWithStatus(string message, HttpContext context)
-        => RedirectToWithStatus(CurrentPath, message, context);
+    public void RedirectToCurrentPageWithStatus(StatusModel status, HttpContext context)
+        => RedirectToWithStatus(CurrentPath, status, context);
 }
