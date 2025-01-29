@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Moq;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
@@ -20,6 +19,69 @@ public class UserServiceTests
             Mock.Of<IUserStore<ApplicationUser>>(), null, null, null, null, null, null, null, null);
 
         _userService = new UserService(_userManagerMock.Object);
+    }
+
+    [Fact]
+    public async Task AddPasswordAsync_ReturnsFailure_WhenUserNotFound()
+    {
+        // Arrange.
+        var user = new ApplicationUser { Id = "userId" };
+        var password = "TestPassword123###";
+        ApplicationUser? nullUser = null;
+
+        _userManagerMock.Setup(m => m.FindByIdAsync(user.Id))
+                        .ReturnsAsync(nullUser);
+
+        _userManagerMock.Setup(m => m.AddPasswordAsync(user, password))
+                        .ReturnsAsync(IdentityResult.Success);
+
+        // Act.
+        var result = await _userService.AddPasswordAsync(user.Id, password);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(UserErrors.NotFound, result.Error);
+    }
+
+    [Fact]
+    public async Task AddPasswordAsync_ReturnsFailure_WhenUserPasswordNotAdded()
+    {
+        // Arrange.
+        var user = new ApplicationUser { Id = "userId" };
+        var password = "TestPassword123###";
+
+        _userManagerMock.Setup(m => m.FindByIdAsync(user.Id))
+                        .ReturnsAsync(user);
+
+        _userManagerMock.Setup(m => m.AddPasswordAsync(user, password))
+                        .ReturnsAsync(IdentityResult.Failed());
+
+        // Act.
+        var result = await _userService.AddPasswordAsync(user.Id, password);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(UserErrors.PasswordNotAdded, result.Error);
+    }
+
+    [Fact]
+    public async Task AddPasswordAsync_ReturnsSuccess_WhenUserPasswordChanged()
+    {
+        // Arrange.
+        var user = new ApplicationUser { Id = "userId" };
+        var password = "TestPassword123###";
+
+        _userManagerMock.Setup(m => m.FindByIdAsync(user.Id))
+                        .ReturnsAsync(user);
+
+        _userManagerMock.Setup(m => m.AddPasswordAsync(user, password))
+                        .ReturnsAsync(IdentityResult.Success);
+
+        // Act.
+        var result = await _userService.AddPasswordAsync(user.Id, password);
+
+        // Assert.
+        Assert.True(result.IsSuccess);
     }
 
     [Fact]
@@ -88,7 +150,7 @@ public class UserServiceTests
     }
 
     [Fact]
-    public async Task ChangeEmailAsync_ReturnsSuccess_WhenEmailChanged()
+    public async Task ChangeEmailAsync_ReturnsSuccess_WhenUserEmailChanged()
     {
         // Arrange.
         var user = new ApplicationUser { Id = "userId" };
