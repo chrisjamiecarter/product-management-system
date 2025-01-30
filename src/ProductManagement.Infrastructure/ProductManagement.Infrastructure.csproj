@@ -30,6 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ProductManagement.Application\ProductManagement.Application.csproj" />
     <ProjectReference Include="..\ProductManagement.Domain\ProductManagement.Domain.csproj" />
+    <ProjectReference Include="..\ProductManagement.Infrastructure.EmailRender\ProductManagement.Infrastructure.EmailRender.csproj" />
   </ItemGroup>
 
   <ItemGroup>

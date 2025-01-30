@@ -9,6 +9,8 @@ using ProductManagement.Infrastructure.Database.Repositories;
 using ProductManagement.Infrastructure.Database.Services;
 using ProductManagement.Infrastructure.Email.Options;
 using ProductManagement.Infrastructure.Email.Services;
+using ProductManagement.Infrastructure.EmailRender.Interfaces;
+using ProductManagement.Infrastructure.EmailRender.Services;
 using ProductManagement.Infrastructure.Services;
 
 namespace ProductManagement.Infrastructure.Installers;
@@ -53,6 +55,10 @@ public static class InfrastructureInstaller
         services.AddScoped<IUserService, UserService>();
 
         services.AddMediatR(config => config.RegisterServicesFromAssembly(AssemblyReference.Assembly));
+
+        // TODO: Install: ProductManagement.Infrastructure.EmailRender.
+        services.AddRazorPages();
+        services.AddScoped<IRazorViewToStringRenderService, RazorViewToStringRenderService>();
 
         return services;
     }

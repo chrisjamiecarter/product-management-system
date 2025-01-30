@@ -38,7 +38,13 @@ internal sealed class RegisterCommandHandler : ICommandHandler<RegisterCommand>
             return roleResult;
         }
 
-        var emailResult = await _authService.GenerateEmailConfirmationAsync(request.Email, request.ConfirmUrl, cancellationToken);
+        var tokenResult = await _authService.GenerateEmailConfirmationTokenAsync(request.Email, cancellationToken);
+        if (tokenResult.IsFailure)
+        {
+            return tokenResult;
+        }
+
+        var emailResult = await _authService.SendEmailConfirmationLinkAsync(request.Email, request.ConfirmUrl, tokenResult.Value, cancellationToken);
         if (emailResult.IsFailure)
         {
             return emailResult;

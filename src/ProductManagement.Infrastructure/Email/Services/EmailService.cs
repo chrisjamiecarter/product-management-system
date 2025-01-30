@@ -5,12 +5,21 @@ using MimeKit;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Infrastructure.Database.Models;
 using ProductManagement.Infrastructure.Email.Options;
+using ProductManagement.Infrastructure.EmailRender.Interfaces;
+using ProductManagement.Infrastructure.EmailRender.Views.Emails.PasswordReset;
 
 namespace ProductManagement.Infrastructure.Email.Services;
 
-internal class EmailService(IOptions<EmailOptions> emailOptions) : IEmailService, IEmailSender<ApplicationUser>
+internal class EmailService : IEmailService, IEmailSender<ApplicationUser>
 {
-    private readonly EmailOptions _emailOptions = emailOptions.Value;
+    private readonly EmailOptions _emailOptions;
+    private readonly IRazorViewToStringRenderService _renderService;
+
+    public EmailService(IOptions<EmailOptions> emailOptions, IRazorViewToStringRenderService renderService)
+    {
+        _emailOptions = emailOptions.Value;
+        _renderService = renderService;
+    }
 
     public async Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink)
     {
@@ -58,6 +67,8 @@ internal class EmailService(IOptions<EmailOptions> emailOptions) : IEmailService
 
     public async Task SendPasswordResetLinkAsync(ApplicationUser user, string email, string resetLink)
     {
-        await SendEmailAsync(email, "Reset your password", $"Please reset your password by <a href='{resetLink}'>clicking here</a>.", CancellationToken.None);
+        var passwordResetViewModel = new PasswordResetViewModel(resetLink);
+        var body = await _renderService.RenderViewToStringAsync("/Views/Emails/PasswordReset/PasswordReset.cshtml", passwordResetViewModel);
+        await SendEmailAsync(email, "Reset your password", body, CancellationToken.None);
     }
 }
