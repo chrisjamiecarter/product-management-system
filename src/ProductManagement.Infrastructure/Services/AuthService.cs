@@ -125,23 +125,16 @@ internal class AuthService : IAuthService
         return Result.Success();
     }
 
-    public async Task<Result> GenerateEmailConfirmationAsync(string email, string confirmUrl, CancellationToken cancellationToken = default)
+    public async Task<Result<AuthToken>> GenerateEmailConfirmationTokenAsync(string email, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByEmailAsync(email);
         if (user is null)
         {
-            return Result.Success();
+            return Result.Failure<AuthToken>(UserErrors.NotFound);
         }
 
         var token = AuthToken.Encode(await _userManager.GenerateEmailConfirmationTokenAsync(user));
-        var uriBuilder = new UriBuilder(confirmUrl)
-        {
-            Query = $"userId={user.Id}&code={token.Code}"
-        };
-        var confirmationLink = HtmlEncoder.Default.Encode(uriBuilder.ToString());
-
-        await _emailSender.SendConfirmationLinkAsync(user, email, confirmationLink);
-        return Result.Success();
+        return Result.Success(token);
     }
 
     public async Task<Result<ApplicationUserDto>> GetCurrentUserAsync(ClaimsPrincipal principal, CancellationToken cancellationToken = default)
@@ -233,6 +226,24 @@ internal class AuthService : IAuthService
         return result.Succeeded
             ? Result.Success()
             : Result.Failure(UserErrors.ErrorResettingPassword);
+    }
+
+    public async Task<Result> SendEmailConfirmationLinkAsync(string email, string confirmUrl, AuthToken token, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user is null)
+        {
+            return Result.Failure(UserErrors.NotFound);
+        }
+
+        var uriBuilder = new UriBuilder(confirmUrl)
+        {
+            Query = $"userId={user.Id}&code={token.Code}"
+        };
+        var confirmationLink = HtmlEncoder.Default.Encode(uriBuilder.ToString());
+
+        await _emailSender.SendConfirmationLinkAsync(user, email, confirmationLink);
+        return Result.Success();
     }
 
     public async Task<Result> SignInAsync(string userId, CancellationToken cancellationToken = default)

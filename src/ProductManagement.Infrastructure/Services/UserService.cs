@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Shared;
@@ -65,7 +64,7 @@ internal class UserService : IUserService
         var role = await GetUserRole(user);
         return Result.Success(user.ToDto(role));
     }
-    
+
     public async Task<Result<ApplicationUserDto>> FindByIdAsync(string userId, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId);
@@ -87,6 +86,18 @@ internal class UserService : IUserService
         }
 
         var response = await _userManager.HasPasswordAsync(user);
+        return Result.Success(response);
+    }
+
+    public async Task<Result<bool>> IsEmailConfirmedAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return Result.Failure<bool>(UserErrors.NotFound);
+        }
+
+        var response = await _userManager.IsEmailConfirmedAsync(user);
         return Result.Success(response);
     }
 
