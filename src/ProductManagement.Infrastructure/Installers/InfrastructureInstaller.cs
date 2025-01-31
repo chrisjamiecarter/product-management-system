@@ -49,7 +49,6 @@ public static class InfrastructureInstaller
 
         services.Configure<EmailOptions>(configuration.GetSection(nameof(EmailOptions)));
         services.AddScoped<IEmailService, EmailService>();
-        services.AddScoped<IEmailSender<ApplicationUser>, EmailService>();
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();

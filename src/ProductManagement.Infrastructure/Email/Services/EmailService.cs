@@ -1,16 +1,14 @@
 ﻿using MailKit.Net.Smtp;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using ProductManagement.Application.Interfaces.Infrastructure;
-using ProductManagement.Infrastructure.Database.Models;
 using ProductManagement.Infrastructure.Email.Options;
 using ProductManagement.Infrastructure.EmailRender.Interfaces;
 using ProductManagement.Infrastructure.EmailRender.Views.Emails.PasswordReset;
 
 namespace ProductManagement.Infrastructure.Email.Services;
 
-internal class EmailService : IEmailService, IEmailSender<ApplicationUser>
+internal class EmailService : IEmailService
 {
     private readonly EmailOptions _emailOptions;
     private readonly IRazorViewToStringRenderService _renderService;
@@ -21,12 +19,29 @@ internal class EmailService : IEmailService, IEmailSender<ApplicationUser>
         _renderService = renderService;
     }
 
-    public async Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink)
+    public async Task SendChangeEmailConfirmationAsync(string toEmailAddress, string changeEmailConfirmationLink, CancellationToken cancellationToken = default)
     {
-        await SendEmailAsync(email, "Confirm your email", $"Please confirm your account by <a href='{confirmationLink}'>clicking here</a>.", CancellationToken.None);
+        var body = $"Please confirm your account by <a href='{changeEmailConfirmationLink}'>clicking here</a>.";
+
+        await SendEmailAsync(toEmailAddress, "Confirm your email", body, cancellationToken);
     }
 
-    public async Task SendEmailAsync(string toEmailAddress, string subject, string body, CancellationToken cancellationToken = default)
+    public async Task SendEmailConfirmationAsync(string toEmailAddress, string emailConfirmationLink, CancellationToken cancellationToken = default)
+    {
+        var body = $"Please confirm your account by <a href='{emailConfirmationLink}'>clicking here</a>.";
+
+        await SendEmailAsync(toEmailAddress, "Confirm your email", body, cancellationToken);
+    }
+
+    public async Task SendPasswordResetAsync(string toEmailAddress, string passwordResetLink, CancellationToken cancellationToken = default)
+    {
+        var passwordResetViewModel = new PasswordResetViewModel(passwordResetLink);
+        var body = await _renderService.RenderViewToStringAsync("/Views/Emails/PasswordReset/PasswordReset.cshtml", passwordResetViewModel);
+
+        await SendEmailAsync(toEmailAddress, "Reset your password", body, cancellationToken);
+    }
+
+    private async Task SendEmailAsync(string toEmailAddress, string subject, string body, CancellationToken cancellationToken)
     {
         // TODO: Errors?
 
@@ -60,15 +75,4 @@ internal class EmailService : IEmailService, IEmailSender<ApplicationUser>
         }
     }
 
-    public async Task SendPasswordResetCodeAsync(ApplicationUser user, string email, string resetCode)
-    {
-        await SendEmailAsync(email, "Reset your password", $"Please reset your password using the following code: {resetCode}", CancellationToken.None);
-    }
-
-    public async Task SendPasswordResetLinkAsync(ApplicationUser user, string email, string resetLink)
-    {
-        var passwordResetViewModel = new PasswordResetViewModel(resetLink);
-        var body = await _renderService.RenderViewToStringAsync("/Views/Emails/PasswordReset/PasswordReset.cshtml", passwordResetViewModel);
-        await SendEmailAsync(email, "Reset your password", body, CancellationToken.None);
-    }
 }

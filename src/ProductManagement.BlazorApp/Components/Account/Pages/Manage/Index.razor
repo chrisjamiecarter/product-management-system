@@ -4,11 +4,13 @@
 @using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
+@using System.Security.Claims
 
 @inject ILogger<Index> Logger
 @inject IdentityRedirectManager RedirectManager
 @inject NavigationManager NavigationManager
 @inject ISenderService Sender
+@inject ICurrentUserService CurrentUserService
 
 <PageTitle>Manage Account</PageTitle>
 
@@ -108,11 +110,19 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var query = new GetCurrentUserQuery(HttpContext.User);
+        var currentUserId = CurrentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(currentUserId))
+        {
+            // TODO:
+            userStatus = new StatusModel("Unable to load user..", MessageLevel.Error);
+            return;
+        }
+
+        var query = new GetCurrentUserQuery(currentUserId);
         var result = await Sender.SendAsync(query);
         if (result.IsFailure)
         {
-            userStatus = new StatusModel("Unable to load user..", MessageLevel.Error);
+            userStatus = new StatusModel(result.Error.Message, MessageLevel.Error);
             return;
         }
 
@@ -120,8 +130,8 @@
 
         // TODO:
         // Confirm what route I want to take regarding Username vs Email. They are the same in this app and the messaging should be consistent.
-        email = user.Username;
-        isEmailConfirmed = user.EmailConfirmed;
+        email = result.Value.Email;
+        isEmailConfirmed = result.Value.EmailConfirmed;
 
         // TODO:
         // This needs to be part of the user registration process.
@@ -144,7 +154,7 @@
 
         var confirmUrl = NavigationManager.ToAbsoluteUri("Account/ConfirmEmailChange").AbsoluteUri;
 
-        var command = new GenerateEmailChangeCommand(HttpContext.User, EmailInput.NewEmail, confirmUrl);
+        var command = new GenerateEmailChangeCommand(user.Id, EmailInput.NewEmail);
         var result = await Sender.SendAsync(command);
         if (result.IsSuccess)
         {
@@ -160,7 +170,7 @@
 
     private async Task EditPasswordAsync()
     {
-        var command = new ChangePasswordCommand(HttpContext.User, PasswordInput.OldPassword, PasswordInput.NewPassword);
+        var command = new ChangePasswordCommand(user.Id, PasswordInput.OldPassword, PasswordInput.NewPassword);
         var result = await Sender.SendAsync(command);
         if (result.IsSuccess)
         {

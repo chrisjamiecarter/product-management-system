@@ -7,10 +7,16 @@ namespace ProductManagement.Application.Features.Auth.Commands.Register;
 internal sealed class RegisterCommandHandler : ICommandHandler<RegisterCommand>
 {
     private readonly IAuthService _authService;
+    private readonly IEmailService _emailService;
+    private readonly ILinkBuilderService _linkBuilderService;
+    private readonly IUserService _userService;
 
-    public RegisterCommandHandler(IAuthService authService)
+    public RegisterCommandHandler(IAuthService authService, IEmailService emailService, ILinkBuilderService linkBuilderService, IUserService userService)
     {
         _authService = authService;
+        _emailService = emailService;
+        _linkBuilderService = linkBuilderService;
+        _userService = userService;
     }
 
     public async Task<Result> Handle(RegisterCommand request, CancellationToken cancellationToken = default)
@@ -29,25 +35,34 @@ internal sealed class RegisterCommandHandler : ICommandHandler<RegisterCommand>
         var registerResult = await _authService.RegisterAsync(request.Email, request.Password, cancellationToken);
         if (registerResult.IsFailure)
         {
-            return registerResult;
+            return Result.Failure(registerResult.Error);
         }
 
-        var roleResult = await _authService.AddToRoleAsync(request.Email, request.Role, cancellationToken);
+        var userResult = await _userService.FindByEmailAsync(request.Email, cancellationToken);
+        if (userResult.IsFailure)
+        {
+            return Result.Failure(userResult.Error);
+        }
+        
+        var user = userResult.Value;
+
+        var roleResult = await _authService.AddToRoleAsync(user.Id, request.Role, cancellationToken);
         if (roleResult.IsFailure)
         {
-            return roleResult;
+            return Result.Failure(roleResult.Error);
         }
 
         var tokenResult = await _authService.GenerateEmailConfirmationTokenAsync(request.Email, cancellationToken);
         if (tokenResult.IsFailure)
         {
-            return tokenResult;
+            return Result.Failure(tokenResult.Error);
         }
 
-        var emailResult = await _authService.SendEmailConfirmationLinkAsync(request.Email, request.ConfirmUrl, tokenResult.Value, cancellationToken);
-        if (emailResult.IsFailure)
+        // TODO: Username to Email?
+        if (!string.IsNullOrWhiteSpace(user.Username))
         {
-            return emailResult;
+            var emailConfirmationLink = await _linkBuilderService.BuildEmailConfirmationLinkAsync(user.Id, tokenResult.Value, cancellationToken);
+            await _emailService.SendEmailConfirmationAsync(user.Username, emailConfirmationLink, cancellationToken);
         }
 
         return Result.Success();

@@ -5,10 +5,8 @@
 @using Microsoft.AspNetCore.WebUtilities
 
 @inject ILogger<Register> Logger
-@inject IdentityRedirectManager RedirectManager
-@inject NavigationManager NavigationManager
 @inject ISenderService Sender
-@inject IUrlService UrlService
+@inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Register</PageTitle>
 
@@ -70,9 +68,8 @@
             showValidation = true;
 
             var role = string.Empty;
-            var confirmUrl = UrlService.GetConfirmEmailUrl();
 
-            var command = new RegisterCommand(Input.Email, Input.Password, role, confirmUrl);
+            var command = new RegisterCommand(Input.Email, Input.Password, role);
             var result = await Sender.SendAsync(command);
             if (result.IsSuccess)
             {

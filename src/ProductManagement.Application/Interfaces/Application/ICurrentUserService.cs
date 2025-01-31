@@ -1,4 +1,6 @@
-﻿namespace ProductManagement.Application.Interfaces.Application;
+﻿using System.Security.Claims;
+
+namespace ProductManagement.Application.Interfaces.Application;
 
 public interface ICurrentUserService
 {

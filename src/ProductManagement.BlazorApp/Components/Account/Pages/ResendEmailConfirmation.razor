@@ -2,7 +2,6 @@
 
 @inject ILogger<ResendEmailConfirmation> Logger
 @inject ISenderService Sender
-@inject IUrlService UrlService
 
 <PageTitle>Resend email confirmation</PageTitle>
 
@@ -47,9 +46,7 @@
             return;
         }
 
-        var confirmUrl = UrlService.GetConfirmEmailUrl();
-        
-        var command = new GenerateEmailConfirmationCommand(Input.Email, confirmUrl);
+        var command = new GenerateEmailConfirmationCommand(Input.Email);
         var result = await Sender.SendAsync(command);
         if (result.IsSuccess)
         {

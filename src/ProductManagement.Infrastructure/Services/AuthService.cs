@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Shared;
@@ -11,20 +9,18 @@ namespace ProductManagement.Infrastructure.Services;
 
 internal class AuthService : IAuthService
 {
-    private readonly IEmailSender<ApplicationUser> _emailSender;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public AuthService(IEmailSender<ApplicationUser> emailSender, SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+    public AuthService(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
     {
-        _emailSender = emailSender;
         _signInManager = signInManager;
         _userManager = userManager;
     }
 
-    public async Task<Result> AddToRoleAsync(string email, string? role, CancellationToken cancellationToken = default)
+    public async Task<Result> AddToRoleAsync(string userId, string? role, CancellationToken cancellationToken = default)
     {
-        var user = await _userManager.FindByEmailAsync(email);
+        var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
             return Result.Success();
@@ -49,25 +45,6 @@ internal class AuthService : IAuthService
         }
     }
 
-    public async Task<Result> ChangePasswordAsync(ClaimsPrincipal principal, string currentPassword, string newPassword, CancellationToken cancellationToken = default)
-    {
-        var user = await _userManager.GetUserAsync(principal);
-        if (user is null)
-        {
-            return Result.Success();
-        }
-
-        var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
-        if (!result.Succeeded)
-        {
-            // TODO: var passwordErrorMessage = $"Error: {string.Join(",", changePasswordResult.Errors.Select(error => error.Description))}";
-            return Result.Failure(UserErrors.PasswordNotChanged);
-        }
-
-        await _signInManager.RefreshSignInAsync(user);
-        return Result.Success();
-    }
-
     public async Task<Result> ConfirmEmailAsync(string userId, AuthToken token, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId);
@@ -82,47 +59,17 @@ internal class AuthService : IAuthService
             : Result.Failure(UserErrors.EmailConfirmedNotChanged);
     }
 
-    public async Task<Result> ForgotPasswordAsync(string email, string resetUrl, CancellationToken cancellationToken = default)
+    public async Task<Result<AuthToken>> GenerateEmailChangeTokenAsync(string userId, string newEmail, CancellationToken cancellationToken = default)
     {
-        var user = await _userManager.FindByEmailAsync(email);
+        var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            return Result.Failure(UserErrors.NotFound);
+            return Result.Failure<AuthToken>(UserErrors.NotFound);
         }
 
-        if (!user.EmailConfirmed)
-        {
-            return Result.Failure(UserErrors.EmailNotConfirmed);
-        }
+        var token = AuthToken.Encode(await _userManager.GenerateChangeEmailTokenAsync(user, newEmail));
 
-        var token = AuthToken.Encode(await _userManager.GeneratePasswordResetTokenAsync(user));
-        var uriBuilder = new UriBuilder(resetUrl)
-        {
-            Query = $"code={token.Code}"
-        };
-        var resetLink = HtmlEncoder.Default.Encode(uriBuilder.ToString());
-
-        await _emailSender.SendPasswordResetLinkAsync(user, email, resetLink);
-        return Result.Success();
-    }
-
-    public async Task<Result> GenerateEmailChangeAsync(ClaimsPrincipal principal, string email, string confirmUrl, CancellationToken cancellationToken = default)
-    {
-        var user = await _userManager.GetUserAsync(principal);
-        if (user is null)
-        {
-            return Result.Success();
-        }
-
-        var token = AuthToken.Encode(await _userManager.GenerateChangeEmailTokenAsync(user, email));
-        var uriBuilder = new UriBuilder(confirmUrl)
-        {
-            Query = $"userId={user.Id}&email={email}&code={token.Code}"
-        };
-        var confirmationLink = HtmlEncoder.Default.Encode(uriBuilder.ToString());
-
-        await _emailSender.SendConfirmationLinkAsync(user, email, confirmationLink);
-        return Result.Success();
+        return Result.Success(token);
     }
 
     public async Task<Result<AuthToken>> GenerateEmailConfirmationTokenAsync(string email, CancellationToken cancellationToken = default)
@@ -137,9 +84,21 @@ internal class AuthService : IAuthService
         return Result.Success(token);
     }
 
-    public async Task<Result<ApplicationUserDto>> GetCurrentUserAsync(ClaimsPrincipal principal, CancellationToken cancellationToken = default)
+    public async Task<Result<AuthToken>> GeneratePasswordResetTokenAsync(string email, CancellationToken cancellationToken = default)
     {
-        var user = await _userManager.GetUserAsync(principal);
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user is null)
+        {
+            return Result.Failure<AuthToken>(UserErrors.NotFound);
+        }
+
+        var token = AuthToken.Encode(await _userManager.GeneratePasswordResetTokenAsync(user));
+        return Result.Success(token);
+    }
+
+    public async Task<Result<ApplicationUserDto>> GetCurrentUserAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
             return Result.Failure<ApplicationUserDto>(UserErrors.NotFound);
@@ -226,24 +185,6 @@ internal class AuthService : IAuthService
         return result.Succeeded
             ? Result.Success()
             : Result.Failure(UserErrors.ErrorResettingPassword);
-    }
-
-    public async Task<Result> SendEmailConfirmationLinkAsync(string email, string confirmUrl, AuthToken token, CancellationToken cancellationToken = default)
-    {
-        var user = await _userManager.FindByEmailAsync(email);
-        if (user is null)
-        {
-            return Result.Failure(UserErrors.NotFound);
-        }
-
-        var uriBuilder = new UriBuilder(confirmUrl)
-        {
-            Query = $"userId={user.Id}&code={token.Code}"
-        };
-        var confirmationLink = HtmlEncoder.Default.Encode(uriBuilder.ToString());
-
-        await _emailSender.SendConfirmationLinkAsync(user, email, confirmationLink);
-        return Result.Success();
     }
 
     public async Task<Result> SignInAsync(string userId, CancellationToken cancellationToken = default)

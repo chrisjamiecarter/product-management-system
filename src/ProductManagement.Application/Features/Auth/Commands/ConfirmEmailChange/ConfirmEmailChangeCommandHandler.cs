@@ -34,15 +34,15 @@ internal sealed class ConfirmEmailChangeCommandHandler : ICommandHandler<Confirm
         var emailResult = await _userService.ChangeEmailAsync(request.UserId, request.Email, request.Token, cancellationToken);
         if (emailResult.IsFailure)
         {
-            return emailResult;
+            return Result.Failure(emailResult.Error);
         }
 
-        var refreshSignInResult = await _authService.RefreshSignInAsync(request.UserId, cancellationToken);
-        if (refreshSignInResult.IsFailure)
+        var refreshResult = await _authService.RefreshSignInAsync(request.UserId, cancellationToken);
+        if (refreshResult.IsFailure)
         {
-            return refreshSignInResult;
+            return Result.Failure(refreshResult.Error);
         }
-
+        
         return Result.Success();
     }
 }

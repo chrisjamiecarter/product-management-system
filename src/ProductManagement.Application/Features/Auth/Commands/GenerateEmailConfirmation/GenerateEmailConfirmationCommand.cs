@@ -2,5 +2,4 @@
 
 namespace ProductManagement.Application.Features.Auth.Commands.GenerateEmailConfirmation;
 
-public sealed record GenerateEmailConfirmationCommand(string Email,
-                                                      string ConfirmUrl) : ICommand;
+public sealed record GenerateEmailConfirmationCommand(string Email) : ICommand;

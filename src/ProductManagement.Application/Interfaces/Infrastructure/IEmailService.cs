@@ -2,5 +2,7 @@
 
 public interface IEmailService
 {
-    Task SendEmailAsync(string toEmailAddress, string subject, string body, CancellationToken cancellationToken = default);
+    Task SendChangeEmailConfirmationAsync(string toEmailAddress, string changeEmailConfirmationLink, CancellationToken cancellationToken = default);
+    Task SendEmailConfirmationAsync(string toEmailAddress, string emailConfirmationLink, CancellationToken cancellationToken = default);
+    Task SendPasswordResetAsync(string toEmailAddress, string passwordResetLink, CancellationToken cancellationToken = default);
 }

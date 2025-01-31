@@ -2,5 +2,4 @@
 
 namespace ProductManagement.Application.Features.Auth.Commands.ForgotPassword;
 
-public sealed record ForgotPasswordCommand(string Email,
-                                           string ResetPasswordUrl) : ICommand;
+public sealed record ForgotPasswordCommand(string Email) : ICommand;

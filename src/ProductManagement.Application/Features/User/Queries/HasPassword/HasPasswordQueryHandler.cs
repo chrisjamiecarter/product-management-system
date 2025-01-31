@@ -16,6 +16,7 @@ internal sealed class HasPasswordQueryHandler : IQueryHandler<HasPasswordQuery, 
     public async Task<Result<HasPasswordQueryResponse>> Handle(HasPasswordQuery request, CancellationToken cancellationToken)
     {
         var hasPasswordResult = await _userService.HasPasswordAsync(request.UserId, cancellationToken);
+        
         return hasPasswordResult.IsSuccess
             ? Result.Success(new HasPasswordQueryResponse(hasPasswordResult.Value))
             : Result.Failure<HasPasswordQueryResponse>(hasPasswordResult.Error);

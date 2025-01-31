@@ -20,13 +20,13 @@ internal sealed class AddPasswordCommandHandler : ICommandHandler<AddPasswordCom
         var addPasswordResult = await _userService.AddPasswordAsync(request.UserId, request.Password, cancellationToken);
         if (addPasswordResult.IsFailure)
         {
-            return addPasswordResult;
+            return Result.Failure(addPasswordResult.Error);
         }
 
         var refreshSignInResult = await _authService.RefreshSignInAsync(request.UserId, cancellationToken);
         if (refreshSignInResult.IsFailure)
         {
-            return refreshSignInResult;
+            return Result.Failure(refreshSignInResult.Error);
         }
 
         return Result.Success();

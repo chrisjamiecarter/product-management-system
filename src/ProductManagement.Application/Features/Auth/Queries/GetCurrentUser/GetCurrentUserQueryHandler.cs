@@ -1,5 +1,4 @@
 ﻿using ProductManagement.Application.Abstractions.Messaging;
-using ProductManagement.Application.Errors;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;
 
@@ -16,8 +15,8 @@ internal sealed class GetCurrentUserQueryHandler : IQueryHandler<GetCurrentUserQ
 
     public async Task<Result<GetCurrentUserQueryResponse>> Handle(GetCurrentUserQuery request, CancellationToken cancellationToken)
     {
-        var user = await _authService.GetCurrentUserAsync(request.Principal, cancellationToken);
-        
+        var user = await _authService.GetCurrentUserAsync(request.UserId, cancellationToken);
+
         return user.IsSuccess
             ? Result.Success(new GetCurrentUserQueryResponse(user.Value.Id, user.Value.Username, user.Value.Role, user.Value.EmailConfirmed))
             : Result.Failure<GetCurrentUserQueryResponse>(user.Error);

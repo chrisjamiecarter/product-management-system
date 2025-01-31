@@ -1,4 +1,5 @@
-﻿using ProductManagement.Application.Abstractions.Messaging;
+﻿using System.Security.Claims;
+using ProductManagement.Application.Abstractions.Messaging;
 
 namespace ProductManagement.Application.Features.User.Commands.AddPassword;
 

@@ -1,4 +1,5 @@
 ﻿using ProductManagement.Application.Interfaces.Application;
+using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.BlazorApp.Abstractions.Messaging;
 using ProductManagement.BlazorApp.Interfaces;
 using ProductManagement.BlazorApp.Services;
@@ -16,7 +17,7 @@ public static class PresentationInstaller
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<ISenderService, SenderService>();
         services.AddScoped<IToastService, ToastService>();
-        services.AddScoped<IUrlService, UrlService>();
+        services.AddScoped<ILinkBuilderService, LinkBuilderService>();
 
         return services;
     }

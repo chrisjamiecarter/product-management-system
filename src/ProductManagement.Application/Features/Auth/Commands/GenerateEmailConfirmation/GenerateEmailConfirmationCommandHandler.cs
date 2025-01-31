@@ -7,11 +7,15 @@ namespace ProductManagement.Application.Features.Auth.Commands.GenerateEmailConf
 internal sealed class GenerateEmailConfirmationCommandHandler : ICommandHandler<GenerateEmailConfirmationCommand>
 {
     private readonly IAuthService _authService;
+    private readonly IEmailService _emailService;
+    private readonly ILinkBuilderService _linkBuilderService;
     private readonly IUserService _userService;
 
-    public GenerateEmailConfirmationCommandHandler(IAuthService authService, IUserService userService)
+    public GenerateEmailConfirmationCommandHandler(IAuthService authService, IEmailService emailService, ILinkBuilderService linkBuilderService, IUserService userService)
     {
         _authService = authService;
+        _emailService = emailService;
+        _linkBuilderService = linkBuilderService;
         _userService = userService;
     }
 
@@ -24,8 +28,9 @@ internal sealed class GenerateEmailConfirmationCommandHandler : ICommandHandler<
             return Result.Success();
         }
 
-        var confirmedResult = await _userService.IsEmailConfirmedAsync(request.Email, cancellationToken);
-        if (confirmedResult.IsFailure || confirmedResult.Value)
+        var user = userResult.Value;
+
+        if (user.EmailConfirmed)
         {
             // Obfuscate that the email is already confirmed.
             return Result.Success();
@@ -37,12 +42,10 @@ internal sealed class GenerateEmailConfirmationCommandHandler : ICommandHandler<
             return Result.Failure(tokenResult.Error);
         }
 
-        var emailResult = await _authService.SendEmailConfirmationLinkAsync(request.Email, request.ConfirmUrl, tokenResult.Value, cancellationToken);
-        if (emailResult.IsFailure)
-        {
-            return Result.Failure(emailResult.Error);
-        }
+        var emailConfirmationLink = await _linkBuilderService.BuildEmailConfirmationLinkAsync(user.Id, tokenResult.Value, cancellationToken);
 
+        await _emailService.SendEmailConfirmationAsync(request.Email, emailConfirmationLink, cancellationToken);
+        
         return Result.Success();
     }
 }

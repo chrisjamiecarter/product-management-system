@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Shared;
@@ -30,7 +31,7 @@ internal class UserService : IUserService
             : Result.Failure(UserErrors.PasswordNotAdded);
     }
 
-    public async Task<Result> ChangeEmailAsync(string userId, string email, AuthToken token, CancellationToken cancellationToken = default)
+    public async Task<Result> ChangeEmailAsync(string userId, string newEmail, AuthToken token, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
@@ -38,16 +39,34 @@ internal class UserService : IUserService
             return Result.Failure(UserErrors.NotFound);
         }
 
-        var emailResult = await _userManager.ChangeEmailAsync(user, email, token.Value);
+        var emailResult = await _userManager.ChangeEmailAsync(user, newEmail, token.Value);
         if (!emailResult.Succeeded)
         {
             return Result.Failure(UserErrors.EmailNotChanged);
         }
 
-        var usernameResult = await _userManager.SetUserNameAsync(user, email);
+        var usernameResult = await _userManager.SetUserNameAsync(user, newEmail);
         if (!usernameResult.Succeeded)
         {
             return Result.Failure(UserErrors.UsernameNotChanged);
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result> ChangePasswordAsync(string userId, string currentPassword, string newPassword, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return Result.Success();
+        }
+
+        var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        if (!result.Succeeded)
+        {
+            // TODO: var passwordErrorMessage = $"Error: {string.Join(",", changePasswordResult.Errors.Select(error => error.Description))}";
+            return Result.Failure(UserErrors.PasswordNotChanged);
         }
 
         return Result.Success();

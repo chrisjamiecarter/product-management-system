@@ -3,7 +3,6 @@
 @inject NavigationManager NavigationManager
 @inject ISenderService Sender
 @inject IToastService ToastService
-@inject IUrlService UrlService
 
 @rendermode InteractiveServer
 
@@ -65,9 +64,7 @@ else
 
     private async Task AddUserAsync()
     {
-        var confirmUrl = UrlService.GetConfirmEmailUrl();
-
-        var command = new RegisterCommand(Input.Username, Input.Password, Input.Role, confirmUrl);
+        var command = new RegisterCommand(Input.Username, Input.Password, Input.Role);
         var response = await Sender.SendAsync(command);
         if (response.IsSuccess)
         {
