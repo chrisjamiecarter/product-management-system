@@ -1,4 +1,5 @@
 ﻿using ProductManagement.Application.Abstractions.Messaging;
+using ProductManagement.Application.Errors;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;
 
@@ -25,6 +26,12 @@ internal sealed class GenerateEmailChangeCommandHandler : ICommandHandler<Genera
         if (userResult.IsFailure)
         {
             return Result.Success();
+        }
+
+        var duplicateEmailResult = await _userService.FindByEmailAsync(request.UpdatedEmail, cancellationToken);
+        if (duplicateEmailResult.IsSuccess)
+        {
+            return Result.Failure(ApplicationErrors.User.UsernameTaken);
         }
 
         var tokenResult = await _authService.GenerateEmailChangeTokenAsync(request.UserId, request.UpdatedEmail, cancellationToken);

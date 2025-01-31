@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Shared;
