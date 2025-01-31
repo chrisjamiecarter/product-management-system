@@ -185,17 +185,11 @@
 
         if (urlParts.FirstOrDefault() == "account")
         {
-            if (urlParts.Length <= 1)
-            {
-                return AppPages.Manage;
-            }
-
-            return urlParts[1] switch
+            return urlParts.FirstOrDefault()?.ToLower() switch
             {
                 "login" => AppPages.Signin,
                 "register" => AppPages.Register,
-                "manage" => AppPages.Manage,
-                _ => AppPages.Unknown,
+                _ => AppPages.Manage,
             };
         }
 
