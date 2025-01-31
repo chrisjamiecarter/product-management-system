@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using ProductManagement.Infrastructure.Database.Models;
+using ProductManagement.Infrastructure.Models;
 
 namespace Microsoft.AspNetCore.Routing;
 internal static class IdentityComponentsEndpointRouteBuilderExtensions

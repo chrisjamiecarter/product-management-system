@@ -3,14 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ProductManagement.Application.Interfaces.Infrastructure;
-using ProductManagement.Infrastructure.Database.Contexts;
-using ProductManagement.Infrastructure.Database.Models;
-using ProductManagement.Infrastructure.Database.Repositories;
-using ProductManagement.Infrastructure.Database.Services;
-using ProductManagement.Infrastructure.Email.Options;
-using ProductManagement.Infrastructure.Email.Services;
+using ProductManagement.Infrastructure.Contexts;
 using ProductManagement.Infrastructure.EmailRender.Interfaces;
 using ProductManagement.Infrastructure.EmailRender.Services;
+using ProductManagement.Infrastructure.Models;
+using ProductManagement.Infrastructure.Options;
+using ProductManagement.Infrastructure.Repositories;
 using ProductManagement.Infrastructure.Services;
 
 namespace ProductManagement.Infrastructure.Installers;

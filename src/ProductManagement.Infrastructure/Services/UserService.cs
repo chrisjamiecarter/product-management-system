@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Shared;
-using ProductManagement.Infrastructure.Database.Models;
 using ProductManagement.Infrastructure.Errors;
+using ProductManagement.Infrastructure.Models;
 
 namespace ProductManagement.Infrastructure.Services;
 

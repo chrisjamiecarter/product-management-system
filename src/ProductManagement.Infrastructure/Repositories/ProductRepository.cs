@@ -4,9 +4,9 @@ using Microsoft.Extensions.Logging;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Entities;
-using ProductManagement.Infrastructure.Database.Contexts;
+using ProductManagement.Infrastructure.Contexts;
 
-namespace ProductManagement.Infrastructure.Database.Repositories;
+namespace ProductManagement.Infrastructure.Repositories;
 
 internal class ProductRepository(ProductManagementDbContext context, ILogger<ProductRepository> logger) : IProductRepository
 {

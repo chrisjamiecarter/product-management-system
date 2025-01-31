@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using ProductManagement.Domain.Entities;
 using ProductManagement.Domain.ValueObjects;
-using ProductManagement.Infrastructure.Database.Contexts;
-using ProductManagement.Infrastructure.Database.Models;
-using ProductManagement.Infrastructure.Email.Options;
+using ProductManagement.Infrastructure.Contexts;
+using ProductManagement.Infrastructure.Models;
+using ProductManagement.Infrastructure.Options;
 
-namespace ProductManagement.Infrastructure.Database.Services;
+namespace ProductManagement.Infrastructure.Services;
 
 internal class SeederService
 {

@@ -1,4 +1,4 @@
-﻿namespace ProductManagement.Infrastructure.Database.Models;
+﻿namespace ProductManagement.Infrastructure.Models;
 
 internal class SeedUser
 {

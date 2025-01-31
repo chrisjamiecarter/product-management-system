@@ -2,11 +2,11 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ProductManagement.Domain.Entities;
-using ProductManagement.Infrastructure.Database.Configurations;
-using ProductManagement.Infrastructure.Database.Constants;
-using ProductManagement.Infrastructure.Database.Models;
+using ProductManagement.Infrastructure.Constants;
+using ProductManagement.Infrastructure.Configurations;
+using ProductManagement.Infrastructure.Models;
 
-namespace ProductManagement.Infrastructure.Database.Contexts;
+namespace ProductManagement.Infrastructure.Contexts;
 
 internal class ProductManagementDbContext(DbContextOptions<ProductManagementDbContext> options) : IdentityDbContext<ApplicationUser>(options)
 {
@@ -21,7 +21,7 @@ internal class ProductManagementDbContext(DbContextOptions<ProductManagementDbCo
             a.ToTable("Users", SchemaConstants.IdentitySchema);
             a.HasMany(e => e.UserRoles).WithOne().HasForeignKey(fk => fk.UserId).IsRequired();
         });
-            
+
         builder.Entity<IdentityRole>().ToTable("Roles", SchemaConstants.IdentitySchema);
         builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims", SchemaConstants.IdentitySchema);
         builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles", SchemaConstants.IdentitySchema);

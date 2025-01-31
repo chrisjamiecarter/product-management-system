@@ -2,11 +2,11 @@
 using Microsoft.Extensions.Options;
 using MimeKit;
 using ProductManagement.Application.Interfaces.Infrastructure;
-using ProductManagement.Infrastructure.Email.Options;
 using ProductManagement.Infrastructure.EmailRender.Interfaces;
 using ProductManagement.Infrastructure.EmailRender.Views.Emails.PasswordReset;
+using ProductManagement.Infrastructure.Options;
 
-namespace ProductManagement.Infrastructure.Email.Services;
+namespace ProductManagement.Infrastructure.Services;
 
 internal class EmailService : IEmailService
 {

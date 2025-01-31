@@ -1,6 +1,6 @@
-﻿using ProductManagement.Infrastructure.Database.Models;
+﻿using ProductManagement.Infrastructure.Models;
 
-namespace ProductManagement.Infrastructure.Email.Options;
+namespace ProductManagement.Infrastructure.Options;
 
 internal class SeederOptions
 {

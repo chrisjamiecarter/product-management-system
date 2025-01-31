@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Entities;
-using ProductManagement.Infrastructure.Database.Models;
+using ProductManagement.Infrastructure.Models;
 
-namespace ProductManagement.Infrastructure.Database.Repositories;
+namespace ProductManagement.Infrastructure.Repositories;
 
 /// <summary>
 /// TODO: Turn into a thin repository for UserMananger only.
@@ -94,7 +94,7 @@ internal class UserRepository : IUserRepository
         {
             return null;
         }
-        
+
         var roles = await _userManager.GetRolesAsync(applicationUser);
         var role = roles.Any() ? roles.FirstOrDefault() : null;
 
@@ -182,7 +182,7 @@ internal class UserRepository : IUserRepository
         var roles = await _userManager.GetRolesAsync(applicationUser);
         if (roles.Count > 1)
         {
-            foreach(var role in roles)
+            foreach (var role in roles)
             {
                 await _userManager.RemoveFromRoleAsync(applicationUser, role);
             }

@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ProductManagement.Domain.Entities;
 using ProductManagement.Domain.ValueObjects;
-using ProductManagement.Infrastructure.Database.Constants;
+using ProductManagement.Infrastructure.Constants;
 
-namespace ProductManagement.Infrastructure.Database.Configurations;
+namespace ProductManagement.Infrastructure.Configurations;
 
 /// <summary>
 /// Configures a <see cref="Product"/> table definition in the database.

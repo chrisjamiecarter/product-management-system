@@ -1,4 +1,4 @@
-﻿namespace ProductManagement.Infrastructure.Database.Constants;
+﻿namespace ProductManagement.Infrastructure.Constants;
 
 internal static class SchemaConstants
 {

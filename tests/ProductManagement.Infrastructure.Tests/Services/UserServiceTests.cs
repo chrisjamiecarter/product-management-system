@@ -2,8 +2,8 @@
 using Moq;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
-using ProductManagement.Infrastructure.Database.Models;
 using ProductManagement.Infrastructure.Errors;
+using ProductManagement.Infrastructure.Models;
 using ProductManagement.Infrastructure.Services;
 
 namespace ProductManagement.Infrastructure.Tests.Services;

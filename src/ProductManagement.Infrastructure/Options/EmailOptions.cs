@@ -1,9 +1,9 @@
-﻿namespace ProductManagement.Infrastructure.Email.Options;
+﻿namespace ProductManagement.Infrastructure.Options;
 
 internal class EmailOptions
 {
     public string SmtpHost { get; set; } = string.Empty;
-    
+
     public int SmtpPort { get; set; }
 
     public string SmtpUser { get; set; } = string.Empty;

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using ProductManagement.Application.Models;
 
-namespace ProductManagement.Infrastructure.Database.Models;
+namespace ProductManagement.Infrastructure.Models;
 
 // TODO: This needs to be made internal and all Infrastructure references in the BlazorApp project need to be removed.
 public class ApplicationUser : IdentityUser
