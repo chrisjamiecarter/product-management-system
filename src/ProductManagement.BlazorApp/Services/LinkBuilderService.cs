@@ -19,7 +19,7 @@ internal class LinkBuilderService : ILinkBuilderService
 
         var builder = new UriBuilder(url)
         {
-            Query = $"userId={userId}&email&{email}&code={token.Code}"
+            Query = $"userId={userId}&email={email}&code={token.Code}"
         };
 
         return Task.FromResult(builder.ToString());

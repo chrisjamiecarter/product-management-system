@@ -1,0 +1,3 @@
+﻿namespace ProductManagement.Infrastructure.EmailRender.Views.Emails.ChangeEmailConfirmation;
+
+public sealed record ChangeEmailConfirmationViewModel(string ChangeEmailConfirmationLink);
