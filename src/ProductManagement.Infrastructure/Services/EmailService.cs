@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using MimeKit;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Infrastructure.EmailRender.Interfaces;
+using ProductManagement.Infrastructure.EmailRender.Views.Emails.EmailConfirmation;
 using ProductManagement.Infrastructure.EmailRender.Views.Emails.PasswordReset;
 using ProductManagement.Infrastructure.Options;
 
@@ -28,7 +29,8 @@ internal class EmailService : IEmailService
 
     public async Task SendEmailConfirmationAsync(string toEmailAddress, string emailConfirmationLink, CancellationToken cancellationToken = default)
     {
-        var body = $"Please confirm your account by <a href='{emailConfirmationLink}'>clicking here</a>.";
+        var emailConfirmationViewModel = new EmailConfirmationViewModel(emailConfirmationLink);
+        var body = await _renderService.RenderViewToStringAsync("/Views/Emails/EmailConfirmation/EmailConfirmation.cshtml", emailConfirmationViewModel);
 
         await SendEmailAsync(toEmailAddress, "Confirm your email", body, cancellationToken);
     }

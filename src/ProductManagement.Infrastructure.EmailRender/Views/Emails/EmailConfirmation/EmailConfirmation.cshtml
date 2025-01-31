@@ -1,6 +1,6 @@
-﻿@using ProductManagement.Infrastructure.EmailRender.Views.Emails.PasswordReset
+﻿@using ProductManagement.Infrastructure.EmailRender.Views.Emails.EmailConfirmation
 @using ProductManagement.Infrastructure.EmailRender.Views.Shared
-@model PasswordResetViewModel
+@model EmailConfirmationViewModel
 
 <!-- HEADER TEXT -->
 <div class="u-row-container" style="padding: 0px;background-color: transparent">
@@ -19,7 +19,7 @@
                                     <td style="overflow-wrap:break-word;word-break:break-word;padding:30px 10px;font-family:'Lato',sans-serif;" align="left">
 
                                         <div style="font-size: 14px; line-height: 140%; text-align: left; word-wrap: break-word;">
-                                            <p style="font-size: 14px; line-height: 140%; text-align: center; margin: 0px;"><span style="font-size: 28px; line-height: 39.2px; color: #ffffff; font-family: Lato, sans-serif;">Reset your password<br /></span></p>
+                                            <p style="font-size: 14px; line-height: 140%; text-align: center; margin: 0px;"><span style="font-size: 28px; line-height: 39.2px; color: #ffffff; font-family: Lato, sans-serif;">Confirm your email<br /></span></p>
                                         </div>
 
                                     </td>
@@ -58,9 +58,9 @@
                                         <div style="font-size: 14px; line-height: 140%; text-align: left; word-wrap: break-word;">
                                             <p style="font-size: 14px; line-height: 140%; margin: 0px;"><span style="font-size: 18px; line-height: 25.2px; color: #666666;">Hey 👋,</span></p>
                                             <p style="font-size: 14px; line-height: 140%; margin: 0px;">&nbsp;</p>
-                                            <p style="font-size: 14px; line-height: 140%; margin: 0px;"><span style="font-size: 18px; line-height: 25.2px; color: #666666;">We have sent you this email in response to your request to reset your password on <strong>Product Management System</strong>.</span></p>
+                                            <p style="font-size: 14px; line-height: 140%; margin: 0px;"><span style="font-size: 18px; line-height: 25.2px; color: #666666;">We have sent you this email in order for you to confirm your email on <strong>Product Management System</strong>.</span></p>
                                             <p style="font-size: 14px; line-height: 140%; margin: 0px;">&nbsp;</p>
-                                            <p style="font-size: 14px; line-height: 140%; margin: 0px;"><span style="font-size: 18px; line-height: 25.2px; color: #666666;">To reset your password, please follow the link below: </span></p>
+                                            <p style="font-size: 14px; line-height: 140%; margin: 0px;"><span style="font-size: 18px; line-height: 25.2px; color: #666666;">To confirm your email, please follow the link below: </span></p>
                                         </div>
 
                                     </td>
@@ -69,7 +69,7 @@
                         </table>
 
                         <!-- BUTTON -->
-                        @await Html.PartialAsync("EmailButton", new EmailButtonViewModel("Reset Password", Model.PasswordResetLink))
+                        @await Html.PartialAsync("EmailButton", new EmailButtonViewModel("Confirm Email", Model.EmailConfirmationLink))
 
                         <!-- Ignore Text -->
                         <table style="font-family:'Lato',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
@@ -78,7 +78,7 @@
                                     <td style="overflow-wrap:break-word;word-break:break-word;padding:40px 40px 30px;font-family:'Lato',sans-serif;" align="left">
 
                                         <div style="font-size: 14px; line-height: 140%; text-align: center; word-wrap: break-word;">
-                                            <p style="font-size: 14px; line-height: 140%; margin: 0px;"><span style="color: #888888; font-size: 14px; line-height: 19.6px;"><em><span style="font-size: 16px; line-height: 22.4px;">Please ignore this email if you did not request a password change.</span></em></span><br /><span style="color: #888888; font-size: 14px; line-height: 19.6px;"><em><span style="font-size: 16px; line-height: 22.4px;">&nbsp;</span></em></span></p>
+                                            <p style="font-size: 14px; line-height: 140%; margin: 0px;"><span style="color: #888888; font-size: 14px; line-height: 19.6px;"><em><span style="font-size: 16px; line-height: 22.4px;">Please ignore this email if you do not have an account.</span></em></span><br /><span style="color: #888888; font-size: 14px; line-height: 19.6px;"><em><span style="font-size: 16px; line-height: 22.4px;">&nbsp;</span></em></span></p>
                                         </div>
 
                                     </td>

@@ -1,5 +1,4 @@
-﻿using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 
@@ -16,15 +15,14 @@ internal class LinkBuilderService : ILinkBuilderService
 
     public Task<string> BuildChangeEmailConfirmationLinkAsync(string userId, string email, AuthToken token, CancellationToken cancellationToken = default)
     {
-        var url = _navigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri;
+        var url = _navigationManager.ToAbsoluteUri("Account/ConfirmEmailChange").AbsoluteUri;
 
         var builder = new UriBuilder(url)
         {
             Query = $"userId={userId}&email&{email}&code={token.Code}"
         };
-        var link = HtmlEncoder.Default.Encode(builder.ToString());
 
-        return Task.FromResult(link);
+        return Task.FromResult(builder.ToString());
     }
 
     public Task<string> BuildEmailConfirmationLinkAsync(string userId, AuthToken token, CancellationToken cancellationToken = default)
@@ -35,9 +33,8 @@ internal class LinkBuilderService : ILinkBuilderService
         {
             Query = $"userId={userId}&code={token.Code}"
         };
-        var link = HtmlEncoder.Default.Encode(builder.ToString());
 
-        return Task.FromResult(link);
+        return Task.FromResult(builder.ToString());
     }
 
     public Task<string> BuildPasswordResetLinkAsync(AuthToken token, CancellationToken cancellationToken = default)
@@ -48,8 +45,7 @@ internal class LinkBuilderService : ILinkBuilderService
         {
             Query = $"code={token.Code}"
         };
-        var link = HtmlEncoder.Default.Encode(builder.ToString());
 
-        return Task.FromResult(link);
+        return Task.FromResult(builder.ToString());
     }
 }

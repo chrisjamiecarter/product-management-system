@@ -1,3 +1,3 @@
 ﻿namespace ProductManagement.Infrastructure.EmailRender.Views.Emails.PasswordReset;
 
-public record PasswordResetViewModel(string PasswordResetUrl);
+public record PasswordResetViewModel(string PasswordResetLink);
