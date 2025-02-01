@@ -2,7 +2,7 @@
 
 namespace ProductManagement.Domain.Errors;
 
-internal class DomainErrors
+public class DomainErrors
 {
     public static class ProductName
     {
