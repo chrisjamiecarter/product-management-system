@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
@@ -15,8 +17,26 @@ public class UserServiceTests
 
     public UserServiceTests()
     {
+        var userStoreMock = new Mock<IUserStore<ApplicationUser>>();
+        var options = new Mock<IOptions<IdentityOptions>>();
+        var passwordHasher = new Mock<IPasswordHasher<ApplicationUser>>();
+        var userValidators = new List<IUserValidator<ApplicationUser>>();
+        var passwordValidators = new List<IPasswordValidator<ApplicationUser>>();
+        var keyNormalizer = new Mock<ILookupNormalizer>();
+        var errors = new Mock<IdentityErrorDescriber>();
+        var services = new Mock<IServiceProvider>();
+        var logger = new Mock<ILogger<UserManager<ApplicationUser>>>();
+
         _userManagerMock = new Mock<UserManager<ApplicationUser>>(
-            Mock.Of<IUserStore<ApplicationUser>>(), null, null, null, null, null, null, null, null);
+            userStoreMock.Object,
+            options.Object,
+            passwordHasher.Object,
+            userValidators,
+            passwordValidators,
+            keyNormalizer.Object,
+            errors.Object,
+            services.Object,
+            logger.Object);
 
         _userService = new UserService(_userManagerMock.Object);
     }
