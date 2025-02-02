@@ -26,7 +26,7 @@ internal class EmailService : IEmailService
         var changeEmailConfirmationViewModel = new ChangeEmailConfirmationViewModel(changeEmailConfirmationLink);
         var body = await _renderService.RenderViewToStringAsync("/Views/Emails/ChangeEmailConfirmation/ChangeEmailConfirmation.cshtml", changeEmailConfirmationViewModel);
 
-        await SendEmailAsync(toEmailAddress, "Confirm your email", body, cancellationToken);
+        await SendEmailAsync(toEmailAddress, "Confirm your change of email", body, cancellationToken);
     }
 
     public async Task SendEmailConfirmationAsync(string toEmailAddress, string emailConfirmationLink, CancellationToken cancellationToken = default)
