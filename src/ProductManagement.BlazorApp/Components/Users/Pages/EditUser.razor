@@ -38,9 +38,11 @@ else
                 </div>
                 <div class="form-floating mb-3">
                     <FixedInputSelect id="updateUserRole" class=@($"form-select {EditContext?.GetValidationClass(() => Input.Role)}") @bind-Value="Input.Role">
-                        <option value=""></option>
-                        <option value="Admin">Admin</option>
-                        <option value="User">User</option>
+                        <option value="">None</option>
+                        @foreach (var role in Roles.AllRoles)
+                        {
+                            <option value="@role">@role</option>
+                        }
                     </FixedInputSelect>
                     <label for="updateUserRole">Role</label>
                     <ValidationMessage For="() => Input.Role" class="invalid-feedback" />
@@ -88,10 +90,8 @@ else
             return;
         }
         
-        var command = new UpdateUserCommand(Input.Id,
-                                            Input.Username,
-                                            Input.Role,
-                                            Input.EmailConfirmed);
+        var command = new UpdateRoleCommand(Input.Id,
+                                            Input.Role);
 
         var response = await Sender.SendAsync(command);
         if (response.IsSuccess)

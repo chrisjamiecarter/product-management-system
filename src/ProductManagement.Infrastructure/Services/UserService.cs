@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ProductManagement.Application.Errors;
-using ProductManagement.Application.Features.Users.Queries.GetUsersPaginated;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Shared;
@@ -12,13 +11,13 @@ namespace ProductManagement.Infrastructure.Services;
 
 internal class UserService : IUserService
 {
-    private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public UserService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+    public UserService(RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager)
     {
-        _userManager = userManager;
         _roleManager = roleManager;
+        _userManager = userManager;
     }
 
     public async Task<Result> AddPasswordAsync(string userId, string password, CancellationToken cancellationToken = default)
@@ -196,6 +195,41 @@ internal class UserService : IUserService
 
         var response = await _userManager.IsEmailConfirmedAsync(user);
         return Result.Success(response);
+    }
+
+    public async Task<Result> UpdateRoleAsync(string userId, string role, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return Result.Failure(UserErrors.NotFound);
+        }
+
+        // NOTE: User can have many Roles, but in this app we treat role as singular.
+        var currentRoles = await _userManager.GetRolesAsync(user);
+        if (currentRoles.FirstOrDefault() != role)
+        {
+            foreach (var currentRole in  currentRoles)
+            {
+                var removeResult = await _userManager.RemoveFromRoleAsync(user, currentRole);
+                if (!removeResult.Succeeded)
+                {
+                    return Result.Failure(UserErrors.NotAddedToRole);
+                }
+            }
+        }
+
+        // NOTE: Only add to valid role - Not whitespace.
+        if (!string.IsNullOrWhiteSpace(role))
+        {
+            var roleResult = await _userManager.AddToRoleAsync(user, role);
+            if (!roleResult.Succeeded)
+            {
+                return Result.Failure(UserErrors.NotAddedToRole);
+            }
+        }
+
+        return Result.Success();
     }
 
     private async Task<string?> GetUserRole(ApplicationUser user)

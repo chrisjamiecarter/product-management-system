@@ -23,7 +23,6 @@ public class UpdateUserInputModel
     [EmailAddress]
     public string? Username { get; set; }
 
-    [Required]
     [DataType(DataType.Text)]
     public string? Role { get; set; } = string.Empty;
 

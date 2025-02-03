@@ -36,9 +36,13 @@ public static class ApplicationErrors
 
     public static class User
     {
+        public static readonly Error CannotUpdateSelf = new(
+            "User.CannotUpdateSelf",
+            "You cannot update yourself.");
+
         public static readonly Error NotCreated = new(
             "User.NotCreated",
-            "The product was not created.");
+            "The user was not created.");
 
         public static readonly Error NotDeleted = new(
             "User.NotDeleted",

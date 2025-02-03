@@ -14,4 +14,5 @@ public interface IUserService
     Task<Result<PaginatedList<ApplicationUserDto>>> GetPageAsync(string? searchUsername, string? searchRole, bool? searchEmailConfirmed, string? sortColumn, string? sortOrder, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
     Task<Result<bool>> HasPasswordAsync(string userId, CancellationToken cancellationToken = default);
     Task<Result<bool>> IsEmailConfirmedAsync(string userId, CancellationToken cancellationToken = default);
+    Task<Result> UpdateRoleAsync(string userId, string role, CancellationToken cancellationToken = default);
 }

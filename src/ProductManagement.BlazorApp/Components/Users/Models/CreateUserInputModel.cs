@@ -13,7 +13,6 @@ public class CreateUserInputModel
     [DataType(DataType.Password)]
     public string? Password { get; }
 
-    [Required]
     [DataType(DataType.Text)]
     public string Role { get; set; } = string.Empty;
 
