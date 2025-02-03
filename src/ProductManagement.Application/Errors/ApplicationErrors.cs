@@ -36,6 +36,10 @@ public static class ApplicationErrors
 
     public static class User
     {
+        public static readonly Error CannotDeleteSelf = new(
+            "User.CannotDeleteSelf",
+            "You cannot delete yourself.");
+
         public static readonly Error CannotUpdateSelf = new(
             "User.CannotUpdateSelf",
             "You cannot update yourself.");
