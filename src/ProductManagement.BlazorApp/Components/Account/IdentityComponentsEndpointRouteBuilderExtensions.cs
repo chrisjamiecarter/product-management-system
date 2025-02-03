@@ -1,7 +1,6 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using ProductManagement.Infrastructure.Models;
+using ProductManagement.Application.Interfaces.Infrastructure;
 
 namespace Microsoft.AspNetCore.Routing;
 internal static class IdentityComponentsEndpointRouteBuilderExtensions
@@ -15,10 +14,10 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
 
         accountGroup.MapPost("/Logout", async (
             ClaimsPrincipal user,
-            [FromServices] SignInManager<ApplicationUser> signInManager,
+            [FromServices] IAuthService authService,
             [FromForm] string returnUrl) =>
         {
-            await signInManager.SignOutAsync();
+            await authService.SignOutAsync();
             return TypedResults.LocalRedirect($"~/{returnUrl}");
         });
 

@@ -49,7 +49,7 @@ public class UserServiceTests
                                                                   services.Object,
                                                                   userLogger.Object);
 
-        _userService = new UserService(_userManagerMock.Object, _roleManagerMock.Object);
+        _userService = new UserService(_roleManagerMock.Object, _userManagerMock.Object);
     }
 
     [Fact]

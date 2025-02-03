@@ -18,4 +18,5 @@ public interface IAuthService
     Task<Result> ResetPasswordAsync(string email, string password, AuthToken token, CancellationToken cancellationToken = default);
     Task<Result> SignInAsync(string userId, CancellationToken cancellationToken = default);
     Task<Result> SignOutAsync(CancellationToken cancellationToken = default);
+    Task<Result> ValidateSecurityStampAsync(ClaimsPrincipal principal, CancellationToken cancellationToken = default);
 }

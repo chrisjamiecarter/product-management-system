@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Shared;
@@ -9,11 +11,13 @@ namespace ProductManagement.Infrastructure.Services;
 
 internal class AuthService : IAuthService
 {
+    private readonly IdentityOptions _options;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public AuthService(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+    public AuthService(IOptions<IdentityOptions> options, SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
     {
+        _options = options.Value;
         _signInManager = signInManager;
         _userManager = userManager;
     }
@@ -203,5 +207,26 @@ internal class AuthService : IAuthService
     {
         await _signInManager.SignOutAsync();
         return Result.Success();
+    }
+
+    public async Task<Result> ValidateSecurityStampAsync(ClaimsPrincipal principal, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.GetUserAsync(principal);
+        if (user is null)
+        {
+            return Result.Failure(UserErrors.NotFound);
+        }
+
+        if (!_userManager.SupportsUserSecurityStamp)
+        {
+            return Result.Success();
+        }
+
+        var principalStamp = principal.FindFirstValue(_options.ClaimsIdentity.SecurityStampClaimType);
+        var userStamp = await _userManager.GetSecurityStampAsync(user);
+
+        return principalStamp == userStamp
+            ? Result.Success()
+            : Result.Failure(UserErrors.InvalidSecurityStamp);
     }
 }

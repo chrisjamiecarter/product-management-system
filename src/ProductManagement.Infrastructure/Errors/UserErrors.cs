@@ -42,6 +42,10 @@ internal static class UserErrors
         "User.ErrorResettingPassword",
         "There was an error when resetting the users password.");
 
+    internal static readonly Error InvalidSecurityStamp = new(
+        "User.InvalidSecurityStamp",
+        "Invalid security stamp.");
+
     internal static readonly Error InvalidSignInAttempt = new(
         "User.InvalidSignInAttempt",
         "Invalid sign in attempt.");
