@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using ProductManagement.Application.Errors;
+using ProductManagement.Application.Features.Users.Queries.GetUsersPaginated;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Shared;
@@ -10,10 +13,12 @@ namespace ProductManagement.Infrastructure.Services;
 internal class UserService : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
 
-    public UserService(UserManager<ApplicationUser> userManager)
+    public UserService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
     {
         _userManager = userManager;
+        _roleManager = roleManager;
     }
 
     public async Task<Result> AddPasswordAsync(string userId, string password, CancellationToken cancellationToken = default)
@@ -71,6 +76,20 @@ internal class UserService : IUserService
         return Result.Success();
     }
 
+    public async Task<Result> DeleteAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return Result.Failure(UserErrors.NotFound);
+        }
+
+        var deleted = await _userManager.DeleteAsync(user);
+        return deleted.Succeeded
+            ? Result.Success()
+            : Result.Failure(UserErrors.NotDeleted);
+    }
+
     public async Task<Result<ApplicationUserDto>> FindByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByEmailAsync(email);
@@ -93,6 +112,66 @@ internal class UserService : IUserService
 
         var role = await GetUserRole(user);
         return Result.Success(user.ToDto(role));
+    }
+
+    public async Task<Result<PaginatedList<ApplicationUserDto>>> GetPageAsync(string? searchUsername, string? searchRole, bool? searchEmailConfirmed, string? sortColumn, string? sortOrder, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    {
+        if (pageNumber <= 0)
+        {
+            return Result.Failure<PaginatedList<ApplicationUserDto>>(ApplicationErrors.PaginatedList.InvalidPageNumber);
+        }
+
+        if (pageSize <= 0)
+        {
+            return Result.Failure<PaginatedList<ApplicationUserDto>>(ApplicationErrors.PaginatedList.InvalidPageSize);
+        }
+
+        var query = _userManager.Users.Select(u => new
+        {
+            User = u,
+            RoleNames = _userManager.Users.Where(w => w.Id == u.Id)
+            .SelectMany(s => s.UserRoles)
+            .Join(_roleManager.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Name)
+            .ToList()
+        });
+
+        if (!string.IsNullOrWhiteSpace(searchUsername))
+        {
+            query = query.Where(q => q.User.UserName != null && q.User.UserName.Contains(searchUsername));
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchRole))
+        {
+            query = query.Where(q => q.RoleNames.Contains(searchRole));
+        }
+
+        if (searchEmailConfirmed != null)
+        {
+            query = query.Where(q => q.User.EmailConfirmed == searchEmailConfirmed);
+        }
+
+        var isDesc = sortOrder?.ToLower() == "desc";
+        query = sortColumn?.ToLower() switch
+        {
+            "emailconfirmed" when isDesc => query.OrderByDescending(q => q.User.EmailConfirmed).ThenBy(q => q.User.UserName),
+            "emailconfirmed" => query.OrderBy(q => q.User.EmailConfirmed).ThenBy(q => q.User.UserName),
+            "role" when isDesc => query.OrderByDescending(q => q.RoleNames.FirstOrDefault()).ThenBy(q => q.User.UserName),
+            "role" => query.OrderBy(q => q.RoleNames.FirstOrDefault()).ThenBy(q => q.User.UserName),
+            "username" when isDesc => query.OrderByDescending(q => q.User.UserName),
+            _ => query.OrderBy(q => q.User.UserName),
+        };
+
+        var count = await query.CountAsync(cancellationToken);
+        var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
+
+        var users = items.Select(item => new ApplicationUserDto(
+            item.User.Id,
+            item.User.UserName,
+            item.RoleNames.FirstOrDefault() ?? null,
+            item.User.EmailConfirmed))
+            .ToList();
+
+        return PaginatedList<ApplicationUserDto>.Create(users, count, pageNumber, pageSize);
     }
 
     public async Task<Result<bool>> HasPasswordAsync(string userId, CancellationToken cancellationToken = default)

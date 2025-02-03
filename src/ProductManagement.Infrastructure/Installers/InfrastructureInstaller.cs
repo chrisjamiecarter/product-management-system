@@ -40,7 +40,6 @@ public static class InfrastructureInstaller
         .AddDefaultTokenProviders();
 
         services.AddScoped<IProductRepository, ProductRepository>();
-        services.AddScoped<IUserRepository, UserRepository>();
 
         services.Configure<SeederOptions>(configuration.GetSection(nameof(SeederOptions)));
         services.AddScoped<SeederService>();

@@ -12,33 +12,44 @@ namespace ProductManagement.Infrastructure.Tests.Services;
 
 public class UserServiceTests
 {
+    private readonly Mock<RoleManager<IdentityRole>> _roleManagerMock;
     private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
     private readonly IUserService _userService;
 
     public UserServiceTests()
     {
-        var userStoreMock = new Mock<IUserStore<ApplicationUser>>();
-        var options = new Mock<IOptions<IdentityOptions>>();
-        var passwordHasher = new Mock<IPasswordHasher<ApplicationUser>>();
-        var userValidators = new List<IUserValidator<ApplicationUser>>();
-        var passwordValidators = new List<IPasswordValidator<ApplicationUser>>();
         var keyNormalizer = new Mock<ILookupNormalizer>();
         var errors = new Mock<IdentityErrorDescriber>();
+        var options = new Mock<IOptions<IdentityOptions>>();
+        var passwordHasher = new Mock<IPasswordHasher<ApplicationUser>>();
+        var passwordValidators = new List<IPasswordValidator<ApplicationUser>>();
         var services = new Mock<IServiceProvider>();
-        var logger = new Mock<ILogger<UserManager<ApplicationUser>>>();
+        
+        var roleLogger = new Mock<ILogger<RoleManager<IdentityRole>>>();
+        var roleStore = new Mock<IRoleStore<IdentityRole>>();
+        var roleValidators = new List<IRoleValidator<IdentityRole>>(); 
+        
+        var userLogger = new Mock<ILogger<UserManager<ApplicationUser>>>();
+        var userStore = new Mock<IUserStore<ApplicationUser>>();
+        var userValidators = new List<IUserValidator<ApplicationUser>>();
 
-        _userManagerMock = new Mock<UserManager<ApplicationUser>>(
-            userStoreMock.Object,
-            options.Object,
-            passwordHasher.Object,
-            userValidators,
-            passwordValidators,
-            keyNormalizer.Object,
-            errors.Object,
-            services.Object,
-            logger.Object);
+        _roleManagerMock = new Mock<RoleManager<IdentityRole>>(roleStore.Object,
+                                                               roleValidators,
+                                                               keyNormalizer.Object,
+                                                               errors.Object,
+                                                               roleLogger.Object);
+        
+        _userManagerMock = new Mock<UserManager<ApplicationUser>>(userStore.Object,
+                                                                  options.Object,
+                                                                  passwordHasher.Object,
+                                                                  userValidators,
+                                                                  passwordValidators,
+                                                                  keyNormalizer.Object,
+                                                                  errors.Object,
+                                                                  services.Object,
+                                                                  userLogger.Object);
 
-        _userService = new UserService(_userManagerMock.Object);
+        _userService = new UserService(_userManagerMock.Object, _roleManagerMock.Object);
     }
 
     [Fact]

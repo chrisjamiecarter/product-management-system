@@ -8,8 +8,10 @@ public interface IUserService
     Task<Result> AddPasswordAsync(string userId, string password, CancellationToken cancellationToken = default);
     Task<Result> ChangeEmailAsync(string userId, string newEmail, AuthToken token, CancellationToken cancellationToken = default);
     Task<Result> ChangePasswordAsync(string userId, string currentPassword, string newPassword, CancellationToken cancellationToken = default);
+    Task<Result> DeleteAsync(string userId, CancellationToken cancellationToken = default);
     Task<Result<ApplicationUserDto>> FindByEmailAsync(string email, CancellationToken cancellationToken = default);
     Task<Result<ApplicationUserDto>> FindByIdAsync(string userId, CancellationToken cancellationToken = default);
+    Task<Result<PaginatedList<ApplicationUserDto>>> GetPageAsync(string? searchUsername, string? searchRole, bool? searchEmailConfirmed, string? sortColumn, string? sortOrder, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
     Task<Result<bool>> HasPasswordAsync(string userId, CancellationToken cancellationToken = default);
     Task<Result<bool>> IsEmailConfirmedAsync(string userId, CancellationToken cancellationToken = default);
 }

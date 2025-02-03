@@ -12,6 +12,10 @@ internal static class UserErrors
         "User.EmailNotChanged",
         "There was an error when changing the users email value.");
 
+    internal static readonly Error NotDeleted = new(
+        "User.NotDeleted",
+        "The user was not deleted.");
+
     internal static readonly Error NotFound = new(
         "User.NotFound",
         "The user was not found.");

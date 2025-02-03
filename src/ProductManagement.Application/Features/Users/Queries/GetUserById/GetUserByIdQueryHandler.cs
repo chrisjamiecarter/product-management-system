@@ -1,5 +1,4 @@
 ﻿using ProductManagement.Application.Abstractions.Messaging;
-using ProductManagement.Application.Errors;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;
 
@@ -7,20 +6,22 @@ namespace ProductManagement.Application.Features.Users.Queries.GetUserById;
 
 internal sealed class GetUserByIdQueryHandler : IQueryHandler<GetUserByIdQuery, GetUserByIdQueryResponse>
 {
-    private readonly IUserRepository _userRepository;
+    private readonly IUserService _userService;
 
-    public GetUserByIdQueryHandler(IUserRepository userRepository)
+    public GetUserByIdQueryHandler(IUserService userService)
     {
-        _userRepository = userRepository;
+        _userService = userService;
     }
 
     public async Task<Result<GetUserByIdQueryResponse>> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.ReturnByIdAsync(request.UserId, cancellationToken);
-        if (user is null)
+        var userResult = await _userService.FindByIdAsync(request.UserId, cancellationToken);
+        if (userResult.IsFailure)
         {
-            return Result.Failure<GetUserByIdQueryResponse>(ApplicationErrors.User.NotFound);
+            return Result.Failure<GetUserByIdQueryResponse>(userResult.Error);
         }
+
+        var user = userResult.Value;
 
         var response = new GetUserByIdQueryResponse(user.Id, user.Username, user.Role, user.EmailConfirmed);
         return Result.Success(response);
