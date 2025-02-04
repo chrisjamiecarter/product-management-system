@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using ProductManagement.Application.Abstractions.Messaging;
+﻿using ProductManagement.Application.Abstractions.Messaging;
 
 namespace ProductManagement.Application.Features.Auth.Commands.GenerateEmailChange;
 

@@ -7,5 +7,5 @@ internal sealed class ChangeEmailInputModel
     [Required]
     [EmailAddress]
     [Display(Name = "New email")]
-    public string? NewEmail { get; set; }
+    public string? UpdatedEmail { get; set; }
 }

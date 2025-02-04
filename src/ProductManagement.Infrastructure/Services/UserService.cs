@@ -34,7 +34,7 @@ internal class UserService : IUserService
             : Result.Failure(UserErrors.PasswordNotAdded);
     }
 
-    public async Task<Result> ChangeEmailAsync(string userId, string newEmail, AuthToken token, CancellationToken cancellationToken = default)
+    public async Task<Result> ChangeEmailAsync(string userId, string updatedEmail, AuthToken token, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
@@ -42,13 +42,13 @@ internal class UserService : IUserService
             return Result.Failure(UserErrors.NotFound);
         }
 
-        var emailResult = await _userManager.ChangeEmailAsync(user, newEmail, token.Value);
+        var emailResult = await _userManager.ChangeEmailAsync(user, updatedEmail, token.Value);
         if (!emailResult.Succeeded)
         {
             return Result.Failure(UserErrors.EmailNotChanged);
         }
 
-        var usernameResult = await _userManager.SetUserNameAsync(user, newEmail);
+        var usernameResult = await _userManager.SetUserNameAsync(user, updatedEmail);
         if (!usernameResult.Succeeded)
         {
             return Result.Failure(UserErrors.UsernameNotChanged);
@@ -57,7 +57,7 @@ internal class UserService : IUserService
         return Result.Success();
     }
 
-    public async Task<Result> ChangePasswordAsync(string userId, string currentPassword, string newPassword, CancellationToken cancellationToken = default)
+    public async Task<Result> ChangePasswordAsync(string userId, string currentPassword, string updatedPassword, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
@@ -65,7 +65,7 @@ internal class UserService : IUserService
             return Result.Success();
         }
 
-        var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        var result = await _userManager.ChangePasswordAsync(user, currentPassword, updatedPassword);
         if (!result.Succeeded)
         {
             // TODO: var passwordErrorMessage = $"Error: {string.Join(",", changePasswordResult.Errors.Select(error => error.Description))}";

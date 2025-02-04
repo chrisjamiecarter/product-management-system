@@ -63,7 +63,7 @@ internal class AuthService : IAuthService
             : Result.Failure(UserErrors.EmailConfirmedNotChanged);
     }
 
-    public async Task<Result<AuthToken>> GenerateEmailChangeTokenAsync(string userId, string newEmail, CancellationToken cancellationToken = default)
+    public async Task<Result<AuthToken>> GenerateEmailChangeTokenAsync(string userId, string updatedEmail, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
@@ -71,7 +71,7 @@ internal class AuthService : IAuthService
             return Result.Failure<AuthToken>(UserErrors.NotFound);
         }
 
-        var token = AuthToken.Encode(await _userManager.GenerateChangeEmailTokenAsync(user, newEmail));
+        var token = AuthToken.Encode(await _userManager.GenerateChangeEmailTokenAsync(user, updatedEmail));
 
         return Result.Success(token);
     }

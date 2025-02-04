@@ -17,7 +17,7 @@ internal sealed class ChangePasswordCommandHandler : ICommandHandler<ChangePassw
 
     public async Task<Result> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
     {
-        var passwordResult = await _userService.ChangePasswordAsync(request.UserId, request.CurrentPassword, request.NewPassword, cancellationToken);
+        var passwordResult = await _userService.ChangePasswordAsync(request.UserId, request.CurrentPassword, request.UpdatedPassword, cancellationToken);
         if (passwordResult.IsFailure)
         {
             return Result.Failure(passwordResult.Error);

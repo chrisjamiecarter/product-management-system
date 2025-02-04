@@ -8,7 +8,7 @@ public interface IAuthService
 {
     Task<Result> AddToRoleAsync(string userId, string? role, CancellationToken cancellationToken = default);
     Task<Result> ConfirmEmailAsync(string userId, AuthToken token, CancellationToken cancellationToken = default);
-    Task<Result<AuthToken>> GenerateEmailChangeTokenAsync(string userId, string newEmail, CancellationToken cancellationToken = default);
+    Task<Result<AuthToken>> GenerateEmailChangeTokenAsync(string userId, string updatedEmail, CancellationToken cancellationToken = default);
     Task<Result<AuthToken>> GenerateEmailConfirmationTokenAsync(string email, CancellationToken cancellationToken = default);
     Task<Result<AuthToken>> GeneratePasswordResetTokenAsync(string email, CancellationToken cancellationToken = default);
     Task<Result<ApplicationUserDto>> GetCurrentUserAsync(string userId, CancellationToken cancellationToken = default);

@@ -138,17 +138,17 @@ public class UserServiceTests
     {
         // Arrange.
         var user = new ApplicationUser();
-        var newEmail = "newEmail";
+        var updatedEmail = "update@email.com";
         var token = AuthToken.Encode("token");
 
         _userManagerMock.Setup(m => m.FindByIdAsync(user.Id))
                         .ReturnsAsync(user);
 
-        _userManagerMock.Setup(m => m.ChangeEmailAsync(user, newEmail, token.Value))
+        _userManagerMock.Setup(m => m.ChangeEmailAsync(user, updatedEmail, token.Value))
                         .ReturnsAsync(IdentityResult.Failed());
 
         // Act.
-        var result = await _userService.ChangeEmailAsync(user.Id, newEmail, token);
+        var result = await _userService.ChangeEmailAsync(user.Id, updatedEmail, token);
 
         // Assert.
         Assert.True(result.IsFailure);
@@ -160,20 +160,20 @@ public class UserServiceTests
     {
         // Arrange.
         var user = new ApplicationUser();
-        var newEmail = "newEmail";
+        var updatedEmail = "update@email.com";
         var token = AuthToken.Encode("token");
 
         _userManagerMock.Setup(m => m.FindByIdAsync(user.Id))
                         .ReturnsAsync(user);
 
-        _userManagerMock.Setup(m => m.ChangeEmailAsync(user, newEmail, token.Value))
+        _userManagerMock.Setup(m => m.ChangeEmailAsync(user, updatedEmail, token.Value))
                         .ReturnsAsync(IdentityResult.Success);
 
-        _userManagerMock.Setup(m => m.SetUserNameAsync(user, newEmail))
+        _userManagerMock.Setup(m => m.SetUserNameAsync(user, updatedEmail))
                         .ReturnsAsync(IdentityResult.Failed());
 
         // Act.
-        var result = await _userService.ChangeEmailAsync(user.Id, newEmail, token);
+        var result = await _userService.ChangeEmailAsync(user.Id, updatedEmail, token);
 
         // Assert.
         Assert.True(result.IsFailure);
@@ -185,20 +185,20 @@ public class UserServiceTests
     {
         // Arrange.
         var user = new ApplicationUser { Id = "userId" };
-        var newEmail = "newEmail";
+        var updatedEmail = "update@email.com";
         var token = AuthToken.Encode("token");
 
         _userManagerMock.Setup(m => m.FindByIdAsync(user.Id))
                         .ReturnsAsync(user);
 
-        _userManagerMock.Setup(m => m.ChangeEmailAsync(user, newEmail, token.Value))
+        _userManagerMock.Setup(m => m.ChangeEmailAsync(user, updatedEmail, token.Value))
                         .ReturnsAsync(IdentityResult.Success);
 
-        _userManagerMock.Setup(m => m.SetUserNameAsync(user, newEmail))
+        _userManagerMock.Setup(m => m.SetUserNameAsync(user, updatedEmail))
                         .ReturnsAsync(IdentityResult.Success);
 
         // Act.
-        var result = await _userService.ChangeEmailAsync(user.Id, newEmail, token);
+        var result = await _userService.ChangeEmailAsync(user.Id, updatedEmail, token);
 
         // Assert.
         Assert.True(result.IsSuccess);

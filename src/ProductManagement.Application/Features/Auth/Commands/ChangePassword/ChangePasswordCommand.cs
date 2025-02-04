@@ -4,4 +4,4 @@ namespace ProductManagement.Application.Features.Auth.Commands.ChangePassword;
 
 public sealed record ChangePasswordCommand(string UserId,
                                            string CurrentPassword,
-                                           string NewPassword) : ICommand;
+                                           string UpdatedPassword) : ICommand;

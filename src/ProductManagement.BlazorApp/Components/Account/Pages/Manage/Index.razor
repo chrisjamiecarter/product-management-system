@@ -44,9 +44,9 @@
                             <label for="email" class="form-label">Email</label>
                         </div>
                         <div class="form-floating mb-3">
-                            <InputText @bind-Value="EmailInput.NewEmail" id="EmailInput.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Enter a new email" />
-                            <label for="Input.NewEmail" class="form-label">New email</label>
-                            <ValidationMessage For="() => EmailInput.NewEmail" class="text-danger" />
+                            <InputText @bind-Value="EmailInput.UpdatedEmail" id="EmailInput.UpdatedEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Enter a new email" />
+                            <label for="EmailInput.UpdatedEmail" class="form-label">New email</label>
+                            <ValidationMessage For="() => EmailInput.UpdatedEmail" class="text-danger" />
                         </div>
                         <button class="btn btn-dark w-100" type="submit">Update email</button>
                     </EditForm>
@@ -63,14 +63,14 @@
                         <DataAnnotationsValidator />
                         <ValidationSummary class="text-danger" role="alert" />
                         <div class="form-floating mb-3">
-                            <InputText type="password" @bind-Value="PasswordInput.OldPassword" id="PasswordInput.OldPassword" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Enter the old password" />
-                            <label for="PasswordInput.OldPassword" class="form-label">Old password</label>
-                            <ValidationMessage For="() => PasswordInput.OldPassword" class="text-danger" />
+                            <InputText type="password" @bind-Value="PasswordInput.CurrentPassword" id="PasswordInput.CurrentPassword" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Enter the old password" />
+                            <label for="PasswordInput.CurrentPassword" class="form-label">Current password</label>
+                            <ValidationMessage For="() => PasswordInput.CurrentPassword" class="text-danger" />
                         </div>
                         <div class="form-floating mb-3">
-                            <InputText type="password" @bind-Value="PasswordInput.NewPassword" id="PasswordInput.NewPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Enter the new password" />
-                            <label for="PasswordInput.NewPassword" class="form-label">New password</label>
-                            <ValidationMessage For="() => PasswordInput.NewPassword" class="text-danger" />
+                            <InputText type="password" @bind-Value="PasswordInput.UpdatedPassword" id="PasswordInput.UpdatedPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Enter the new password" />
+                            <label for="PasswordInput.UpdatedPassword" class="form-label">New password</label>
+                            <ValidationMessage For="() => PasswordInput.UpdatedPassword" class="text-danger" />
                         </div>
                         <div class="form-floating mb-3">
                             <InputText type="password" @bind-Value="PasswordInput.ConfirmPassword" id="PasswordInput.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Enter the new password" />
@@ -131,12 +131,12 @@
         // TODO:
         // Dynamically set ChangePassword or SetPassword based on User.HasPassword.
 
-        EmailInput.NewEmail ??= email;
+        EmailInput.UpdatedEmail ??= email;
     }
 
     private async Task EditEmailAsync()
     {
-        if (EmailInput.NewEmail is null || EmailInput.NewEmail == email)
+        if (EmailInput.UpdatedEmail is null || EmailInput.UpdatedEmail == email)
         {
             emailStatus = new StatusModel("Your email is unchanged.", MessageLevel.Info);
             return;
@@ -144,7 +144,7 @@
 
         var confirmUrl = NavigationManager.ToAbsoluteUri("Account/ConfirmEmailChange").AbsoluteUri;
 
-        var command = new GenerateEmailChangeCommand(user.Id, EmailInput.NewEmail);
+        var command = new GenerateEmailChangeCommand(user.Id, EmailInput.UpdatedEmail);
         var result = await Sender.SendAsync(command);
         if (result.IsSuccess)
         {
@@ -160,7 +160,7 @@
 
     private async Task EditPasswordAsync()
     {
-        var command = new ChangePasswordCommand(user.Id, PasswordInput.OldPassword, PasswordInput.NewPassword);
+        var command = new ChangePasswordCommand(user.Id, PasswordInput.CurrentPassword, PasswordInput.UpdatedPassword);
         var result = await Sender.SendAsync(command);
         if (result.IsSuccess)
         {
