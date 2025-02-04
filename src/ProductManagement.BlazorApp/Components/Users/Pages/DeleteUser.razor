@@ -34,13 +34,13 @@ else
                     <InputText id="Input.Email" class="form-control" placeholder="name@example.com" disabled readonly @bind-Value="Input.Email" />
                     <label for="Input.Email" class="form-label">Email</label>
                 </div>
-                <div class="form-floating mb-3">
-                    <InputText id="Input.Role" class="form-control" placeholder="role" disabled readonly @bind-Value="Input.Role" />
-                    <label for="Input.Role" class="form-label">Role</label>
-                </div>
                 <div class="form-check form-switch mb-3">
                     <InputCheckbox id="Input.EmailConfirmed" class="form-check-input" disabled readonly @bind-Value="Input.EmailConfirmed" />
                     <label for="Input.EmailConfirmed" class="form-check-label">Email Confirmed</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <InputText id="Input.Role" class="form-control" placeholder="role" disabled readonly @bind-Value="Input.Role" />
+                    <label for="Input.Role" class="form-label">Role</label>
                 </div>
                 <div class="d-flex gap-1">
                     <button class="btn btn-outline-dark w-100" type="submit">Delete</button>
@@ -52,9 +52,9 @@ else
         @if (ShowConfirmationModal)
         {
             <ConfirmationModal Title="Delete this user?"
-                               Message="Do you really want to delete this user? This action cannot be undone."
-                               OnCancelCallback="HideConfirmation"
-                               OnConfirmCallback="DeleteUserAsync" />
+            Message="Do you really want to delete this user? This action cannot be undone."
+            OnCancelCallback="HideConfirmation"
+            OnConfirmCallback="DeleteUserAsync" />
         }
     </div>
 }
@@ -100,6 +100,7 @@ else
         {
             // TODO: Log.
             ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
+            HideConfirmation();
         }
     }
 

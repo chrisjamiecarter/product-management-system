@@ -15,5 +15,4 @@ public class CreateUserInputModel
 
     [DataType(DataType.Text)]
     public string Role { get; set; } = string.Empty;
-
 }

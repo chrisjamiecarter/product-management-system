@@ -84,16 +84,16 @@ else
                                 <DynamicComponent Type="GetSortIcon(nameof(GetUsersPaginatedQueryResponse.Email))" />
                             </div>
                         </th>
-                        <th scope="col" class="col-2 col-lg-2 table-dark align-middle sortable" @onclick="() => SortTable(nameof(GetUsersPaginatedQueryResponse.Role))">
-                            <div class="d-flex gap-1 align-items-center justify-content-between">
-                                Role
-                                <DynamicComponent Type="GetSortIcon(nameof(GetUsersPaginatedQueryResponse.Role))" />
-                            </div>
-                        </th>
                         <th scope="col" class="col-2 col-lg-2 table-dark align-middle text-center sortable" @onclick="() => SortTable(nameof(GetUsersPaginatedQueryResponse.EmailConfirmed))">
                             <div class="d-flex gap-1 align-items-center justify-content-between">
                                 Email Confirmed
                                 <DynamicComponent Type=" GetSortIcon(nameof(GetUsersPaginatedQueryResponse.EmailConfirmed))" />
+                            </div>
+                        </th>
+                        <th scope="col" class="col-2 col-lg-2 table-dark align-middle sortable" @onclick="() => SortTable(nameof(GetUsersPaginatedQueryResponse.Role))">
+                            <div class="d-flex gap-1 align-items-center justify-content-between">
+                                Role
+                                <DynamicComponent Type="GetSortIcon(nameof(GetUsersPaginatedQueryResponse.Role))" />
                             </div>
                         </th>
                         <th scope="col" class="col-1">
@@ -110,7 +110,6 @@ else
                     {
                         <tr title="@user.Email">
                             <td>@user.Email</td>
-                            <td>@user.Role</td>
                             <td class="text-center">
                                 @if (user.EmailConfirmed)
                                 {
@@ -121,6 +120,7 @@ else
                                     <XCircleSvg />
                                 }
                             </td>
+                            <td>@user.Role</td>
                             <td scope="row">
                                 <div class="d-flex flex-column flex-md-row gap-1">
                                     <button class="btn btn-sm btn-outline-dark w-100" type="button" aria-label="Edit User" title="Edit User" @onclick="() => NavigateToEditUser(user.Id)">

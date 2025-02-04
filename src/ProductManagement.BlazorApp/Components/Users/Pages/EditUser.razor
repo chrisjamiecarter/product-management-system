@@ -36,6 +36,10 @@ else
                     <label for="Input.Email" class="form-label">Email</label>
                     <ValidationMessage For="() => Input.Email" class="invalid-feedback" />
                 </div>
+                <div class="form-check form-switch mb-3">
+                    <InputCheckbox id="Input.EmailConfirmed" class="form-check-input" disabled readonly @bind-Value="Input.EmailConfirmed" />
+                    <label for="Input.EmailConfirmed" class="form-check-label">Email Confirmed</label>
+                </div>
                 <div class="form-floating mb-3">
                     <FixedInputSelect id="Input.Role" class=@($"form-select {EditContext?.GetValidationClass(() => Input.Role)}") @bind-Value="Input.Role">
                         <option value="">None</option>
@@ -46,10 +50,6 @@ else
                     </FixedInputSelect>
                     <label for="Input.Role">Role</label>
                     <ValidationMessage For="() => Input.Role" class="invalid-feedback" />
-                </div>
-                <div class="form-check form-switch mb-3">
-                    <InputCheckbox id="Input.EmailConfirmed" class="form-check-input" disabled readonly @bind-Value="Input.EmailConfirmed" />
-                    <label for="Input.EmailConfirmed" class="form-check-label">Email Confirmed</label>
                 </div>
                 <div class="d-flex gap-1">
                     <button class="btn btn-outline-dark w-100" type="submit">Update</button>
