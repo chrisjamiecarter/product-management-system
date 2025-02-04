@@ -8,9 +8,5 @@ internal class SeederOptions
 
     public int NumberOfProducts { get; set; }
 
-    public SeedUser Owner { get; set; } = new SeedUser();
-
-    public SeedUser Admin { get; set; } = new SeedUser();
-
-    public SeedUser User { get; set; } = new SeedUser();
+    public ICollection<SeedUser> SeedUsers { get; set; } = [];
 }
