@@ -23,7 +23,7 @@ internal sealed class GetUserByEmailQueryHandler : IQueryHandler<GetUserByEmailQ
 
         var user = userResult.Value;
 
-        var response = new GetUserByEmailQueryResponse(user.Id, user.Username, user.Role, user.EmailConfirmed);
+        var response = new GetUserByEmailQueryResponse(user.Id, user.Email, user.Role, user.EmailConfirmed);
         return Result.Success(response);
     }
 }

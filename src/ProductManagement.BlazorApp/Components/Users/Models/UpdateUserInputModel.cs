@@ -8,9 +8,9 @@ public class UpdateUserInputModel
     public UpdateUserInputModel(GetUserByIdQueryResponse user)
     {
         Id = user.Id;
-        Username = user.Username;
-        Role = user.Role;
+        Email = user.Email;
         EmailConfirmed = user.EmailConfirmed;
+        Role = user.Role;
     }
 
     [Required]
@@ -21,11 +21,11 @@ public class UpdateUserInputModel
     [Editable(false)]
     [DataType(DataType.EmailAddress)]
     [EmailAddress]
-    public string? Username { get; set; }
-
-    [DataType(DataType.Text)]
-    public string? Role { get; set; } = string.Empty;
+    public string? Email { get; set; }
 
     [Editable(false)]
     public bool EmailConfirmed { get; set; }
+
+    [DataType(DataType.Text)]
+    public string? Role { get; set; } = string.Empty;
 }

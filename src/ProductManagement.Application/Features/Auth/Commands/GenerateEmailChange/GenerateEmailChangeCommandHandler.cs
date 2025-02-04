@@ -31,7 +31,7 @@ internal sealed class GenerateEmailChangeCommandHandler : ICommandHandler<Genera
         var duplicateEmailResult = await _userService.FindByEmailAsync(request.UpdatedEmail, cancellationToken);
         if (duplicateEmailResult.IsSuccess)
         {
-            return Result.Failure(ApplicationErrors.User.UsernameTaken);
+            return Result.Failure(ApplicationErrors.User.EmailTaken);
         }
 
         var tokenResult = await _authService.GenerateEmailChangeTokenAsync(request.UserId, request.UpdatedEmail, cancellationToken);

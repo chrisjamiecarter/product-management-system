@@ -110,7 +110,7 @@ internal class AuthService : IAuthService
 
         var roles = await _userManager.GetRolesAsync(user);
 
-        var response = new ApplicationUserDto(user.Id, user.UserName, roles.FirstOrDefault(), user.EmailConfirmed);
+        var response = new ApplicationUserDto(user.Id, user.Email, user.EmailConfirmed, roles.FirstOrDefault());
         return Result.Success(response);
     }
 
@@ -156,8 +156,8 @@ internal class AuthService : IAuthService
     {
         var user = new ApplicationUser
         {
-            UserName = email,
             Email = email,
+            UserName = email,
         };
 
         var result = await (string.IsNullOrWhiteSpace(password) ? _userManager.CreateAsync(user) : _userManager.CreateAsync(user, password));

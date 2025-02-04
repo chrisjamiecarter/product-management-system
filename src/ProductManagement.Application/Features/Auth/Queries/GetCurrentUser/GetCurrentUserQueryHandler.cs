@@ -18,7 +18,7 @@ internal sealed class GetCurrentUserQueryHandler : IQueryHandler<GetCurrentUserQ
         var user = await _authService.GetCurrentUserAsync(request.UserId, cancellationToken);
 
         return user.IsSuccess
-            ? Result.Success(new GetCurrentUserQueryResponse(user.Value.Id, user.Value.Username, user.Value.Role, user.Value.EmailConfirmed))
+            ? Result.Success(new GetCurrentUserQueryResponse(user.Value.Id, user.Value.Email, user.Value.Role, user.Value.EmailConfirmed))
             : Result.Failure<GetCurrentUserQueryResponse>(user.Error);
     }
 }

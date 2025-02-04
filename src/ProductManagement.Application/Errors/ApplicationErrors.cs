@@ -64,8 +64,8 @@ public static class ApplicationErrors
             "User.NotUpdated",
             "The user was not updated.");
 
-        public static readonly Error UsernameTaken = new(
-            "User.UsernameTaken",
-            "The username is already taken.");
+        public static readonly Error EmailTaken = new(
+            "User.EmailTaken",
+            "The email is already taken.");
     }
 }

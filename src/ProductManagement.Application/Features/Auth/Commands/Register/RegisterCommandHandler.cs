@@ -21,17 +21,6 @@ internal sealed class RegisterCommandHandler : ICommandHandler<RegisterCommand>
 
     public async Task<Result> Handle(RegisterCommand request, CancellationToken cancellationToken = default)
     {
-        // TODO:
-        // Maybe do:
-        //     var registerResult = await _authService.RegisterAsync(request.Email, request.Password, cancellationToken);
-        //
-        //     var userResult = await _userService.GetUserByEmail(request.Email, cancellationToken);
-        //     var user = userResult.Value;
-        // or
-        //     return the user as part of the registerResult.
-        //
-        //     var tokenResult = await _authService.GenerateEmailConfirmationTokenAsync(user, cancellationToken);
-        
         var registerResult = await _authService.RegisterAsync(request.Email, request.Password, cancellationToken);
         if (registerResult.IsFailure)
         {
@@ -58,11 +47,10 @@ internal sealed class RegisterCommandHandler : ICommandHandler<RegisterCommand>
             return Result.Failure(tokenResult.Error);
         }
 
-        // TODO: Username to Email?
-        if (!string.IsNullOrWhiteSpace(user.Username))
+        if (!string.IsNullOrWhiteSpace(user.Email))
         {
             var emailConfirmationLink = await _linkBuilderService.BuildEmailConfirmationLinkAsync(user.Id, tokenResult.Value, cancellationToken);
-            await _emailService.SendEmailConfirmationAsync(user.Username, emailConfirmationLink, cancellationToken);
+            await _emailService.SendEmailConfirmationAsync(user.Email, emailConfirmationLink, cancellationToken);
         }
 
         return Result.Success();

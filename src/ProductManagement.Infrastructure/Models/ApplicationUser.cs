@@ -12,6 +12,6 @@ internal static class ApplicationUserExtensions
 {
     public static ApplicationUserDto ToDto(this ApplicationUser user, string? role)
     {
-        return new ApplicationUserDto(user.Id, user.UserName, role, user.EmailConfirmed);
+        return new ApplicationUserDto(user.Id, user.Email, user.EmailConfirmed, role);
     }
 }

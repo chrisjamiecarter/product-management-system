@@ -123,20 +123,13 @@
             return;
         }
 
-        user = new ApplicationUserDto(result.Value.UserId, result.Value.Email, result.Value.Role, result.Value.EmailConfirmed);
+        user = new ApplicationUserDto(result.Value.UserId, result.Value.Email, result.Value.EmailConfirmed, result.Value.Role);
 
-        // TODO:
-        // Confirm what route I want to take regarding Username vs Email. They are the same in this app and the messaging should be consistent.
         email = result.Value.Email;
         isEmailConfirmed = result.Value.EmailConfirmed;
 
         // TODO:
-        // This needs to be part of the user registration process.
-        // hasPassword = await UserManager.HasPasswordAsync(user);
-        // if (!hasPassword)
-        // {
-        //     RedirectManager.RedirectTo("Account/Manage/SetPassword");
-        // }
+        // Dynamically set ChangePassword or SetPassword based on User.HasPassword.
 
         EmailInput.NewEmail ??= email;
     }

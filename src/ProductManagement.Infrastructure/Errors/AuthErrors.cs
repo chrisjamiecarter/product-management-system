@@ -11,11 +11,7 @@ internal static class AuthErrors
     internal static readonly Error ErrorChangingPassword = new(
         "User.ErrorChangingPassword",
         "There was an error when changing the users password.");
-
-    internal static readonly Error ErrorChangingUsername = new(
-        "User.ErrorChangingUsername",
-        "There was an error when changing the users username.");
-
+    
     internal static readonly Error ErrorConfirmingEmail = new(
         "User.ErrorConfirmingEmail",
         "There was an error when confirming the users email.");

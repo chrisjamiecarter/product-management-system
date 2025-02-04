@@ -236,7 +236,7 @@ public class UserServiceTests
 
         // Assert.
         Assert.True(result.IsSuccess);
-        Assert.Equal(email, result.Value.Username);
+        Assert.Equal(email, result.Value.Email);
     }
 
     [Fact]

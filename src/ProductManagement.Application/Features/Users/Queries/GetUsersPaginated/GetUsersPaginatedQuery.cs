@@ -3,9 +3,9 @@ using ProductManagement.Application.Models;
 
 namespace ProductManagement.Application.Features.Users.Queries.GetUsersPaginated;
 
-public sealed record GetUsersPaginatedQuery(string? SearchUsername,
-                                            string? SearchRole,
+public sealed record GetUsersPaginatedQuery(string? SearchEmail,
                                             bool? SearchEmailConfirmed,
+                                            string? SearchRole,
                                             string? SortColumn,
                                             string? SortOrder,
                                             int PageNumber = 1,

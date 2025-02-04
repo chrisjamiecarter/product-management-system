@@ -40,29 +40,29 @@ else
                 <div class="row">
                     <div class="col-12 col-lg-6">
                         <div class="form-floating mb-3">
-                            <InputText id="searchUsername" class="form-control" placeholder="username" @bind-Value="Input.SearchUsername" />
-                            <label for="searchUsername" class="form-label">Username</label>
+                            <InputText id="Input.SearchEmail" class="form-control" placeholder="name@example.com" @bind-Value="Input.SearchEmail" />
+                            <label for="Input.SearchEmail" class="form-label">Email</label>
                         </div>
                     </div>
                     <div class="col-12 col-md-6 col-lg-3">
                         <div class="form-floating mb-3">
-                            <FixedInputSelect id="searchEmailConfirmed" class="form-select" @bind-Value="Input.SearchEmailConfirmed">
+                            <FixedInputSelect id="Input.SearchEmailConfirmed" class="form-select" @bind-Value="Input.SearchEmailConfirmed">
                                 <option value="">All</option>
                                 <option value="true">Yes</option>
                                 <option value="false">No</option>
                             </FixedInputSelect>
-                            <label for="searchEmailConfirmed">Email Confirmed</label>
+                            <label for="Input.SearchEmailConfirmed">Email Confirmed</label>
                         </div>
                     </div>
                     <div class="col-12 col-md-6 col-lg-3">
                         <div class="form-floating mb-3">
-                            <FixedInputSelect id="searchRole" class="form-select" @bind-Value="Input.SearchRole">
+                            <FixedInputSelect id="Input.SearchRole" class="form-select" @bind-Value="Input.SearchRole">
                                 <option value="">All</option>
                                 <option value="Owner">Owner</option>
                                 <option value="Admin">Admin</option>
                                 <option value="User">User</option>
                             </FixedInputSelect>
-                            <label for="searchRole">Role</label>
+                            <label for="Input.SearchRole">Role</label>
                         </div>
                     </div>
 
@@ -78,10 +78,10 @@ else
             <table class="table table-hover align-middle">
                 <thead>
                     <tr>
-                        <th scope="col" class="col-7 col-lg-7 table-dark align-middle sortable" @onclick="() => SortTable(nameof(GetUsersPaginatedQueryResponse.Username))">
+                        <th scope="col" class="col-7 col-lg-7 table-dark align-middle sortable" @onclick="() => SortTable(nameof(GetUsersPaginatedQueryResponse.Email))">
                             <div class="d-flex gap-1 align-items-center justify-content-between">
-                                Username
-                                <DynamicComponent Type="GetSortIcon(nameof(GetUsersPaginatedQueryResponse.Username))" />
+                                Email
+                                <DynamicComponent Type="GetSortIcon(nameof(GetUsersPaginatedQueryResponse.Email))" />
                             </div>
                         </th>
                         <th scope="col" class="col-2 col-lg-2 table-dark align-middle sortable" @onclick="() => SortTable(nameof(GetUsersPaginatedQueryResponse.Role))">
@@ -108,8 +108,8 @@ else
                 <tbody>
                     @foreach (var user in UsersPage.Items)
                     {
-                        <tr title="@user.Username">
-                            <td>@user.Username</td>
+                        <tr title="@user.Email">
+                            <td>@user.Email</td>
                             <td>@user.Role</td>
                             <td class="text-center">
                                 @if (user.EmailConfirmed)
@@ -198,16 +198,16 @@ else
     {
         if (string.IsNullOrWhiteSpace(Input.SortColumn))
         {
-            Input.SortColumn = nameof(GetUsersPaginatedQueryResponse.Username);
+            Input.SortColumn = nameof(GetUsersPaginatedQueryResponse.Email);
         }
         if (string.IsNullOrWhiteSpace(Input.SortOrder))
         {
             Input.SortOrder = "asc";
         }
 
-        var query = new GetUsersPaginatedQuery(Input.SearchUsername,
-                                               Input.SearchRole,
+        var query = new GetUsersPaginatedQuery(Input.SearchEmail,
                                                Input.SearchEmailConfirmed,
+                                               Input.SearchRole,
                                                Input.SortColumn,
                                                Input.SortOrder,
                                                pageNumber);

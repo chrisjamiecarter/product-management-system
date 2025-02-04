@@ -72,11 +72,11 @@ internal class SeederService
 
     private async Task SeedUserAsync(SeedUser user, string role)
     {
-        if (await _userManager.FindByEmailAsync(user.Username) is null)
+        if (await _userManager.FindByEmailAsync(user.Email) is null)
         {
             var applicationUser = Activator.CreateInstance<ApplicationUser>();
-            await _userStore.SetUserNameAsync(applicationUser, user.Username, CancellationToken.None);
-            await _userEmailStore.SetEmailAsync(applicationUser, user.Username, CancellationToken.None);
+            await _userStore.SetUserNameAsync(applicationUser, user.Email, CancellationToken.None);
+            await _userEmailStore.SetEmailAsync(applicationUser, user.Email, CancellationToken.None);
             await _userEmailStore.SetEmailConfirmedAsync(applicationUser, true, CancellationToken.None);
 
             var result = await _userManager.CreateAsync(applicationUser, user.Password);

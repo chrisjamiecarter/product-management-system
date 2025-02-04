@@ -32,9 +32,9 @@ else
             <EditForm EditContext="EditContext" FormName="AddUser" OnValidSubmit="AddUserAsync">
                 <DataAnnotationsValidator />
                 <div class="form-floating mb-3">
-                    <InputText id="Input.Username" class=@($"form-control {EditContext?.GetValidationClass(() => Input.Username)}") placeholder="username" @bind-Value="Input.Username" />
-                    <label for="Input.Username" class="form-label">Username</label>
-                    <ValidationMessage For="() => Input.Username" class="invalid-feedback" />
+                    <InputText id="Input.Email" class=@($"form-control {EditContext?.GetValidationClass(() => Input.Email)}") placeholder="name@example.com" @bind-Value="Input.Email" />
+                    <label for="Input.Email" class="form-label">Email</label>
+                    <ValidationMessage For="() => Input.Email" class="invalid-feedback" />
                 </div>
                 <div class="form-floating mb-3">
                     <FixedInputSelect id="Input.Role" class=@($"form-select {EditContext?.GetValidationClass(() => Input.Role)}") @bind-Value="Input.Role">
@@ -67,7 +67,7 @@ else
 
     private async Task AddUserAsync()
     {
-        var command = new RegisterCommand(Input.Username, Input.Password, Input.Role);
+        var command = new RegisterCommand(Input.Email, Input.Password, Input.Role);
         var response = await Sender.SendAsync(command);
         if (response.IsSuccess)
         {

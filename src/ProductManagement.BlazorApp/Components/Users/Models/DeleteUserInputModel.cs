@@ -8,9 +8,9 @@ public class DeleteUserInputModel
     public DeleteUserInputModel(GetUserByIdQueryResponse user)
     {
         Id = user.Id;
-        Username = user.Username;
-        Role = user.Role;
+        Email = user.Email;
         EmailConfirmed = user.EmailConfirmed;
+        Role = user.Role;
     }
 
     [Editable(false)]
@@ -18,12 +18,12 @@ public class DeleteUserInputModel
 
     [Editable(false)]
     [DataType(DataType.EmailAddress)]
-    public string? Username { get; set; }
+    public string? Email { get; set; }
+
+    [Editable(false)]
+    public bool EmailConfirmed { get; set; }
 
     [Editable(false)]
     [DataType(DataType.Text)]
     public string? Role { get; set; } = string.Empty;
-
-    [Editable(false)]
-    public bool EmailConfirmed { get; set; }
 }

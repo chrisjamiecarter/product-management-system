@@ -16,9 +16,9 @@ internal sealed class GetUsersPaginatedQueryHandler : IQueryHandler<GetUsersPagi
 
     public async Task<Result<PaginatedList<GetUsersPaginatedQueryResponse>>> Handle(GetUsersPaginatedQuery request, CancellationToken cancellationToken)
     {
-        var pageResult = await _userService.GetPageAsync(request.SearchUsername,
-                                                         request.SearchRole,
+        var pageResult = await _userService.GetPageAsync(request.SearchEmail,
                                                          request.SearchEmailConfirmed,
+                                                         request.SearchRole,
                                                          request.SortColumn,
                                                          request.SortOrder,
                                                          request.PageNumber,
