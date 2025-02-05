@@ -1,16 +1,8 @@
 ﻿@page "/Account/Manage"
 
-@using System.Text
-@using System.Text.Encodings.Web
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.WebUtilities
-@using System.Security.Claims
-
-@inject ILogger<Index> Logger
-@inject IdentityRedirectManager RedirectManager
-@inject NavigationManager NavigationManager
-@inject ISenderService Sender
 @inject ICurrentUserService CurrentUserService
+@inject ILogger<Index> Logger
+@inject ISenderService Sender
 
 <PageTitle>Manage Account</PageTitle>
 
@@ -28,151 +20,71 @@
         <h1 class="h2 mb-0">Manage Account</h1>
     </div>
 
-    <StatusMessage Status="@userStatus" />
-    @if (userStatus == StatusModel.None)
+    <StatusMessage Status="@status" />
+
+    @if (status == StatusModel.None)
     {
         <div class="row">
 
-            <h3>Change email</h3>
-            <div class="row mb-4">
-                <div class="col-xl-6">
-                    <StatusMessage Status="@emailStatus" />
-                    <EditForm Model="EmailInput" FormName="change-email" OnValidSubmit="EditEmailAsync" method="post">
-                        <DataAnnotationsValidator />
-                        <div class="form-floating mb-3 input-group">
-                            <input type="text" value="@email" id="email" class="form-control" placeholder="Enter your email" disabled />
-                            <label for="email" class="form-label">Email</label>
-                        </div>
-                        <div class="form-floating mb-3">
-                            <InputText @bind-Value="EmailInput.UpdatedEmail" id="EmailInput.UpdatedEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Enter a new email" />
-                            <label for="EmailInput.UpdatedEmail" class="form-label">New email</label>
-                            <ValidationMessage For="() => EmailInput.UpdatedEmail" class="text-danger" />
-                        </div>
-                        <button class="btn btn-dark w-100" type="submit">Update email</button>
-                    </EditForm>
-                </div>
-            </div>
+            @if (user is null)
+            {
+                <LoadingSpinner />
+            }
+            else
+            {
+                <ChangeEmail User="@user"/>
 
-            <hr />
+                <hr />
 
-            <h3>Change password</h3>
-            <div class="row mb-4">
-                <div class="col-xl-6">
-                    <StatusMessage Status="@passwordStatus" />
-                    <EditForm Model="PasswordInput" FormName="change-password" OnValidSubmit="EditPasswordAsync" method="post">
-                        <DataAnnotationsValidator />
-                        <ValidationSummary class="text-danger" role="alert" />
-                        <div class="form-floating mb-3">
-                            <InputText type="password" @bind-Value="PasswordInput.CurrentPassword" id="PasswordInput.CurrentPassword" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Enter the old password" />
-                            <label for="PasswordInput.CurrentPassword" class="form-label">Current password</label>
-                            <ValidationMessage For="() => PasswordInput.CurrentPassword" class="text-danger" />
-                        </div>
-                        <div class="form-floating mb-3">
-                            <InputText type="password" @bind-Value="PasswordInput.UpdatedPassword" id="PasswordInput.UpdatedPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Enter the new password" />
-                            <label for="PasswordInput.UpdatedPassword" class="form-label">New password</label>
-                            <ValidationMessage For="() => PasswordInput.UpdatedPassword" class="text-danger" />
-                        </div>
-                        <div class="form-floating mb-3">
-                            <InputText type="password" @bind-Value="PasswordInput.ConfirmPassword" id="PasswordInput.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Enter the new password" />
-                            <label for="PasswordInput.ConfirmPassword" class="form-label">Confirm password</label>
-                            <ValidationMessage For="() => PasswordInput.ConfirmPassword" class="text-danger" />
-                        </div>
-                        <button class="btn btn-dark w-100" type="submit">Update password</button>
-                    </EditForm>
-                </div>
-            </div>
+                @if (hasPassword)
+                {
+                    <ChangePassword User="@user" />
 
+                }
+                else
+                {
+                    <SetPassword User="@user" />
+                }
+            }
         </div>
     }
 </div>
 
 @code {
-    private StatusModel emailStatus = StatusModel.None;
-    private StatusModel passwordStatus = StatusModel.None;
-    private StatusModel userStatus = StatusModel.None;
+    private StatusModel status = StatusModel.None;
     private ApplicationUserDto user = default!;
-
-    private string? email;
-    private bool isEmailConfirmed;
-    // private bool hasPassword;
-
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
-
-    [SupplyParameterFromForm(FormName = "change-email")]
-    private ChangeEmailInputModel EmailInput { get; set; } = new();
-
-    [SupplyParameterFromForm(FormName = "change-password")]
-    private ChangePasswordInputModel PasswordInput { get; set; } = new();
+    private bool hasPassword;
 
     protected override async Task OnInitializedAsync()
     {
         var currentUserId = CurrentUserService.UserId;
         if (string.IsNullOrWhiteSpace(currentUserId))
         {
-            // TODO:
-            userStatus = new StatusModel("Unable to load user..", MessageLevel.Error);
+            status = new StatusModel("Unable to load user.", MessageLevel.Error);
             return;
         }
 
-        var query = new GetCurrentUserQuery(currentUserId);
-        var result = await Sender.SendAsync(query);
-        if (result.IsFailure)
+        var userQuery = new GetCurrentUserQuery(currentUserId);
+        var userResult = await Sender.SendAsync(userQuery);
+        if (userResult.IsFailure)
         {
-            userStatus = new StatusModel(result.Error.Message, MessageLevel.Error);
+            status = new StatusModel(userResult.Error.Message, MessageLevel.Error);
             return;
         }
 
-        user = new ApplicationUserDto(result.Value.UserId, result.Value.Email, result.Value.EmailConfirmed, result.Value.Role);
+        user = new ApplicationUserDto(userResult.Value.UserId,
+                                      userResult.Value.Email,
+                                      userResult.Value.EmailConfirmed,
+                                      userResult.Value.Role);
 
-        email = result.Value.Email;
-        isEmailConfirmed = result.Value.EmailConfirmed;
-
-        // TODO:
-        // Dynamically set ChangePassword or SetPassword based on User.HasPassword.
-
-        EmailInput.UpdatedEmail ??= email;
-    }
-
-    private async Task EditEmailAsync()
-    {
-        if (EmailInput.UpdatedEmail is null || EmailInput.UpdatedEmail == email)
+        var hasPasswordQuery = new HasPasswordQuery(user.Id);
+        var hasPasswordResult = await Sender.SendAsync(hasPasswordQuery);
+        if (hasPasswordResult.IsFailure)
         {
-            emailStatus = new StatusModel("Your email is unchanged.", MessageLevel.Info);
+            status = new StatusModel(hasPasswordResult.Error.Message, MessageLevel.Error);
             return;
         }
 
-        var confirmUrl = NavigationManager.ToAbsoluteUri("Account/ConfirmEmailChange").AbsoluteUri;
-
-        var command = new GenerateEmailChangeCommand(user.Id, EmailInput.UpdatedEmail);
-        var result = await Sender.SendAsync(command);
-        if (result.IsSuccess)
-        {
-            emailStatus = new StatusModel("Confirmation link to change email sent. Please check your email.", MessageLevel.Success);
-            Logger.LogInformation("Confirmation of email change link sent to user email.");
-        }
-        else
-        {
-            emailStatus = new StatusModel(result.Error.Message, MessageLevel.Error);
-            Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
-        }
+        hasPassword = hasPasswordResult.Value.HasPassword;
     }
-
-    private async Task EditPasswordAsync()
-    {
-        var command = new ChangePasswordCommand(user.Id, PasswordInput.CurrentPassword, PasswordInput.UpdatedPassword);
-        var result = await Sender.SendAsync(command);
-        if (result.IsSuccess)
-        {
-            passwordStatus = new StatusModel("Your password has been changed.", MessageLevel.Success);
-            Logger.LogInformation("User changed their password successfully.");
-            //RedirectManager.RedirectToCurrentPageWithStatus("Your password has been changed", HttpContext);
-        }
-        else
-        {
-            passwordStatus = new StatusModel(result.Error.Message, MessageLevel.Error);
-            Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
-        }
-    }
-
 }
