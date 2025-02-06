@@ -61,9 +61,6 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    [Parameter]
-    public EventCallback OnSignedOut { get; set; }
-
     [SupplyParameterFromForm]
     private SignInUserInputModel Input { get; set; } = new();
 
