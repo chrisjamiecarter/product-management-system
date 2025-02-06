@@ -1,9 +1,4 @@
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Identity;
-using ProductManagement.Application.Constants;
 using ProductManagement.Application.Installers;
-using ProductManagement.BlazorApp.Components;
-using ProductManagement.BlazorApp.Components.Account;
 using ProductManagement.BlazorApp.Installers;
 using ProductManagement.Infrastructure.Installers;
 
@@ -18,58 +13,9 @@ public class Program
         builder.Services.AddInfrastructure(builder.Configuration);
         builder.Services.AddPresentation();
 
-        // TODO: Refactor the below.
-
-        // Add services to the container.
-        builder.Services.AddRazorComponents()
-            .AddInteractiveServerComponents();
-
-        builder.Services.AddCascadingAuthenticationState();
-        builder.Services.AddScoped<IdentityRedirectManager>();
-        builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
-
-        builder.Services.AddAuthentication(options =>
-        {
-            options.DefaultScheme = IdentityConstants.ApplicationScheme;
-            options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-        })
-        .AddIdentityCookies();
-
-        builder.Services.ConfigureApplicationCookie(options =>
-        {
-            options.LoginPath = "/Account/Signin";
-        });
-
-        builder.Services.AddAuthorizationBuilder()
-            .AddPolicy(Policies.RequireProductRole, policy => policy.RequireRole(Roles.ProductRoles))
-            .AddPolicy(Policies.RequireUserRole, policy => policy.RequireRole(Roles.UserRoles));
-
         var app = builder.Build();
+        app.AddMiddleware();
         await app.SetUpDatabaseAsync();
-
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseMigrationsEndPoint();
-        }
-        else
-        {
-            app.UseExceptionHandler("/Error");
-            app.UseHsts();
-        }
-
-        app.UseStatusCodePagesWithReExecute("/Error/{0}");
-
-        app.UseHttpsRedirection();
-
-        app.UseAntiforgery();
-
-        app.MapStaticAssets();
-        app.MapRazorComponents<App>()
-            .AddInteractiveServerRenderMode();
-
-        // Add additional endpoints required by the Identity /Account Razor components.
-        app.MapAdditionalIdentityEndpoints();
-
         app.Run();
     }
 }

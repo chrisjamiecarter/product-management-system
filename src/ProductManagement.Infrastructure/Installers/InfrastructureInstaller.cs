@@ -18,7 +18,6 @@ namespace ProductManagement.Infrastructure.Installers;
 /// </summary>
 public static class InfrastructureInstaller
 {
-
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("ProductManagement") ?? throw new InvalidOperationException("Connection string 'ProductManagement' not found.");
@@ -52,7 +51,6 @@ public static class InfrastructureInstaller
 
         services.AddMediatR(config => config.RegisterServicesFromAssembly(AssemblyReference.Assembly));
 
-        // TODO: Install: ProductManagement.Infrastructure.EmailRender.
         services.AddRazorPages();
         services.AddScoped<IRazorViewToStringRenderService, RazorViewToStringRenderService>();
 
