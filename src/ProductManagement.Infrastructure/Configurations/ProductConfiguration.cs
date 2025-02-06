@@ -13,7 +13,7 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
     public void Configure(EntityTypeBuilder<Product> builder)
     {
-        builder.ToTable("Product", SchemaConstants.CoreSchema);
+        builder.ToTable(Tables.Product, Schemas.Core);
 
         builder.HasKey(pk => pk.Id);
 

@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ProductManagement.Domain.Entities;
-using ProductManagement.Infrastructure.Constants;
 using ProductManagement.Infrastructure.Configurations;
 using ProductManagement.Infrastructure.Models;
 
@@ -10,25 +8,22 @@ namespace ProductManagement.Infrastructure.Contexts;
 
 internal class ProductManagementDbContext(DbContextOptions<ProductManagementDbContext> options) : IdentityDbContext<ApplicationUser>(options)
 {
+    public DbSet<AuditLog> Logs { get; set; } = default!;
+
     public DbSet<Product> Products { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
-        builder.Entity<ApplicationUser>(a =>
-        {
-            a.ToTable("Users", SchemaConstants.IdentitySchema);
-            a.HasMany(e => e.UserRoles).WithOne().HasForeignKey(fk => fk.UserId).IsRequired();
-        });
-
-        builder.Entity<IdentityRole>().ToTable("Roles", SchemaConstants.IdentitySchema);
-        builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims", SchemaConstants.IdentitySchema);
-        builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles", SchemaConstants.IdentitySchema);
-        builder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins", SchemaConstants.IdentitySchema);
-        builder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaims", SchemaConstants.IdentitySchema);
-        builder.Entity<IdentityUserToken<string>>().ToTable("UserTokens", SchemaConstants.IdentitySchema);
-
+        builder.ApplyConfiguration(new ApplicationUserConfiguration());
+        builder.ApplyConfiguration(new AuditLogConfiguration());
+        builder.ApplyConfiguration(new IdentityRoleConfiguration());
+        builder.ApplyConfiguration(new IdentityUserClaimConfiguration());
+        builder.ApplyConfiguration(new IdentityUserRoleConfiguration());
+        builder.ApplyConfiguration(new IdentityUserLoginConfiguration());
+        builder.ApplyConfiguration(new IdentityRoleClaimConfiguration());
+        builder.ApplyConfiguration(new IdentityUserTokenConfiguration());
         builder.ApplyConfiguration(new ProductConfiguration());
     }
 }

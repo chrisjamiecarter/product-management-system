@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ProductManagement.Application.Interfaces.Infrastructure;
+using ProductManagement.Infrastructure.Constants;
 using ProductManagement.Infrastructure.Contexts;
 using ProductManagement.Infrastructure.EmailRender.Interfaces;
 using ProductManagement.Infrastructure.EmailRender.Services;
@@ -10,6 +11,9 @@ using ProductManagement.Infrastructure.Models;
 using ProductManagement.Infrastructure.Options;
 using ProductManagement.Infrastructure.Repositories;
 using ProductManagement.Infrastructure.Services;
+using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.MSSqlServer;
 
 namespace ProductManagement.Infrastructure.Installers;
 
@@ -37,6 +41,24 @@ public static class InfrastructureInstaller
         .AddEntityFrameworkStores<ProductManagementDbContext>()
         .AddSignInManager()
         .AddDefaultTokenProviders();
+
+        var sqlLogger = new LoggerConfiguration()
+            .Enrich.FromLogContext()
+            .Enrich.WithMachineName()
+            .WriteTo.MSSqlServer(
+                connectionString: connectionString,
+                sinkOptions: new MSSqlServerSinkOptions
+                {
+                    SchemaName = Schemas.Audit,
+                    TableName = Tables.AuditLog
+                },
+                restrictedToMinimumLevel: LogEventLevel.Warning)
+            .CreateLogger();
+        
+        services.AddLogging(builder =>
+        {
+            builder.AddSerilog(sqlLogger);
+        });
 
         services.AddScoped<IProductRepository, ProductRepository>();
 

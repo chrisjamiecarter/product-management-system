@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProductManagement.Infrastructure.Contexts;
 
@@ -11,9 +12,11 @@ using ProductManagement.Infrastructure.Contexts;
 namespace ProductManagement.Infrastructure.Database.Migrations
 {
     [DbContext(typeof(ProductManagementDbContext))]
-    partial class ProductManagementDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250206143108_AddedAuditLogs")]
+    partial class AddedAuditLogs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
