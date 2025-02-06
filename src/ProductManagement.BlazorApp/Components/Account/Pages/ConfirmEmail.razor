@@ -33,50 +33,33 @@
     {
         if (UserId is null || Code is null)
         {
-            var newStatus = new StatusModel("Invalid email confirmation link.", MessageLevel.Error);
-            Logger.LogWarning("{code}: {message}", newStatus.Level, newStatus.Message);
-            RedirectManager.RedirectToWithStatus("Account/Signin", newStatus, HttpContext);
+            status = new StatusModel("Invalid email confirmation link.", MessageLevel.Error);
+            Logger.LogWarning("{code}: {message}", status.Level, status.Message);
+            RedirectManager.RedirectToWithStatus("Account/Signin", status, HttpContext);
         }
 
         var token = AuthToken.Decode(Code);
         var confirmCommand = new ConfirmEmailCommand(UserId, token);
         var confirmResult = await Sender.SendAsync(confirmCommand);
-        if (confirmResult.IsSuccess)
+        if (confirmResult.IsFailure)
         {
-            Logger.LogInformation("User email confirmed.");
-            
-            var signInCommand = new SignInCommand(UserId);
-            var signInResult = await Sender.SendAsync(signInCommand);
-            if (signInResult.IsSuccess)
-            {
-                Logger.LogInformation("User signed in.");
-                
-                // If the user DOES have a password - Redirect to ConfirmEmailConfirmation.
-                // If the user DOES NOT have a password - Redirect to SetPassword.
-                var hasPasswordQuery = new HasPasswordQuery(UserId);
-                var hasPasswordResult = await Sender.SendAsync(hasPasswordQuery);
-                if (hasPasswordResult.IsSuccess && !hasPasswordResult.Value.HasPassword)
-                {
-                    var newStatus = new StatusModel("Thank you for confirming your email.", MessageLevel.Success);
-                    RedirectManager.RedirectToWithStatus("Account/Manage/SetPassword", newStatus, HttpContext);
-                }
-                else
-                {
-                    RedirectManager.RedirectTo("Account/ConfirmEmailConfirmation");
-                }
-            }
-            else
-            {
-                var newStatus = new StatusModel("Error signing in.", MessageLevel.Error);
-                Logger.LogWarning("{code}: {message}", signInResult.Error.Code, signInResult.Error.Message);
-                RedirectManager.RedirectToWithStatus("Account/Signin", newStatus, HttpContext);
-            }
-        }
-        else
-        {
-            var newStatus = new StatusModel("Error confirming your email.", MessageLevel.Error);
+            status = new StatusModel("Error confirming your email.", MessageLevel.Error);
             Logger.LogWarning("{code}: {message}", confirmResult.Error.Code, confirmResult.Error.Message);
-            RedirectManager.RedirectToWithStatus("Account/Signin", newStatus, HttpContext);
+            RedirectManager.RedirectToWithStatus("Account/Signin", status, HttpContext);
         }
+
+        Logger.LogInformation("User email confirmed.");
+            
+        var signInCommand = new SignInCommand(UserId);
+        var signInResult = await Sender.SendAsync(signInCommand);
+        if (signInResult.IsFailure)
+        {
+            status = new StatusModel("Error signing in.", MessageLevel.Error);
+            Logger.LogWarning("{code}: {message}", signInResult.Error.Code, signInResult.Error.Message);
+            RedirectManager.RedirectToWithStatus("Account/Signin", status, HttpContext);
+        }
+            
+        Logger.LogInformation("User signed in.");
+        RedirectManager.RedirectToWithStatus("Account/Manage", new StatusModel("Thank you for confirming your email.", MessageLevel.Success), HttpContext);
     }
 }

@@ -93,7 +93,7 @@
     {
         try
         {
-            status = StatusModel.None;
+            status = new StatusModel(null, null);
             showValidation = false;
 
             var command = new PasswordSignInCommand(Input.Email, Input.Password, Input.RememberMe);

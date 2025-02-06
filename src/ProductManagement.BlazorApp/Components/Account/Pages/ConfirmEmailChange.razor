@@ -1,8 +1,8 @@
 ﻿@page "/Account/ConfirmEmailChange"
 
-@inject IdentityRedirectManager RedirectManager
 @inject ILogger<ConfirmEmailChange> Logger
 @inject ISenderService Sender
+@inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Confirm email change</PageTitle>
 
@@ -43,15 +43,13 @@
         var token = AuthToken.Decode(Code);
         var command = new ConfirmEmailChangeCommand(UserId, Email, token);
         var result = await Sender.SendAsync(command);
-        if (result.IsSuccess)
-        {
-            status = new StatusModel("Thank you for confirming your email change.", MessageLevel.Success);
-            Logger.LogInformation("User email change confirmed.");
-        }
-        else
+        if (result.IsFailure)
         {
             status = new StatusModel("Error confirming your email change.", MessageLevel.Error);
             Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
         }
+
+        Logger.LogInformation("User email change confirmed.");
+        RedirectManager.RedirectToWithStatus("Account/Manage", new StatusModel("Thank you for confirming your email change.", MessageLevel.Success), HttpContext);
     }
 }

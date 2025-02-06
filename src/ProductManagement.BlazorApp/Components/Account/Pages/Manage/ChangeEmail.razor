@@ -1,13 +1,14 @@
 ﻿@inject ICurrentUserService CurrentUserService
 @inject ILogger<ChangeEmail> Logger
 @inject ISenderService Sender
+@inject IdentityRedirectManager RedirectManager
 
 <h3 class="mb-3 fw-normal">Change email</h3>
 <div class="row mb-4">
     <div class="col-xl-6">
-        <StatusMessage Status="status" />
         @if (Input is not null)
         {
+            <StatusMessage Status="@status" />
             <EditForm Model="Input" FormName="change-email" OnValidSubmit="EditEmailAsync" method="post">
                 <DataAnnotationsValidator />
                 <div class="form-floating mb-3">
@@ -30,6 +31,9 @@
 @code {
     private StatusModel status = StatusModel.None;
 
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
     [Parameter, EditorRequired]
     public ApplicationUserDto User { get; set; } = default!;
 
@@ -48,22 +52,20 @@
     {
         if (Input.UpdatedEmail is null || Input.UpdatedEmail == User.Email)
         {
-            status = new StatusModel("Your email is unchanged.", MessageLevel.Info);
+            status = new StatusModel("Your email is unchanged.", MessageLevel.Warning);
             return;
         }
 
         var command = new GenerateEmailChangeCommand(User.Id, Input.UpdatedEmail);
 
         var result = await Sender.SendAsync(command);
-        if (result.IsSuccess)
-        {
-            status = new StatusModel("Confirmation link to change email sent. Please check your email.", MessageLevel.Success);
-            Logger.LogInformation("Confirmation of email change link sent to user email.");
-        }
-        else
+        if (result.IsFailure)
         {
             status = new StatusModel(result.Error.Message, MessageLevel.Error);
             Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
         }
+
+        Logger.LogInformation("Confirmation of email change link sent to user email.");
+        RedirectManager.RedirectToCurrentPageWithStatus(new StatusModel("Confirmation link to change email sent. Please check your email.", MessageLevel.Success), HttpContext);
     }
 }

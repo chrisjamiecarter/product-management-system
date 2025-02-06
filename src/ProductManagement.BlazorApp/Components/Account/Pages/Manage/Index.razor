@@ -21,32 +21,25 @@
     </div>
 
     <StatusMessage Status="@status" />
-
-    @if (status == StatusModel.None)
+    @if (user is null)
     {
-        <div class="row">
+        <LoadingSpinner />
+    }
+    else
+    {
+        <ChangeEmail User="@user"/>
 
-            @if (user is null)
-            {
-                <LoadingSpinner />
-            }
-            else
-            {
-                <ChangeEmail User="@user"/>
+        <hr />
 
-                <hr />
+        @if (hasPassword)
+        {
+            <ChangePassword User="@user" />
 
-                @if (hasPassword)
-                {
-                    <ChangePassword User="@user" />
-
-                }
-                else
-                {
-                    <SetPassword User="@user" />
-                }
-            }
-        </div>
+        }
+        else
+        {
+            <SetPassword User="@user" />
+        }
     }
 </div>
 
@@ -54,6 +47,9 @@
     private StatusModel status = StatusModel.None;
     private ApplicationUserDto user = default!;
     private bool hasPassword;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -86,5 +82,14 @@
         }
 
         hasPassword = hasPasswordResult.Value.HasPassword;
+
+        var messageFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusMessageCookieName];
+        var levelFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusLevelCookieName];
+        if (!string.IsNullOrWhiteSpace(messageFromCookie) && !string.IsNullOrWhiteSpace(levelFromCookie))
+        {
+            status = new StatusModel(messageFromCookie, Enum.Parse<MessageLevel>(levelFromCookie));
+            HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusMessageCookieName);
+            HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusLevelCookieName);
+        }
     }
 }

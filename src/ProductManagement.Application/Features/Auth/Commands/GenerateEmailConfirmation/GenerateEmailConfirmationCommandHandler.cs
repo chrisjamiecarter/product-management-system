@@ -29,12 +29,6 @@ internal sealed class GenerateEmailConfirmationCommandHandler : ICommandHandler<
         }
 
         var user = userResult.Value;
-
-        if (user.EmailConfirmed)
-        {
-            // Obfuscate that the email is already confirmed.
-            return Result.Success();
-        }
         
         var tokenResult = await _authService.GenerateEmailConfirmationTokenAsync(request.Email, cancellationToken);
         if (tokenResult.IsFailure)
