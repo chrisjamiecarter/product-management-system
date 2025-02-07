@@ -27,15 +27,15 @@
     if (!submitButton.querySelector('.button-content')) {
       const originalContent = submitButton.innerHTML;
       submitButton.innerHTML = `
-                <span class="button-content">${originalContent}</span>
-                <span class="button-loading d-none">
-                    <div class="d-flex justify-content-center align-items-center">
-                      <div class="spinner-border" role="status">
-                          <span class="visually-hidden">Loading...</span>
-                      </div>
-                  </div>
-                </span>
-            `;
+        <span class="button-content">${originalContent}</span>
+        <span class="button-loading d-none">
+          <div class="d-flex justify-content-center align-items-center">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        </span>
+        `;
     }
 
     const buttonContent = submitButton.querySelector('.button-content');
