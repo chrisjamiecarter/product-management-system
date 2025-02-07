@@ -1,14 +1,14 @@
 ﻿using ProductManagement.BlazorApp.Enums;
 
-namespace ProductManagement.BlazorApp.Components.Models;
+namespace ProductManagement.BlazorApp.Components.Shared.Models;
 
 public class StatusModel
 {
     public static readonly StatusModel None = new(null, null);
-    
+
     public StatusModel(string? message, MessageLevel? level)
     {
-        if(!string.IsNullOrWhiteSpace(message))
+        if (!string.IsNullOrWhiteSpace(message))
         {
             if (level is null)
             {

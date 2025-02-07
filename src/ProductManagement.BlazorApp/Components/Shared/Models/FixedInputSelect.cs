@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 
-namespace ProductManagement.BlazorApp.Components.Shared;
+namespace ProductManagement.BlazorApp.Components.Shared.Models;
 
 public class FixedInputSelect<TValue> : InputSelect<TValue>
 {

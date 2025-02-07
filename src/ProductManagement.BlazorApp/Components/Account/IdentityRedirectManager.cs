@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
-using ProductManagement.BlazorApp.Components.Models;
+using ProductManagement.BlazorApp.Components.Shared.Models;
 
 namespace ProductManagement.BlazorApp.Components.Account;
 internal sealed class IdentityRedirectManager(NavigationManager navigationManager)
