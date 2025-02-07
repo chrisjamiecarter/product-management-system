@@ -43,7 +43,9 @@ else
                     <label for="Input.Role" class="form-label">Role</label>
                 </div>
                 <div class="d-flex gap-1">
-                    <button class="btn btn-outline-dark w-100" type="submit">Delete</button>
+                    <LoadingButton Type="submit" IsProcessing="@isProcessing" CssClass="btn btn-outline-dark w-100">
+                        Delete
+                    </LoadingButton>
                     <button class="btn btn-dark w-100" type="button" @onclick="() => NavigateToUsers()">Back</button>
                 </div>
             </EditForm>
@@ -64,6 +66,7 @@ else
 
     private DeleteUserInputModel? Input;
     private bool ShowConfirmationModal { get; set; }
+    private bool isProcessing = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -88,6 +91,8 @@ else
             return;
         }
 
+        isProcessing = true;
+
         var command = new DeleteUserCommand(Input.Id);
 
         var response = await Sender.SendAsync(command);
@@ -102,6 +107,8 @@ else
             ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
             HideConfirmation();
         }
+
+        isProcessing = false;
     }
 
     private void NavigateToUsers()
