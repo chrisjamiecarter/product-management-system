@@ -48,8 +48,10 @@ else
                     <ValidationMessage For="() => Input.Role" class="invalid-feedback" />
                 </div>
                 <div class="d-flex gap-1">
-                    <button class="btn btn-outline-dark w-100" type="submit">Create</button>
-                    <button class="btn btn-dark w-100" type="button" @onclick="() => NavigateToUsers()">Cancel</button>
+                    <LoadingButton Type="submit" IsProcessing="@isProcessing" CssClass="btn btn-outline-dark w-100">
+                        Create
+                    </LoadingButton>
+                    <button class="btn btn-dark w-100" type="button" @onclick="() => NavigateToUsers()">Back</button>
                 </div>
             </EditForm>
         </div>
@@ -59,6 +61,7 @@ else
 @code {
     private CreateUserInputModel Input = new();
     private EditContext? EditContext;
+    private bool isProcessing = false;
 
     protected override void OnInitialized()
     {
@@ -67,6 +70,8 @@ else
 
     private async Task AddUserAsync()
     {
+        isProcessing = true;
+
         var command = new RegisterCommand(Input.Email, Input.Password, Input.Role);
         var response = await Sender.SendAsync(command);
         if (response.IsSuccess)
@@ -79,6 +84,8 @@ else
             // TODO: Log.
             ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
         }
+
+        isProcessing = false;
     }
 
     private void NavigateToUsers()

@@ -1,0 +1,30 @@
+﻿<button type="@Type" class="@CssClass" disabled="@IsProcessing" @onclick="@OnClickCallback">
+    @if (IsProcessing)
+    {
+        <div class="d-flex justify-content-center align-items-center">
+            <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        @ChildContent
+    }
+</button>
+
+@code {
+    [Parameter] public bool IsProcessing { get; set; }
+    [Parameter] public string CssClass { get; set; } = "btn btn-primary";
+    [Parameter] public string Type { get; set; } = "button";
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private async Task OnClickCallback()
+    {
+        if (!IsProcessing && OnClick.HasDelegate)
+        {
+            await OnClick.InvokeAsync();
+        }
+    }
+}
