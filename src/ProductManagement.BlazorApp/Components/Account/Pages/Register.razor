@@ -19,7 +19,7 @@
             <div class="col-md-8 col-lg-6 col-xl-5">
                 <h1 class="h3 mb-3 fw-normal">Please register</h1>
                 <StatusMessage Status="@status" />
-                <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" OnInvalidSubmit="HandleInvalidSubmit" FormName="register">
+                <EditForm id="registerForm" Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" OnInvalidSubmit="HandleInvalidSubmit" FormName="register">
                     <DataAnnotationsValidator />
                     <div class="form-floating mb-3">
                         <InputText @bind-Value="Input.Email" id="Input.Email" class=@($"form-control form-control-lg {ValidationHelper.GetValidationCssClass(Input, nameof(Input.Email), showValidation)}") autocomplete="email" aria-required="true" placeholder="name@example.com" />
@@ -49,6 +49,13 @@
         </div>
     </div>
 </section>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        window.FormLoading.initialize('registerForm', {
+            submitButtonId: 'registerSubmit'
+        });
+    });
+</script>
 
 @code {
     private StatusModel status = StatusModel.None;
