@@ -9,7 +9,7 @@
         @if (Input is not null)
         {
             <StatusMessage Status="@status" />
-            <EditForm Model="Input" FormName="change-email" OnValidSubmit="EditEmailAsync" method="post">
+            <EditForm Model="Input" FormName="change-email" OnValidSubmit="EditEmailAsync" method="post" data-loading-button>
                 <DataAnnotationsValidator />
                 <div class="form-floating mb-3">
                     <input type="text" value="@User.Email" id="email" class="form-control" placeholder="Enter your email" disabled readonly />
@@ -20,9 +20,7 @@
                     <label for="Input.UpdatedEmail" class="form-label">New email</label>
                     <ValidationMessage For="() => Input.UpdatedEmail" class="text-danger" />
                 </div>
-                <div class="d-flex gap-1">
-                    <button class="btn btn-dark w-100" type="submit">Update email</button>
-                </div>
+                <button class="btn btn-dark w-100" type="submit">Update email</button>
             </EditForm>
         }
     </div>

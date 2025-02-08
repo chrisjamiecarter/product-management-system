@@ -14,7 +14,7 @@
             <div class="col-md-8 col-lg-6 col-xl-5">
                 <h1 class="h3 mb-3 fw-normal">Please enter your email</h1>
                 <StatusMessage Status="@status" />
-                <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="ResendEmailConfirmationAsync" OnInvalidSubmit="ShowValidation" method="post">
+                <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="ResendEmailConfirmationAsync" OnInvalidSubmit="ShowValidation" method="post" data-loading-button>
                     <DataAnnotationsValidator />
                     <div class="form-floating mb-3">
                         <InputText @bind-Value="Input.Email" id="Input.Email" class=@($"form-control form-control-lg {ValidationHelper.GetValidationCssClass(Input, nameof(Input.Email), showValidation)}") aria-required="true" placeholder="name@example.com" />

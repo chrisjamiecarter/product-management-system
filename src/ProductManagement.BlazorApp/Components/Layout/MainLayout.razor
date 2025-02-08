@@ -77,7 +77,7 @@
                         <AuthorizeView Context="Account">
                             <Authorized>
                                 <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
-                                    <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="Account/Manage">
+                                    <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="Account/Manage" data-enhance-nav="false">
                                         @if (currentPage is AppPages.Manage)
                                         {
                                             <PersonGearFillSvg />
@@ -102,7 +102,7 @@
                             </Authorized>
                             <NotAuthorized>
                                 <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
-                                    <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="Account/Register">
+                                    <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="Account/Register" data-enhance-nav="false">
                                         @if (currentPage is AppPages.Register)
                                         {
                                             <PersonFillSvg />
@@ -115,7 +115,7 @@
                                     </NavLink>
                                 </li>
                                 <li class="nav-item" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu">
-                                    <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="Account/Signin">
+                                    <NavLink class="nav-link link-dark d-flex align-items-center gap-2" href="Account/Signin" data-enhance-nav="false">
                                         @if (currentPage is AppPages.Signin)
                                         {
                                             <PersonBadgeFillSvg />
@@ -141,6 +141,39 @@
         </main>
     </div>
 </div>
+<script>
+    // NOTE: 
+    // Account pages are Static Server Rendered. So I want to use JS to disable and add spinner when clicked.
+    // TO USE: 
+    // - Mark a Form with "data-loading-button".
+    // - Ensure that when you navigate to the page, a full page load is done so JS is invoked.
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const forms = document.querySelectorAll('form[data-loading-button]');
+        forms.forEach(form => {
+            form.addEventListener('submit', (event) => {
+                try {
+                    const submitButton = form.querySelector('button[type="submit"]');
+                    if (!submitButton) {
+                        return;
+                    }
+                    
+                    submitButton.disabled = true;
+                    requestAnimationFrame(() => {
+                        submitButton.innerHTML = `
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        `;
+                    });
+
+                } catch (error) {
+                    console.error("Error processing form submission:", error);
+                }
+            });
+        });
+    });
+</script>
 
 @code {
     private enum AppPages
