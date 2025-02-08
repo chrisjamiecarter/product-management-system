@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ProductManagement.Application.Errors;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
@@ -11,11 +12,13 @@ namespace ProductManagement.Infrastructure.Services;
 
 internal class UserService : IUserService
 {
+    private readonly ILogger<UserService> _logger;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public UserService(RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager)
+    public UserService(ILogger<UserService> logger, RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager)
     {
+        _logger = logger;
         _roleManager = roleManager;
         _userManager = userManager;
     }
@@ -62,13 +65,17 @@ internal class UserService : IUserService
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            return Result.Success();
+            return Result.Failure(UserErrors.NotFound);
         }
 
         var result = await _userManager.ChangePasswordAsync(user, currentPassword, updatedPassword);
         if (!result.Succeeded)
         {
-            // TODO: var passwordErrorMessage = $"Error: {string.Join(",", changePasswordResult.Errors.Select(error => error.Description))}";
+            foreach (var error in result.Errors)
+            {
+                _logger.LogWarning("IdentityError during {method} for {userId}: {errorCode} - {errorDescription}", nameof(ChangePasswordAsync), userId, error.Code, error.Description);
+            }
+
             return Result.Failure(UserErrors.PasswordNotChanged);
         }
 

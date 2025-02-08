@@ -148,6 +148,7 @@ internal class AuthService : IAuthService
         {
             return Result.Failure(UserErrors.NotFound);
         }
+
         await _signInManager.RefreshSignInAsync(user);
         return Result.Success();
     }
