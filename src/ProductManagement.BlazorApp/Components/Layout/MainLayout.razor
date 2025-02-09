@@ -143,10 +143,10 @@
 </div>
 <script>
     // NOTE: 
-    // Account pages are Static Server Rendered. So I want to use JS to disable and add spinner when clicked.
+    // Account pages must use Static Server-Side Rendering. And I want to use JS to disable buttons and add a spinner when clicked.
     // TO USE: 
     // - Mark a Form with "data-loading-button".
-    // - Ensure that when you navigate to the page, a full page load is done so JS is invoked.
+    // - Ensure that when you navigate to the page, a full page load is done so JS is invoked (i.e. when using NavLink add attribute: data-enhance-nav="false").
     
     document.addEventListener('DOMContentLoaded', () => {
         const forms = document.querySelectorAll('form[data-loading-button]');

@@ -4,7 +4,6 @@
 @using Microsoft.AspNetCore.Identity
 
 @inject ISenderService Sender
-@inject ILogger<Signin> Logger
 @inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Sign in</PageTitle>
@@ -86,29 +85,17 @@
 
     public async Task SignInUserAsync()
     {
-        try
-        {
-            status = new StatusModel(null, null);
-            showValidation = false;
+        status = new StatusModel(null, null);
+        showValidation = false;
 
-            var command = new SignInCommand(Input.Email, Input.Password, Input.RememberMe);
-            var result = await Sender.SendAsync(command);
-            if (result.IsSuccess)
-            {
-                Logger.LogInformation("User signed in.");
-                RedirectManager.RedirectTo(ReturnUrl);
-            }
-            else
-            {
-                Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
-                status = new StatusModel(result.Error.Message, MessageLevel.Error);
-            }
-        }
-        catch (Exception exception) when (exception is not NavigationException)
+        var command = new SignInCommand(Input.Email, Input.Password, Input.RememberMe);
+        var result = await Sender.SendAsync(command);
+        if (result.IsFailure)
         {
-            Logger.LogWarning("Exception throw in {method}: {exceptionMessage}", nameof(SignInUserAsync), exception.Message);
-            status = new StatusModel("Error during sign in.", MessageLevel.Error);
+            status = new StatusModel(result.Error.Message, MessageLevel.Error);
         }
+
+        RedirectManager.RedirectTo(ReturnUrl);
     }
 
     private void HandleInvalidSubmit()

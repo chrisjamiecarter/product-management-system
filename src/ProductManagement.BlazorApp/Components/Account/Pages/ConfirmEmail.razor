@@ -1,6 +1,5 @@
 ﻿@page "/Account/ConfirmEmail"
 
-@inject ILogger<ConfirmEmail> Logger
 @inject ISenderService Sender
 @inject IdentityRedirectManager RedirectManager
 
@@ -33,9 +32,7 @@
     {
         if (UserId is null || Code is null)
         {
-            status = new StatusModel("Invalid email confirmation link.", MessageLevel.Error);
-            Logger.LogWarning("{code}: {message}", status.Level, status.Message);
-            RedirectManager.RedirectToWithStatus("Account/Signin", status, HttpContext);
+            RedirectManager.RedirectToWithStatus("Account/Signin", new StatusModel("Invalid email confirmation link.", MessageLevel.Error), HttpContext);
         }
 
         var token = AuthToken.Decode(Code);

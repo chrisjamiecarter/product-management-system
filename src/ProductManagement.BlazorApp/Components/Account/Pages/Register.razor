@@ -1,6 +1,5 @@
 ﻿@page "/Account/Register"
 
-@inject ILogger<Register> Logger
 @inject ISenderService Sender
 @inject IdentityRedirectManager RedirectManager
 
@@ -56,29 +55,17 @@
 
     public async Task RegisterUser()
     {
-        try
+        status = StatusModel.None;
+        showValidation = true;
+        
+        var command = new RegisterCommand(Input.Email, Input.Password);
+        var result = await Sender.SendAsync(command);
+        if (result.IsFailure)
         {
-            status = StatusModel.None;
-            showValidation = true;
-
-            var command = new RegisterCommand(Input.Email, Input.Password);
-            var result = await Sender.SendAsync(command);
-            if (result.IsSuccess)
-            {
-                Logger.LogInformation("User created a new account with password.");
-                RedirectManager.RedirectTo("Account/RegisterConfirmation", new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
-            }
-            else
-            {
-                status = new StatusModel(result.Error.Message, MessageLevel.Error);
-                Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
-            }
+            status = new StatusModel(result.Error.Message, MessageLevel.Error);
         }
-        catch (Exception exception) when (exception is not NavigationException)
-        {
-            Logger.LogWarning("Exception throw in {method}: {exceptionMessage}", nameof(RegisterUser), exception.Message);
-            status = new StatusModel("Error during registration.", MessageLevel.Error);
-        }
+        
+        RedirectManager.RedirectTo("Account/RegisterConfirmation");
     }
 
     private void HandleInvalidSubmit()

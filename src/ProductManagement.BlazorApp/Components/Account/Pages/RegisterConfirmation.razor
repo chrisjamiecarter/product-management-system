@@ -1,10 +1,5 @@
 ﻿@page "/Account/RegisterConfirmation"
 
-@inject ILogger<RegisterConfirmation> Logger
-@inject IdentityRedirectManager RedirectManager
-@inject NavigationManager NavigationManager
-@inject ISenderService Sender
-
 <PageTitle>Register confirmation</PageTitle>
 
 <section class="container-md py-3">
@@ -19,36 +14,5 @@
 </section>
 
 @code {
-    private StatusModel status = StatusModel.None;
-
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
-
-    [SupplyParameterFromQuery]
-    private string? Email { get; set; }
-
-    [SupplyParameterFromQuery]
-    private string? ReturnUrl { get; set; }
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (Email is null)
-        {
-            RedirectManager.RedirectTo("");
-        }
-
-        var query = new GetUserByEmailQuery(Email);
-        var result = await Sender.SendAsync(query);
-        if (result.IsSuccess)
-        {
-            Logger.LogInformation("User register confirmation has been sent to their email.");
-            status = new StatusModel("Please check your email to confirm your account.", MessageLevel.Success);
-        }
-        else
-        {
-            Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
-            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            status = new StatusModel("There was an error during register confirmation.", MessageLevel.Error);
-        }
-    }
+    private StatusModel status = new StatusModel("Please check your email to confirm your account.", MessageLevel.Success);
 }

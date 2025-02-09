@@ -1,6 +1,5 @@
 ﻿@page "/Account/ResendEmailConfirmation"
 
-@inject ILogger<ResendEmailConfirmation> Logger
 @inject ISenderService Sender
 
 <PageTitle>Resend email confirmation</PageTitle>
@@ -50,13 +49,11 @@
         var result = await Sender.SendAsync(command);
         if (result.IsSuccess)
         {
-            Logger.LogInformation("Verification email sent to user.");
             status = new StatusModel("Verification email sent. Please check your email.", MessageLevel.Success);
         }
         else
         {
             status = new StatusModel(result.Error.Message, MessageLevel.Error);
-            Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
         }
     }
 

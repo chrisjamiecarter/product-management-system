@@ -1,5 +1,4 @@
 ﻿@inject ICurrentUserService CurrentUserService
-@inject ILogger<ChangeEmail> Logger
 @inject ISenderService Sender
 @inject IdentityRedirectManager RedirectManager
 
@@ -55,15 +54,12 @@
         }
 
         var command = new GenerateEmailChangeCommand(User.Id, Input.UpdatedEmail);
-
         var result = await Sender.SendAsync(command);
         if (result.IsFailure)
         {
             status = new StatusModel(result.Error.Message, MessageLevel.Error);
-            Logger.LogWarning("{code}: {message}", result.Error.Code, result.Error.Message);
         }
 
-        Logger.LogInformation("Confirmation of email change link sent to user email.");
         RedirectManager.RedirectToCurrentPageWithStatus(new StatusModel("Confirmation link to change email sent. Please check your email.", MessageLevel.Success), HttpContext);
     }
 }
