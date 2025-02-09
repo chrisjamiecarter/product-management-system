@@ -8,7 +8,6 @@ namespace ProductManagement.Application.Features.Auth.Commands.ChangePassword;
 /// <summary>
 /// Handles the change password command by validating the user, updating the password, 
 /// and refreshing the authentication session.
-/// Logs relevant events and ensures failures are handled appropriately.
 /// </summary>
 internal sealed class ChangePasswordCommandHandler : ICommandHandler<ChangePasswordCommand>
 {
