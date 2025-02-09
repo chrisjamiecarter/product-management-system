@@ -32,34 +32,26 @@ internal sealed class GenerateEmailChangeCommandHandler : ICommandHandler<Genera
 
     public async Task<Result> Handle(GenerateEmailChangeCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Starting {handler} for UserId {userId}",
-            nameof(GenerateEmailChangeCommandHandler), request.UserId);
+        _logger.LogDebug("Starting {handler} for UserId {userId}", nameof(GenerateEmailChangeCommandHandler), request.UserId);
 
         var userResult = await _userService.FindByIdAsync(request.UserId, cancellationToken);
         if (userResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler} for UserId {userId}. {errorCode} - {errorMessage}",
-                nameof(GenerateEmailChangeCommandHandler), request.UserId, userResult.Error.Code, userResult.Error.Message);
-
-            // Obfuscate user not found.
+            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, userResult.Error.Code, userResult.Error.Message);
             return Result.Success();
         }
 
         var duplicateEmailResult = await _userService.FindByEmailAsync(request.UpdatedEmail, cancellationToken);
         if (duplicateEmailResult.IsSuccess)
         {
-            _logger.LogWarning("Failure during {handler} for UserId {userId}. {errorCode} - {errorMessage}",
-                nameof(GenerateEmailChangeCommandHandler), request.UserId, duplicateEmailResult.Error.Code, duplicateEmailResult.Error.Message);
-
+            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, duplicateEmailResult.Error.Code, duplicateEmailResult.Error.Message);
             return Result.Failure(ApplicationErrors.User.EmailTaken);
         }
 
         var tokenResult = await _authService.GenerateEmailChangeTokenAsync(request.UserId, request.UpdatedEmail, cancellationToken);
         if (tokenResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler} for UserId {userId}. {errorCode} - {errorMessage}",
-                nameof(GenerateEmailChangeCommandHandler), request.UserId, tokenResult.Error.Code, tokenResult.Error.Message);
-
+            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, tokenResult.Error.Code, tokenResult.Error.Message);
             return Result.Failure(tokenResult.Error);
         }
 
@@ -68,15 +60,11 @@ internal sealed class GenerateEmailChangeCommandHandler : ICommandHandler<Genera
         var emailResult = await _emailService.SendChangeEmailConfirmationAsync(request.UpdatedEmail, changeEmailConfirmationLink, cancellationToken);
         if (emailResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler} for UserId {userId}. {errorCode} - {errorMessage}",
-                nameof(GenerateEmailChangeCommandHandler), request.UserId, emailResult.Error.Code, emailResult.Error.Message);
-
+            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, emailResult.Error.Code, emailResult.Error.Message);
             return Result.Failure(tokenResult.Error);
         }
 
-        _logger.LogInformation("Finished {handler} for UserId {userId} successfully",
-            nameof(GenerateEmailChangeCommandHandler), request.UserId);
-
+        _logger.LogInformation("Finished {handler} for UserId {userId} successfully", nameof(GenerateEmailChangeCommandHandler), request.UserId);
         return Result.Success();
     }
 }

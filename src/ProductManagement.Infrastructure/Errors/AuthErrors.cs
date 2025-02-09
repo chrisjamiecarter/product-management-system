@@ -20,8 +20,8 @@ internal static class AuthErrors
         "User.ErrorConfirmingEmailChange",
         "There was an error when confirming the change to the users email.");
 
-    internal static readonly Error ErrorResettingPassword = new(
-        "User.ErrorResettingPassword",
+    internal static readonly Error PasswordNotReset = new(
+        "User.PasswordNotReset",
         "There was an error when resetting the users password.");
 
     internal static readonly Error InvalidSignInAttempt = new(

@@ -3,6 +3,9 @@ using ProductManagement.Application.Models;
 
 namespace ProductManagement.Application.Features.Products.Queries.GetProductsPaginated;
 
+/// <summary>
+/// Represents a query to get a page of products.
+/// </summary>
 public sealed record GetProductsPaginatedQuery(string? SearchName,
                                                bool? SearchIsActive,
                                                DateOnly? SearchFromAddedOnDateUtc,

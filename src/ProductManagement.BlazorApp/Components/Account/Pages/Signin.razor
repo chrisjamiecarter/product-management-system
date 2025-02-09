@@ -91,7 +91,7 @@
             status = new StatusModel(null, null);
             showValidation = false;
 
-            var command = new PasswordSignInCommand(Input.Email, Input.Password, Input.RememberMe);
+            var command = new SignInCommand(Input.Email, Input.Password, Input.RememberMe);
             var result = await Sender.SendAsync(command);
             if (result.IsSuccess)
             {

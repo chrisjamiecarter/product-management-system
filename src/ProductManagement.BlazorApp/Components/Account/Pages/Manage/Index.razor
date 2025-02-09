@@ -60,15 +60,15 @@
             return;
         }
 
-        var userQuery = new GetCurrentUserQuery(currentUserId);
+        var userQuery = new GetUserByIdQuery(currentUserId);
         var userResult = await Sender.SendAsync(userQuery);
         if (userResult.IsFailure)
         {
             status = new StatusModel(userResult.Error.Message, MessageLevel.Error);
             return;
         }
-
-        user = new ApplicationUserDto(userResult.Value.UserId,
+        
+        user = new ApplicationUserDto(userResult.Value.Id,
                                       userResult.Value.Email,
                                       userResult.Value.EmailConfirmed,
                                       userResult.Value.Role);

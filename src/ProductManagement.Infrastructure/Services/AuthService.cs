@@ -7,6 +7,7 @@ using ProductManagement.Application.Models;
 using ProductManagement.Domain.Shared;
 using ProductManagement.Infrastructure.Errors;
 using ProductManagement.Infrastructure.Models;
+using static ProductManagement.Application.Errors.ApplicationErrors;
 
 namespace ProductManagement.Infrastructure.Services;
 
@@ -173,17 +174,17 @@ internal class AuthService : IAuthService
         };
 
         var result = await (string.IsNullOrWhiteSpace(password) ? _userManager.CreateAsync(user) : _userManager.CreateAsync(user, password));
-        if (result.Succeeded)
+        if (!result.Succeeded)
         {
-            return Result.Success();
+            foreach (var error in result.Errors)
+            {
+                _logger.LogWarning("IdentityError during {method} for {email}: {errorCode} - {errorDescription}", nameof(RegisterAsync), email, error.Code, error.Description);
+            }
+
+            return Result.Failure(UserErrors.NotRegistered);
         }
-        else
-        {
-            var identityError = result.Errors.First();
-            return identityError != null
-                ? Result.Failure(new Error(identityError.Code, identityError.Description))
-                : Result.Failure(UserErrors.NotRegistered);
-        }
+                
+        return Result.Success();
     }
 
     public async Task<Result> ResetPasswordAsync(string email, string password, AuthToken token, CancellationToken cancellationToken = default)
@@ -191,16 +192,21 @@ internal class AuthService : IAuthService
         var user = await _userManager.FindByEmailAsync(email);
         if (user is null)
         {
-            // Log the invalid attempt. But return successful.
-            // AS to not reveal that the user does not exist.
-            return Result.Success();
+            return Result.Failure(AuthErrors.NotFound);
         }
 
-        // TODO: Log better info here?
         var result = await _userManager.ResetPasswordAsync(user, token.Value, password);
-        return result.Succeeded
-            ? Result.Success()
-            : Result.Failure(UserErrors.ErrorResettingPassword);
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors)
+            {
+                _logger.LogWarning("IdentityError during {method} for {email}: {errorCode} - {errorDescription}", nameof(ResetPasswordAsync), email, error.Code, error.Description);
+            }
+
+            return Result.Failure(AuthErrors.PasswordNotReset);
+        }
+
+        return Result.Success();
     }
 
     public async Task<Result> SignInAsync(string userId, CancellationToken cancellationToken = default)

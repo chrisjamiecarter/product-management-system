@@ -43,23 +43,9 @@
         var confirmResult = await Sender.SendAsync(confirmCommand);
         if (confirmResult.IsFailure)
         {
-            status = new StatusModel("Error confirming your email.", MessageLevel.Error);
-            Logger.LogWarning("{code}: {message}", confirmResult.Error.Code, confirmResult.Error.Message);
-            RedirectManager.RedirectToWithStatus("Account/Signin", status, HttpContext);
+            RedirectManager.RedirectToWithStatus("Account/Signin", new StatusModel("Error confirming your email.", MessageLevel.Error), HttpContext);
         }
 
-        Logger.LogInformation("User email confirmed.");
-            
-        var signInCommand = new SignInCommand(UserId);
-        var signInResult = await Sender.SendAsync(signInCommand);
-        if (signInResult.IsFailure)
-        {
-            status = new StatusModel("Error signing in.", MessageLevel.Error);
-            Logger.LogWarning("{code}: {message}", signInResult.Error.Code, signInResult.Error.Message);
-            RedirectManager.RedirectToWithStatus("Account/Signin", status, HttpContext);
-        }
-            
-        Logger.LogInformation("User signed in.");
         RedirectManager.RedirectToWithStatus("Account/Manage", new StatusModel("Thank you for confirming your email.", MessageLevel.Success), HttpContext);
     }
 }

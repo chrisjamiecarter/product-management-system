@@ -31,25 +31,19 @@ internal sealed class ForgotPasswordCommandHandler : ICommandHandler<ForgotPassw
 
     public async Task<Result> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Starting {handler} for Email {email}",
-            nameof(ForgotPasswordCommandHandler), request.Email);
+        _logger.LogDebug("Starting {handler} for Email {email}", nameof(ForgotPasswordCommandHandler), request.Email);
 
         var userResult = await _userService.FindByEmailAsync(request.Email, cancellationToken);
         if (userResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler} for Email {email}. {errorCode} - {errorMessage}",
-                nameof(ForgotPasswordCommandHandler), request.Email, userResult.Error.Code, userResult.Error.Message);
-
-            // Obfuscate user not found.
+            _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, userResult.Error.Code, userResult.Error.Message);
             return Result.Success();
         }
 
         var tokenResult = await _authService.GeneratePasswordResetTokenAsync(request.Email, cancellationToken);
         if (tokenResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler} for Email {email}. {errorCode} - {errorMessage}",
-                nameof(ForgotPasswordCommandHandler), request.Email, tokenResult.Error.Code, tokenResult.Error.Message);
-
+            _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, tokenResult.Error.Code, tokenResult.Error.Message);
             return Result.Failure(tokenResult.Error);
         }
 
@@ -58,15 +52,11 @@ internal sealed class ForgotPasswordCommandHandler : ICommandHandler<ForgotPassw
         var emailResult = await _emailService.SendPasswordResetAsync(request.Email, passwordResetLink, cancellationToken);
         if (emailResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler} for Email {email}. {errorCode} - {errorMessage}",
-                nameof(ForgotPasswordCommandHandler), request.Email, emailResult.Error.Code, emailResult.Error.Message);
-
+            _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, emailResult.Error.Code, emailResult.Error.Message);
             return Result.Failure(emailResult.Error);
         }
 
-        _logger.LogInformation("Finished {handler} for Email {email} successfully",
-            nameof(ForgotPasswordCommandHandler), request.Email);
-
+        _logger.LogInformation("Finished {handler} for Email {email} successfully", nameof(ForgotPasswordCommandHandler), request.Email);
         return Result.Success();
     }
 }

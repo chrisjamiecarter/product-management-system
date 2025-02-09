@@ -27,31 +27,30 @@ internal sealed class ConfirmEmailCommandHandler : ICommandHandler<ConfirmEmailC
 
     public async Task<Result> Handle(ConfirmEmailCommand request, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Starting {handler} for UserId {userId}",
-            nameof(ConfirmEmailCommandHandler), request.UserId);
+        _logger.LogDebug("Starting {handler} for UserId {userId}", nameof(ConfirmEmailCommandHandler), request.UserId);
 
         var userResult = await _userService.FindByIdAsync(request.UserId, cancellationToken);
         if (userResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler} for UserId {userId}. {errorCode} - {errorMessage}",
-                nameof(ConfirmEmailCommandHandler), request.UserId, userResult.Error.Code, userResult.Error.Message);
-
-            // Obfuscate user not found.
+            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, userResult.Error.Code, userResult.Error.Message);
             return Result.Success();
         }
 
         var confirmEmailResult = await _authService.ConfirmEmailAsync(request.UserId, request.Token, cancellationToken);
         if (confirmEmailResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler} for UserId {userId}. {errorCode} - {errorMessage}",
-                nameof(ConfirmEmailCommandHandler), request.UserId, confirmEmailResult.Error.Code, confirmEmailResult.Error.Message);
-
+            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, confirmEmailResult.Error.Code, confirmEmailResult.Error.Message);
             return Result.Failure(confirmEmailResult.Error);
         }
 
-        _logger.LogInformation("Finished {handler} for UserId {userId} successfully",
-            nameof(ConfirmEmailCommandHandler), request.UserId);
+        var signInResult = await _authService.RefreshSignInAsync(request.UserId, cancellationToken);
+        if (signInResult.IsFailure)
+        {
+            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, signInResult.Error.Code, signInResult.Error.Message);
+            return Result.Failure(signInResult.Error);
+        }
 
+        _logger.LogInformation("Finished {handler} for UserId {userId} successfully", nameof(ConfirmEmailCommandHandler), request.UserId);
         return Result.Success();
     }
 }

@@ -32,9 +32,17 @@ internal class UserService : IUserService
         }
 
         var result = await _userManager.AddPasswordAsync(user, password);
-        return result.Succeeded
-            ? Result.Success()
-            : Result.Failure(UserErrors.PasswordNotAdded);
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors)
+            {
+                _logger.LogWarning("UserId {userId}: {errorCode} - {errorDescription}", userId, error.Code, error.Description);
+            }
+
+            return Result.Failure(UserErrors.PasswordNotAdded);
+        }
+
+        return Result.Success();
     }
 
     public async Task<Result> ChangeEmailAsync(string userId, string updatedEmail, AuthToken token, CancellationToken cancellationToken = default)
@@ -50,7 +58,7 @@ internal class UserService : IUserService
         {
             foreach (var error in emailResult.Errors)
             {
-                _logger.LogWarning("IdentityError during {method} for {userId}: {errorCode} - {errorDescription}", nameof(ChangePasswordAsync), userId, error.Code, error.Description);
+                _logger.LogWarning("UserId {userId}: {errorCode} - {errorDescription}", userId, error.Code, error.Description);
             }
 
             return Result.Failure(UserErrors.EmailNotChanged);
@@ -61,7 +69,7 @@ internal class UserService : IUserService
         {
             foreach (var error in usernameResult.Errors)
             {
-                _logger.LogWarning("IdentityError during {method} for {userId}: {errorCode} - {errorDescription}", nameof(ChangePasswordAsync), userId, error.Code, error.Description);
+                _logger.LogWarning("UserId {userId}: {errorCode} - {errorDescription}", userId, error.Code, error.Description);
             }
 
             return Result.Failure(UserErrors.UsernameNotChanged);
@@ -83,7 +91,7 @@ internal class UserService : IUserService
         {
             foreach (var error in result.Errors)
             {
-                _logger.LogWarning("IdentityError during {method} for {userId}: {errorCode} - {errorDescription}", nameof(ChangePasswordAsync), userId, error.Code, error.Description);
+                _logger.LogWarning("UserId {userId}: {errorCode} - {errorDescription}", userId, error.Code, error.Description);
             }
 
             return Result.Failure(UserErrors.PasswordNotChanged);
@@ -100,8 +108,17 @@ internal class UserService : IUserService
             return Result.Failure(UserErrors.NotFound);
         }
 
-        var deleted = await _userManager.DeleteAsync(user);
-        return deleted.Succeeded
+        var result = await _userManager.DeleteAsync(user);
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors)
+            {
+                _logger.LogWarning("UserId {userId}: {errorCode} - {errorDescription}", userId, error.Code, error.Description);
+            }
+
+        }
+
+            return deleted.Succeeded
             ? Result.Success()
             : Result.Failure(UserErrors.NotDeleted);
     }

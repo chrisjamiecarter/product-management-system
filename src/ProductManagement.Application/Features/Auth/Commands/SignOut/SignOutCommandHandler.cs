@@ -4,6 +4,9 @@ using ProductManagement.Domain.Shared;
 
 namespace ProductManagement.Application.Features.Auth.Commands.SignOut;
 
+/// <summary>
+/// Handles the <see cref="SignOutCommand"/>.
+/// </summary>
 internal sealed class SignOutCommandHandler : ICommandHandler<SignOutCommand>
 {
     private readonly IAuthService _authService;

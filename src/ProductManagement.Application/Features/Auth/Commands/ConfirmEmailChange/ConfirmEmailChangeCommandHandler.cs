@@ -28,40 +28,30 @@ internal sealed class ConfirmEmailChangeCommandHandler : ICommandHandler<Confirm
 
     public async Task<Result> Handle(ConfirmEmailChangeCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Starting {handler} for UserId {userId}",
-            nameof(ConfirmEmailChangeCommandHandler), request.UserId);
+        _logger.LogDebug("Starting {handler} for UserId {userId}", nameof(ConfirmEmailChangeCommandHandler), request.UserId);
 
         var userResult = await _userService.FindByIdAsync(request.UserId, cancellationToken);
         if (userResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler} for UserId {userId}. {errorCode} - {errorMessage}",
-                nameof(ConfirmEmailChangeCommandHandler), request.UserId, userResult.Error.Code, userResult.Error.Message);
-
-            // Obfuscate user not found.
+            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, userResult.Error.Code, userResult.Error.Message);
             return Result.Success();
         }
 
         var emailResult = await _userService.ChangeEmailAsync(request.UserId, request.Email, request.Token, cancellationToken);
         if (emailResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler} for UserId {userId}. {errorCode} - {errorMessage}",
-                nameof(ConfirmEmailChangeCommandHandler), request.UserId, emailResult.Error.Code, emailResult.Error.Message);
-
+            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, emailResult.Error.Code, emailResult.Error.Message);
             return Result.Failure(emailResult.Error);
         }
 
         var refreshResult = await _authService.RefreshSignInAsync(request.UserId, cancellationToken);
         if (refreshResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler} for UserId {userId}. {errorCode} - {errorMessage}",
-                nameof(ConfirmEmailChangeCommandHandler), request.UserId, refreshResult.Error.Code, refreshResult.Error.Message);
-
+            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, refreshResult.Error.Code, refreshResult.Error.Message);
             return Result.Failure(refreshResult.Error);
         }
 
-        _logger.LogInformation("Finished {handler} for UserId {userId} successfully",
-            nameof(ConfirmEmailChangeCommandHandler), request.UserId);
-
+        _logger.LogInformation("Finished {handler} for UserId {userId} successfully", nameof(ConfirmEmailChangeCommandHandler), request.UserId);
         return Result.Success();
     }
 }
