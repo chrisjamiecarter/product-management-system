@@ -6,9 +6,12 @@ using ProductManagement.Domain.Shared;
 namespace ProductManagement.Application.Features.Auth.Commands.ChangePassword;
 
 /// <summary>
-/// Handles the change password command by validating the user, updating the password, 
+/// Handles the <see cref="ChangePasswordCommand"/> by validating the user, updating the password, 
 /// and refreshing the authentication session.
 /// </summary>
+/// /// <remarks>
+/// The <see cref="Handle"/> method will return a Success Result if the user is not found to obfuscate from attackers.
+/// </remarks>
 internal sealed class ChangePasswordCommandHandler : ICommandHandler<ChangePasswordCommand>
 {
     private readonly ILogger<ChangePasswordCommandHandler> _logger;

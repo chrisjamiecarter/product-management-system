@@ -6,9 +6,12 @@ using ProductManagement.Domain.Shared;
 namespace ProductManagement.Application.Features.Auth.Commands.ConfirmEmail;
 
 /// <summary>
-/// Handles the confirm email command by verifying the user's email confirmation token 
+/// Handles the <see cref="ConfirmEmailCommand"/> by verifying the user's email confirmation token 
 /// and updating their authentication status.
 /// </summary>
+/// /// <remarks>
+/// The <see cref="Handle"/> method will return a Success Result if the user is not found to obfuscate from attackers.
+/// </remarks>
 internal sealed class ConfirmEmailCommandHandler : ICommandHandler<ConfirmEmailCommand>
 {
     private readonly ILogger<ConfirmEmailCommandHandler> _logger;
@@ -27,13 +30,23 @@ internal sealed class ConfirmEmailCommandHandler : ICommandHandler<ConfirmEmailC
         _logger.LogDebug("Starting {handler} for UserId {userId}",
             nameof(ConfirmEmailCommandHandler), request.UserId);
 
-        var result = await _authService.ConfirmEmailAsync(request.UserId, request.Token, cancellationToken);
-        if (result.IsFailure)
+        var userResult = await _userService.FindByIdAsync(request.UserId, cancellationToken);
+        if (userResult.IsFailure)
         {
             _logger.LogWarning("Failure during {handler} for UserId {userId}. {errorCode} - {errorMessage}",
-                nameof(ConfirmEmailCommandHandler), request.UserId, result.Error.Code, result.Error.Message);
+                nameof(ConfirmEmailCommandHandler), request.UserId, userResult.Error.Code, userResult.Error.Message);
 
-            return Result.Failure(result.Error);
+            // Obfuscate user not found.
+            return Result.Success();
+        }
+
+        var confirmEmailResult = await _authService.ConfirmEmailAsync(request.UserId, request.Token, cancellationToken);
+        if (confirmEmailResult.IsFailure)
+        {
+            _logger.LogWarning("Failure during {handler} for UserId {userId}. {errorCode} - {errorMessage}",
+                nameof(ConfirmEmailCommandHandler), request.UserId, confirmEmailResult.Error.Code, confirmEmailResult.Error.Message);
+
+            return Result.Failure(confirmEmailResult.Error);
         }
 
         _logger.LogInformation("Finished {handler} for UserId {userId} successfully",
