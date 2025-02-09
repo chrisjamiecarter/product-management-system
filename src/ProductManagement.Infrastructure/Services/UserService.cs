@@ -48,12 +48,22 @@ internal class UserService : IUserService
         var emailResult = await _userManager.ChangeEmailAsync(user, updatedEmail, token.Value);
         if (!emailResult.Succeeded)
         {
+            foreach (var error in emailResult.Errors)
+            {
+                _logger.LogWarning("IdentityError during {method} for {userId}: {errorCode} - {errorDescription}", nameof(ChangePasswordAsync), userId, error.Code, error.Description);
+            }
+
             return Result.Failure(UserErrors.EmailNotChanged);
         }
 
         var usernameResult = await _userManager.SetUserNameAsync(user, updatedEmail);
         if (!usernameResult.Succeeded)
         {
+            foreach (var error in usernameResult.Errors)
+            {
+                _logger.LogWarning("IdentityError during {method} for {userId}: {errorCode} - {errorDescription}", nameof(ChangePasswordAsync), userId, error.Code, error.Description);
+            }
+
             return Result.Failure(UserErrors.UsernameNotChanged);
         }
 
