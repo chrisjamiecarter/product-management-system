@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
@@ -11,12 +12,14 @@ namespace ProductManagement.Infrastructure.Services;
 
 internal class AuthService : IAuthService
 {
+    private readonly ILogger<AuthService> _logger;
     private readonly IdentityOptions _options;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public AuthService(IOptions<IdentityOptions> options, SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+    public AuthService(ILogger<AuthService> logger, IOptions<IdentityOptions> options, SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
     {
+        _logger = logger;
         _options = options.Value;
         _signInManager = signInManager;
         _userManager = userManager;
@@ -58,9 +61,17 @@ internal class AuthService : IAuthService
         }
 
         var result = await _userManager.ConfirmEmailAsync(user, token.Value);
-        return result.Succeeded
-            ? Result.Success()
-            : Result.Failure(UserErrors.EmailConfirmedNotChanged);
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors)
+            {
+                _logger.LogWarning("IdentityError during {method} for {userId}: {errorCode} - {errorDescription}", nameof(ConfirmEmailAsync), userId, error.Code, error.Description);
+            }
+
+            return Result.Failure(UserErrors.EmailConfirmedNotChanged);
+        }
+
+        return Result.Success();
     }
 
     public async Task<Result<AuthToken>> GenerateEmailChangeTokenAsync(string userId, string updatedEmail, CancellationToken cancellationToken = default)
