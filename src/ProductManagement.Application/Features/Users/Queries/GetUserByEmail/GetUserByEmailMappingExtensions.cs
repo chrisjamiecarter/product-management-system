@@ -2,13 +2,16 @@
 
 namespace ProductManagement.Application.Features.Users.Queries.GetUserByEmail;
 
+/// <summary>
+/// Provides extension methods for mapping <see cref="GetUserByEmailQuery"/> responses.
+/// </summary>
 internal static class GetUserByEmailMappingExtensions
 {
-    public static ApplicationUserDto ToDto(this GetUserByEmailQueryResponse response)
+    public static GetUserByEmailQueryResponse ToResponse(this ApplicationUserDto user)
     {
-        return new ApplicationUserDto(response.Id,
-                                      response.Email,
-                                      response.EmailConfirmed,
-                                      response.Role);
+        return new GetUserByEmailQueryResponse(user.Id,
+                                               user.Email,
+                                               user.EmailConfirmed,
+                                               user.Role);
     }
 }

@@ -1,28 +1,35 @@
-﻿using ProductManagement.Application.Abstractions.Messaging;
-using ProductManagement.Application.Errors;
+﻿using Microsoft.Extensions.Logging;
+using ProductManagement.Application.Abstractions.Messaging;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;
 
 namespace ProductManagement.Application.Features.Products.Queries.GetProductById;
 
+/// <summary>
+/// Handles the <see cref="GetProductByIdQuery"/> by retrieving a single product by its ID, and returns a <see cref="GetProductByIdQueryResponse"/>.
+/// </summary>
 internal sealed class GetProductByIdQueryHandler : IQueryHandler<GetProductByIdQuery, GetProductByIdQueryResponse>
 {
+    private readonly ILogger<GetProductByIdQueryHandler> _logger;
     private readonly IProductRepository _productRepository;
 
-    public GetProductByIdQueryHandler(IProductRepository productRepository)
+    public GetProductByIdQueryHandler(ILogger<GetProductByIdQueryHandler> logger, IProductRepository productRepository)
     {
+        _logger = logger;
         _productRepository = productRepository;
     }
 
     public async Task<Result<GetProductByIdQueryResponse>> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
     {
-        var product = await _productRepository.ReturnByIdAsync(request.ProductId, cancellationToken);
-        if (product is null)
+        var result = await _productRepository.ReturnByIdAsync(request.ProductId, cancellationToken);
+        if (result.IsFailure)
         {
-            return Result.Failure<GetProductByIdQueryResponse>(ApplicationErrors.Product.NotFound);
+            _logger.LogWarning("Failed to get Product {id}: {@error}", request.ProductId, result.Error);
+            return Result.Failure<GetProductByIdQueryResponse>(result.Error);
         }
 
-        var response = new GetProductByIdQueryResponse(product.Id, product.Name.Value, product.Description, product.IsActive, product.AddedOnUtc, product.Price.Value);
+        var response = result.Value.ToResponse();
+        _logger.LogInformation("Returned Product {id} successfully", request.ProductId);
         return Result.Success(response);
     }
 }

@@ -28,8 +28,6 @@ internal sealed class ConfirmEmailChangeCommandHandler : ICommandHandler<Confirm
 
     public async Task<Result> Handle(ConfirmEmailChangeCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Starting {handler} for UserId {userId}", nameof(ConfirmEmailChangeCommandHandler), request.UserId);
-
         var userResult = await _userService.FindByIdAsync(request.UserId, cancellationToken);
         if (userResult.IsFailure)
         {
@@ -51,7 +49,7 @@ internal sealed class ConfirmEmailChangeCommandHandler : ICommandHandler<Confirm
             return Result.Failure(refreshResult.Error);
         }
 
-        _logger.LogInformation("Finished {handler} for UserId {userId} successfully", nameof(ConfirmEmailChangeCommandHandler), request.UserId);
+        _logger.LogInformation("Confirmed email change for User {id} successfully", request.UserId);
         return Result.Success();
     }
 }

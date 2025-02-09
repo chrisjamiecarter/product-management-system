@@ -31,8 +31,6 @@ internal sealed class GenerateEmailConfirmationCommandHandler : ICommandHandler<
 
     public async Task<Result> Handle(GenerateEmailConfirmationCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Starting {handler} for Email {email}", nameof(GenerateEmailConfirmationCommandHandler), request.Email);
-
         var userResult = await _userService.FindByEmailAsync(request.Email, cancellationToken);
         if (userResult.IsFailure)
         {
@@ -58,7 +56,7 @@ internal sealed class GenerateEmailConfirmationCommandHandler : ICommandHandler<
             return Result.Failure(tokenResult.Error);
         }
 
-        _logger.LogInformation("Finished {handler} for Email {email} successfully", nameof(GenerateEmailConfirmationCommandHandler), request.Email);
+        _logger.LogInformation("Sent confirm email link for User {id} successfully", user.Id);
         return Result.Success();
     }
 }

@@ -27,8 +27,6 @@ internal sealed class AddPasswordCommandHandler : ICommandHandler<AddPasswordCom
 
     public async Task<Result> Handle(AddPasswordCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Starting {handler} for UserId {userId}", nameof(AddPasswordCommandHandler), request.UserId);
-
         var userResult = await _userService.FindByIdAsync(request.UserId, cancellationToken);
         if (userResult.IsFailure)
         {
@@ -50,7 +48,7 @@ internal sealed class AddPasswordCommandHandler : ICommandHandler<AddPasswordCom
             return Result.Failure(refreshResult.Error);
         }
 
-        _logger.LogInformation("Finished {handler} for UserId {userId} successfully", nameof(AddPasswordCommandHandler), request.UserId);
+        _logger.LogInformation("Added password for User {id} successfully", request.UserId);
         return Result.Success();
     }
 }

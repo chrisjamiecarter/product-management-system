@@ -165,7 +165,7 @@ internal class AuthService : IAuthService
         return Result.Success();
     }
 
-    public async Task<Result> RegisterAsync(string email, string? password, CancellationToken cancellationToken = default)
+    public async Task<Result> RegisterAsync(string email, string password, CancellationToken cancellationToken = default)
     {
         var user = new ApplicationUser
         {
@@ -173,7 +173,7 @@ internal class AuthService : IAuthService
             UserName = email,
         };
 
-        var result = await (string.IsNullOrWhiteSpace(password) ? _userManager.CreateAsync(user) : _userManager.CreateAsync(user, password));
+        var result = await _userManager.CreateAsync(user, password);
         if (!result.Succeeded)
         {
             foreach (var error in result.Errors)

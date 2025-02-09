@@ -1,29 +1,41 @@
-﻿using ProductManagement.Application.Abstractions.Messaging;
-using ProductManagement.Application.Errors;
+﻿using Microsoft.Extensions.Logging;
+using ProductManagement.Application.Abstractions.Messaging;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;
 
 namespace ProductManagement.Application.Features.Products.Commands.DeleteProduct;
 
+/// <summary>
+/// Handles the <see cref="DeleteProductCommand"/> by deleting an existing product.
+/// </summary>
 internal class DeleteProductCommandHandler : ICommandHandler<DeleteProductCommand>
 {
+    private readonly ILogger<DeleteProductCommandHandler> _logger;
     private readonly IProductRepository _productRepository;
 
-    public DeleteProductCommandHandler(IProductRepository productRepository)
+    public DeleteProductCommandHandler(ILogger<DeleteProductCommandHandler> logger, IProductRepository productRepository)
     {
+        _logger = logger;
         _productRepository = productRepository;
     }
 
     public async Task<Result> Handle(DeleteProductCommand request, CancellationToken cancellationToken)
     {
-        var product = await _productRepository.ReturnByIdAsync(request.Id, cancellationToken);
-        if (product is null)
+        var productResult = await _productRepository.ReturnByIdAsync(request.ProductId, cancellationToken);
+        if (productResult.IsFailure)
         {
-            return Result.Failure(ApplicationErrors.Product.NotFound);
+            _logger.LogWarning("Failed to delete Product {id}: {@error}", request.ProductId, productResult.Error);
+            return Result.Failure(productResult.Error);
         }
 
-        var isDeleted = await _productRepository.DeleteAsync(product, cancellationToken);
+        var deleteResult = await _productRepository.DeleteAsync(productResult.Value, cancellationToken);
+        if (deleteResult.IsFailure)
+        {
+            _logger.LogWarning("Failed to delete Product {id}: {@error}", request.ProductId, deleteResult.Error);
+            return Result.Failure(deleteResult.Error);
+        }
 
-        return isDeleted ? Result.Success() : Result.Failure(ApplicationErrors.Product.NotDeleted);
+        _logger.LogInformation("Deleted Product {id} successfully", request.ProductId);
+        return Result.Success();
     }
 }

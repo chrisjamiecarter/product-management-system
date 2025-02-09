@@ -1,5 +1,5 @@
-﻿using ProductManagement.Application.Abstractions.Messaging;
-using ProductManagement.Application.Errors;
+﻿using Microsoft.Extensions.Logging;
+using ProductManagement.Application.Abstractions.Messaging;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Entities;
 using ProductManagement.Domain.Shared;
@@ -7,36 +7,49 @@ using ProductManagement.Domain.ValueObjects;
 
 namespace ProductManagement.Application.Features.Products.Commands.CreateProduct;
 
+/// <summary>
+/// Handles the <see cref="CreateProductCommand"/> by creating a new product.
+/// </summary>
 internal sealed class CreateProductCommandHandler : ICommandHandler<CreateProductCommand>
 {
+    private readonly ILogger<CreateProductCommandHandler> _logger;
     private readonly IProductRepository _productRepository;
 
-    public CreateProductCommandHandler(IProductRepository productRepository)
+    public CreateProductCommandHandler(ILogger<CreateProductCommandHandler> logger, IProductRepository productRepository)
     {
+        _logger = logger;
         _productRepository = productRepository;
     }
 
     public async Task<Result> Handle(CreateProductCommand request, CancellationToken cancellationToken)
     {
-        var name = ProductName.Create(request.Name);
-        if (name.IsFailure)
+        var nameResult = ProductName.Create(request.Name);
+        if (nameResult.IsFailure)
         {
-            return Result.Failure(name.Error);
+            _logger.LogWarning("Failed to create Product: {@error}", nameResult.Error);
+            return Result.Failure(nameResult.Error);
         }
 
-        var price = ProductPrice.Create(request.Price);
-        if (price.IsFailure)
+        var priceResult = ProductPrice.Create(request.Price);
+        if (priceResult.IsFailure)
         {
-            return Result.Failure(price.Error);
+            _logger.LogWarning("Failed to create Product: {@error}", priceResult.Error);
+            return Result.Failure(priceResult.Error);
         }
 
         var product = new Product(Guid.CreateVersion7(),
-                                  name.Value,
+                                  nameResult.Value,
                                   request.Description,
-                                  price.Value);
+                                  priceResult.Value);
 
-        var isCreated = await _productRepository.CreateAsync(product, cancellationToken);
+        var createResult = await _productRepository.CreateAsync(product, cancellationToken);
+        if (createResult.IsFailure)
+        {
+            _logger.LogWarning("Failed to create Product: {@error}", createResult.Error);
+            return Result.Failure(createResult.Error);
+        }
 
-        return isCreated ? Result.Success() : Result.Failure(ApplicationErrors.Product.NotCreated);
+        _logger.LogInformation("Created Product {id} successfully", product.Id);
+        return Result.Success();
     }
 }

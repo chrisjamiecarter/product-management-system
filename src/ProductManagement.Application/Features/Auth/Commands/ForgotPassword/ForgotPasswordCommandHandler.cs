@@ -31,14 +31,14 @@ internal sealed class ForgotPasswordCommandHandler : ICommandHandler<ForgotPassw
 
     public async Task<Result> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Starting {handler} for Email {email}", nameof(ForgotPasswordCommandHandler), request.Email);
-
         var userResult = await _userService.FindByEmailAsync(request.Email, cancellationToken);
         if (userResult.IsFailure)
         {
             _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, userResult.Error.Code, userResult.Error.Message);
             return Result.Success();
         }
+
+        var user = userResult.Value;
 
         var tokenResult = await _authService.GeneratePasswordResetTokenAsync(request.Email, cancellationToken);
         if (tokenResult.IsFailure)
@@ -56,7 +56,7 @@ internal sealed class ForgotPasswordCommandHandler : ICommandHandler<ForgotPassw
             return Result.Failure(emailResult.Error);
         }
 
-        _logger.LogInformation("Finished {handler} for Email {email} successfully", nameof(ForgotPasswordCommandHandler), request.Email);
+        _logger.LogInformation("Sent reset password link for User {id} successfully", user.Id);
         return Result.Success();
     }
 }

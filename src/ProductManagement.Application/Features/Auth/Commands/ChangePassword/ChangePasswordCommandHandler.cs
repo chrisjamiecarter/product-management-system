@@ -27,8 +27,6 @@ internal sealed class ChangePasswordCommandHandler : ICommandHandler<ChangePassw
 
     public async Task<Result> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Starting {handler} for UserId {userId}", nameof(ChangePasswordCommandHandler), request.UserId);
-
         var userResult = await _userService.FindByIdAsync(request.UserId, cancellationToken);
         if (userResult.IsFailure)
         {
@@ -50,7 +48,7 @@ internal sealed class ChangePasswordCommandHandler : ICommandHandler<ChangePassw
             return Result.Failure(refreshResult.Error);
         }
 
-        _logger.LogInformation("Finished {handler} for UserId {userId} successfully", nameof(ChangePasswordCommandHandler), request.UserId);
+        _logger.LogInformation("Changed password for User {id} successfully", request.UserId);
         return Result.Success();
     }
 }

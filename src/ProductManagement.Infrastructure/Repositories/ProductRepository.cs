@@ -1,51 +1,66 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using ProductManagement.Application.Errors;
+using ProductManagement.Application.Features.Products.Queries.GetProductsPaginated;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Entities;
+using ProductManagement.Domain.Shared;
 using ProductManagement.Infrastructure.Contexts;
 
 namespace ProductManagement.Infrastructure.Repositories;
 
 internal class ProductRepository(ProductManagementDbContext context, ILogger<ProductRepository> logger) : IProductRepository
 {
-    public async Task<bool> CreateAsync(Product product, CancellationToken cancellationToken = default)
+    public async Task<Result> CreateAsync(Product product, CancellationToken cancellationToken = default)
     {
         await context.Products.AddAsync(product, cancellationToken);
         var created = await SaveAsync(cancellationToken);
-        return created > 0;
+        return created > 0
+            ? Result.Success()
+            : Result.Failure(ApplicationErrors.Product.NotCreated);
     }
 
-    public async Task<bool> DeleteAsync(Product product, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(Product product, CancellationToken cancellationToken = default)
     {
         context.Products.Remove(product);
         var deleted = await SaveAsync(cancellationToken);
-        return deleted > 0;
+        return deleted > 0
+            ? Result.Success()
+            : Result.Failure(ApplicationErrors.Product.NotDeleted);
     }
 
-    public async Task<IReadOnlyList<Product>> ReturnAllAsync(CancellationToken cancellationToken = default)
+    public async Task<Result<Product>> ReturnByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await context.Products.ToListAsync(cancellationToken);
+        var product = await context.Products.FindAsync(id, cancellationToken);
+        return product != null
+            ? Result.Success(product)
+            : Result.Failure<Product>(ApplicationErrors.Product.NotFound);
     }
 
-    public async Task<Product?> ReturnByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Result<PaginatedList<Product>>> ReturnByPageAsync(string? searchName,
+                                                                        bool? searchIsActive,
+                                                                        DateOnly? searchFromAddedOnDateUtc,
+                                                                        DateOnly? searchToAddedOnDateUtc,
+                                                                        decimal? searchFromPrice,
+                                                                        decimal? searchToPrice,
+                                                                        string? sortColumn,
+                                                                        string? sortOrder,
+                                                                        int pageNumber,
+                                                                        int pageSize,
+                                                                        CancellationToken cancellationToken = default)
     {
-        return await context.Products.FindAsync(id, cancellationToken);
-    }
+        if (pageNumber <= 0)
+        {
+            return Result.Failure<PaginatedList<Product>>(ApplicationErrors.PaginatedList.InvalidPageNumber);
+        }
 
-    public async Task<PaginatedList<Product>> ReturnByPageAsync(string? searchName,
-                                                                bool? searchIsActive,
-                                                                DateOnly? searchFromAddedOnDateUtc,
-                                                                DateOnly? searchToAddedOnDateUtc,
-                                                                decimal? searchFromPrice,
-                                                                decimal? searchToPrice,
-                                                                string? sortColumn,
-                                                                string? sortOrder,
-                                                                int pageNumber,
-                                                                int pageSize,
-                                                                CancellationToken cancellationToken = default)
-    {
+        if (pageSize <= 0)
+        {
+            return Result.Failure<PaginatedList<Product>>(ApplicationErrors.PaginatedList.InvalidPageSize);
+        }
+
         var query = context.Products.AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(searchName))
@@ -90,14 +105,16 @@ internal class ProductRepository(ProductManagementDbContext context, ILogger<Pro
         var count = await query.CountAsync(cancellationToken);
         var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
 
-        return PaginatedList<Product>.Create(items, count, pageNumber, pageSize);
+        return Result.Success(PaginatedList<Product>.Create(items, count, pageNumber, pageSize));
     }
 
-    public async Task<bool> UpdateAsync(Product product, CancellationToken cancellationToken = default)
+    public async Task<Result> UpdateAsync(Product product, CancellationToken cancellationToken = default)
     {
         context.Products.Update(product);
         var updated = await SaveAsync(cancellationToken);
-        return updated > 0;
+        return updated > 0
+            ? Result.Success()
+            : Result.Failure(ApplicationErrors.Product.NotUpdated);
     }
 
     private static Expression<Func<Product, object>> GetSortProperty(string? sortColumn)

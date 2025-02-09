@@ -6,8 +6,8 @@ using ProductManagement.Domain.Shared;
 namespace ProductManagement.Application.Features.Auth.Commands.Register;
 
 /// <summary>
-/// Handles the <see cref="RegisterCommand"/> by creating a new user, assigning a role, 
-/// generating an email confirmation token, and sending a confirmation email.
+/// Handles the <see cref="RegisterCommand"/> by creating a new user, generating an email 
+/// confirmation token, and sending a confirmation email.
 /// </summary>
 internal sealed class RegisterCommandHandler : ICommandHandler<RegisterCommand>
 {
@@ -28,8 +28,6 @@ internal sealed class RegisterCommandHandler : ICommandHandler<RegisterCommand>
 
     public async Task<Result> Handle(RegisterCommand request, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Starting {handler} for Email {email}", nameof(RegisterCommandHandler), request.Email);
-
         var registerResult = await _authService.RegisterAsync(request.Email, request.Password, cancellationToken);
         if (registerResult.IsFailure)
         {
@@ -45,13 +43,6 @@ internal sealed class RegisterCommandHandler : ICommandHandler<RegisterCommand>
         }
         
         var user = userResult.Value;
-
-        var roleResult = await _authService.AddToRoleAsync(user.Id, request.Role, cancellationToken);
-        if (roleResult.IsFailure)
-        {
-            _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, roleResult.Error.Code, roleResult.Error.Message);
-            return Result.Failure(roleResult.Error);
-        }
 
         var tokenResult = await _authService.GenerateEmailConfirmationTokenAsync(request.Email, cancellationToken);
         if (tokenResult.IsFailure)
@@ -69,7 +60,7 @@ internal sealed class RegisterCommandHandler : ICommandHandler<RegisterCommand>
             return Result.Failure(tokenResult.Error);
         }
 
-        _logger.LogInformation("Finished {handler} for Email {email} successfully", nameof(RegisterCommandHandler), request.Email);
+        _logger.LogInformation("Registered User {id} successfully", user.Id);
         return Result.Success();
     }
 }

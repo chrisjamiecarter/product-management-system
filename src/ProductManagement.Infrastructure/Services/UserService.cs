@@ -7,6 +7,7 @@ using ProductManagement.Application.Models;
 using ProductManagement.Domain.Shared;
 using ProductManagement.Infrastructure.Errors;
 using ProductManagement.Infrastructure.Models;
+using static ProductManagement.Application.Errors.ApplicationErrors;
 
 namespace ProductManagement.Infrastructure.Services;
 
@@ -100,6 +101,28 @@ internal class UserService : IUserService
         return Result.Success();
     }
 
+    public async Task<Result> CreateAsync(string email, CancellationToken cancellationToken = default)
+    {
+        var user = new ApplicationUser
+        {
+            Email = email,
+            UserName = email,
+        };
+
+        var result = await _userManager.CreateAsync(user);
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors)
+            {
+                _logger.LogWarning("Email {email}: {errorCode} - {errorDescription}", email, error.Code, error.Description);
+            }
+
+            return Result.Failure(UserErrors.NotCreated);
+        }
+
+        return Result.Success();
+    }
+
     public async Task<Result> DeleteAsync(string userId, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId);
@@ -116,11 +139,10 @@ internal class UserService : IUserService
                 _logger.LogWarning("UserId {userId}: {errorCode} - {errorDescription}", userId, error.Code, error.Description);
             }
 
+            return Result.Failure(UserErrors.NotDeleted);
         }
 
-            return deleted.Succeeded
-            ? Result.Success()
-            : Result.Failure(UserErrors.NotDeleted);
+        return Result.Success();
     }
 
     public async Task<Result<ApplicationUserDto>> FindByEmailAsync(string email, CancellationToken cancellationToken = default)
@@ -149,7 +171,6 @@ internal class UserService : IUserService
 
     public async Task<Result<PaginatedList<ApplicationUserDto>>> GetPageAsync(string? searchEmail, bool? searchEmailConfirmed, string? searchRole, string? sortColumn, string? sortOrder, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
-        // TODO: these need to go back to app errors.
         if (pageNumber <= 0)
         {
             return Result.Failure<PaginatedList<ApplicationUserDto>>(ApplicationErrors.PaginatedList.InvalidPageNumber);
@@ -205,7 +226,7 @@ internal class UserService : IUserService
             item.RoleNames.FirstOrDefault() ?? null))
             .ToList();
 
-        return PaginatedList<ApplicationUserDto>.Create(users, count, pageNumber, pageSize);
+        return Result.Success(PaginatedList<ApplicationUserDto>.Create(users, count, pageNumber, pageSize));
     }
 
     public async Task<Result<bool>> HasPasswordAsync(string userId, CancellationToken cancellationToken = default)

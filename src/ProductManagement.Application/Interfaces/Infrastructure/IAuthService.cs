@@ -14,7 +14,7 @@ public interface IAuthService
     Task<Result<ApplicationUserDto>> GetCurrentUserAsync(string userId, CancellationToken cancellationToken = default);
     Task<Result> PasswordSignInAsync(string email, string password, bool remember, CancellationToken cancellationToken = default);
     Task<Result> RefreshSignInAsync(string userId, CancellationToken cancellationToken = default);
-    Task<Result> RegisterAsync(string email, string? password, CancellationToken cancellationToken = default);
+    Task<Result> RegisterAsync(string email, string password, CancellationToken cancellationToken = default);
     Task<Result> ResetPasswordAsync(string email, string password, AuthToken token, CancellationToken cancellationToken = default);
     Task<Result> SignInAsync(string userId, CancellationToken cancellationToken = default);
     Task<Result> SignOutAsync(CancellationToken cancellationToken = default);

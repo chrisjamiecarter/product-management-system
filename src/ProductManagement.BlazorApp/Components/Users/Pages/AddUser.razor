@@ -72,7 +72,7 @@ else
     {
         isProcessing = true;
 
-        var command = new RegisterCommand(Input.Email, Input.Password, Input.Role);
+        var command = new CreateUserCommand(Input.Email, Input.Role);
         var response = await Sender.SendAsync(command);
         if (response.IsSuccess)
         {

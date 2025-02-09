@@ -32,8 +32,6 @@ internal sealed class GenerateEmailChangeCommandHandler : ICommandHandler<Genera
 
     public async Task<Result> Handle(GenerateEmailChangeCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Starting {handler} for UserId {userId}", nameof(GenerateEmailChangeCommandHandler), request.UserId);
-
         var userResult = await _userService.FindByIdAsync(request.UserId, cancellationToken);
         if (userResult.IsFailure)
         {
@@ -64,7 +62,7 @@ internal sealed class GenerateEmailChangeCommandHandler : ICommandHandler<Genera
             return Result.Failure(tokenResult.Error);
         }
 
-        _logger.LogInformation("Finished {handler} for UserId {userId} successfully", nameof(GenerateEmailChangeCommandHandler), request.UserId);
+        _logger.LogInformation("Sent confirm email change link for User {id} successfully", request.UserId);
         return Result.Success();
     }
 }

@@ -21,8 +21,6 @@ internal sealed class SignInCommandHandler : ICommandHandler<SignInCommand>
 
     public async Task<Result> Handle(SignInCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Starting {handler} for Email {email}", nameof(SignInCommandHandler), request.Email);
-
         var signInResult = await _authService.PasswordSignInAsync(request.Email, request.Password, request.Remember, cancellationToken);
         if (signInResult.IsFailure)
         {
@@ -30,7 +28,7 @@ internal sealed class SignInCommandHandler : ICommandHandler<SignInCommand>
             return Result.Failure(signInResult.Error);
         }
 
-        _logger.LogInformation("Finished {handler} for Email {email} successfully", nameof(SignInCommandHandler), request.Email);
+        _logger.LogInformation("Signed in User {email} successfully", request.Email);
         return Result.Success();
     }
 }

@@ -27,8 +27,6 @@ internal sealed class ConfirmEmailCommandHandler : ICommandHandler<ConfirmEmailC
 
     public async Task<Result> Handle(ConfirmEmailCommand request, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Starting {handler} for UserId {userId}", nameof(ConfirmEmailCommandHandler), request.UserId);
-
         var userResult = await _userService.FindByIdAsync(request.UserId, cancellationToken);
         if (userResult.IsFailure)
         {
@@ -50,7 +48,7 @@ internal sealed class ConfirmEmailCommandHandler : ICommandHandler<ConfirmEmailC
             return Result.Failure(signInResult.Error);
         }
 
-        _logger.LogInformation("Finished {handler} for UserId {userId} successfully", nameof(ConfirmEmailCommandHandler), request.UserId);
+        _logger.LogInformation("Confirmed email for User {id} successfully", request.UserId);
         return Result.Success();
     }
 }

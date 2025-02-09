@@ -1,6 +1,9 @@
 ﻿namespace ProductManagement.Application.Features.Users.Queries.GetUserById;
 
+/// <summary>
+/// Represents a response from a <see cref="GetUserByIdQuery"/>.
+/// </summary>
 public sealed record GetUserByIdQueryResponse(string Id,
                                               string? Email,
-                                              string? Role,
-                                              bool EmailConfirmed);
+                                              bool EmailConfirmed,
+                                              string? Role);

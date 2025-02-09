@@ -61,9 +61,7 @@
             status = StatusModel.None;
             showValidation = true;
 
-            var role = string.Empty;
-
-            var command = new RegisterCommand(Input.Email, Input.Password, role);
+            var command = new RegisterCommand(Input.Email, Input.Password);
             var result = await Sender.SendAsync(command);
             if (result.IsSuccess)
             {

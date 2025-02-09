@@ -26,14 +26,14 @@ internal sealed class ResetPasswordCommandHandler : ICommandHandler<ResetPasswor
 
     public async Task<Result> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Starting {handler} for Email {email}", nameof(ResetPasswordCommandHandler), request.Email);
-
         var userResult = await _userService.FindByEmailAsync(request.Email, cancellationToken);
         if (userResult.IsFailure)
         {
             _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, userResult.Error.Code, userResult.Error.Message);
             return Result.Success();
         }
+
+        var user = userResult.Value;
 
         var resetResult = await _authService.ResetPasswordAsync(request.Email, request.Password, request.Token, cancellationToken);
         if (resetResult.IsFailure)
@@ -42,7 +42,7 @@ internal sealed class ResetPasswordCommandHandler : ICommandHandler<ResetPasswor
             return Result.Failure(resetResult.Error);
         }
 
-        _logger.LogInformation("Finished {handler} for Email {email} successfully", nameof(ResetPasswordCommandHandler), request.Email);
+        _logger.LogInformation("Reset password for User {id} successfully", user.Id);
         return Result.Success();
     }
 }

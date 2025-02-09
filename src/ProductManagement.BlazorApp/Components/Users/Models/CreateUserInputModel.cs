@@ -8,11 +8,7 @@ public class CreateUserInputModel
     [DataType(DataType.EmailAddress)]
     [EmailAddress]
     public string Email { get; set; } = string.Empty;
-
-    [Editable(false)]
-    [DataType(DataType.Password)]
-    public string? Password { get; }
-
+        
     [DataType(DataType.Text)]
     public string Role { get; set; } = string.Empty;
 }

@@ -1,47 +1,62 @@
-﻿using ProductManagement.Application.Abstractions.Messaging;
-using ProductManagement.Application.Errors;
+﻿using Microsoft.Extensions.Logging;
+using ProductManagement.Application.Abstractions.Messaging;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;
 using ProductManagement.Domain.ValueObjects;
 
 namespace ProductManagement.Application.Features.Products.Commands.UpdateProduct;
 
+/// <summary>
+/// Handles the <see cref="UpdateProductCommand"/> by updating an existing product.
+/// </summary>
 internal sealed class UpdateProductCommandHandler : ICommandHandler<UpdateProductCommand>
 {
+    private readonly ILogger<UpdateProductCommandHandler> _logger;
     private readonly IProductRepository _productRepository;
 
-    public UpdateProductCommandHandler(IProductRepository productRepository)
+    public UpdateProductCommandHandler(ILogger<UpdateProductCommandHandler> logger, IProductRepository productRepository)
     {
+        _logger = logger;
         _productRepository = productRepository;
     }
 
     public async Task<Result> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
     {
-        var name = ProductName.Create(request.Name);
-        if (name.IsFailure)
+        var nameResult = ProductName.Create(request.Name);
+        if (nameResult.IsFailure)
         {
-            return Result.Failure(name.Error);
+            _logger.LogWarning("Failed to update Product {id}: {@error}", request.ProductId, nameResult.Error);
+            return Result.Failure(nameResult.Error);
         }
 
-        var price = ProductPrice.Create(request.Price);
-        if (price.IsFailure)
+        var priceResult = ProductPrice.Create(request.Price);
+        if (priceResult.IsFailure)
         {
-            return Result.Failure(price.Error);
+            _logger.LogWarning("Failed to update Product {id}: {@error}", request.ProductId, priceResult.Error);
+            return Result.Failure(priceResult.Error);
         }
 
-        var product = await _productRepository.ReturnByIdAsync(request.Id, cancellationToken);
-        if (product is null)
+        var productResult = await _productRepository.ReturnByIdAsync(request.ProductId, cancellationToken);
+        if (productResult.IsFailure)
         {
-            return Result.Failure(ApplicationErrors.Product.NotFound);
+            _logger.LogWarning("Failed to update Product {id}: {@error}", request.ProductId, productResult.Error);
+            return Result.Failure(productResult.Error);
         }
 
-        product.Name = name.Value;
+        var product = productResult.Value;
+        product.Name = nameResult.Value;
         product.Description = request.Description;
         product.IsActive = request.IsActive;
-        product.Price = price.Value;
+        product.Price = priceResult.Value;
 
-        var isUpdated = await _productRepository.UpdateAsync(product, cancellationToken);
+        var updateResult = await _productRepository.UpdateAsync(product, cancellationToken);
+        if (updateResult.IsFailure)
+        {
+            _logger.LogWarning("Failed to update Product {id}: {@error}", request.ProductId, updateResult.Error);
+            return Result.Failure(updateResult.Error);
+        }
 
-        return isUpdated ? Result.Success() : Result.Failure(ApplicationErrors.Product.NotUpdated);
+        _logger.LogInformation("Updated Product {id} successfully", request.ProductId);
+        return Result.Success();
     }
 }

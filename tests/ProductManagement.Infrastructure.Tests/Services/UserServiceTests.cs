@@ -49,7 +49,8 @@ public class UserServiceTests
                                                                   services.Object,
                                                                   userLogger.Object);
 
-        _userService = new UserService(_roleManagerMock.Object, _userManagerMock.Object);
+        var userServiceLogger = new Mock<ILogger<UserService>>();
+        _userService = new UserService(userServiceLogger.Object, _roleManagerMock.Object, _userManagerMock.Object);
     }
 
     [Fact]
