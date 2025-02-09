@@ -6,7 +6,7 @@ using ProductManagement.Domain.Shared;
 namespace ProductManagement.Application.Features.Auth.Commands.ForgotPassword;
 
 /// <summary>
-/// Handles the forgot password command by generating a password reset token, 
+/// Handles the <see cref="ForgotPasswordCommand"/> by generating a password reset token, 
 /// building a reset link, and sending it via email.
 /// </summary>
 /// <remarks>
