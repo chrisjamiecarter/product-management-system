@@ -93,6 +93,7 @@
         if (result.IsFailure)
         {
             status = new StatusModel(result.Error.Message, MessageLevel.Error);
+            return;
         }
 
         RedirectManager.RedirectTo(ReturnUrl);

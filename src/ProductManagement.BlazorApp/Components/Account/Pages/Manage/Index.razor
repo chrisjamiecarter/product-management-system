@@ -89,6 +89,7 @@
             status = new StatusModel(messageFromCookie, Enum.Parse<MessageLevel>(levelFromCookie));
             HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusMessageCookieName);
             HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusLevelCookieName);
+            return;
         }
     }
 }

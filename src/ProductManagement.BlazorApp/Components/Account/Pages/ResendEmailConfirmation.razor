@@ -50,10 +50,12 @@
         if (result.IsSuccess)
         {
             status = new StatusModel("Verification email sent. Please check your email.", MessageLevel.Success);
+            return;
         }
         else
         {
             status = new StatusModel(result.Error.Message, MessageLevel.Error);
+            return;
         }
     }
 
