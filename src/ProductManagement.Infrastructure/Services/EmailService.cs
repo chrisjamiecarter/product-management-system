@@ -2,13 +2,13 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using ProductManagement.Application.Errors;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;
 using ProductManagement.Infrastructure.EmailRender.Interfaces;
 using ProductManagement.Infrastructure.EmailRender.Views.Emails.ChangeEmailConfirmation;
 using ProductManagement.Infrastructure.EmailRender.Views.Emails.EmailConfirmation;
 using ProductManagement.Infrastructure.EmailRender.Views.Emails.PasswordReset;
-using ProductManagement.Infrastructure.Errors;
 using ProductManagement.Infrastructure.Options;
 
 namespace ProductManagement.Infrastructure.Services;
@@ -74,8 +74,8 @@ internal class EmailService : IEmailService
         }
         catch (Exception exception)
         {
-            _logger.LogWarning("Exception during {method} for {email}: {message}", nameof(SendEmailAsync), toEmailAddress, exception.Message);
-            return Result.Failure(EmailErrors.NotSent);
+            _logger.LogWarning("{Exception}", exception.Message);
+            return Result.Failure(ApplicationErrors.Email.NotSent(toEmailAddress));
         }
         finally
         {

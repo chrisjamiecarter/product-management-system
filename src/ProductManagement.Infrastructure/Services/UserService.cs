@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using ProductManagement.Application.Errors;
+using ProductManagement.Application.Constants;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Shared;
-using ProductManagement.Infrastructure.Errors;
+using ProductManagement.Infrastructure.Extensions;
 using ProductManagement.Infrastructure.Models;
 using static ProductManagement.Application.Errors.ApplicationErrors;
 
@@ -13,13 +12,11 @@ namespace ProductManagement.Infrastructure.Services;
 
 internal class UserService : IUserService
 {
-    private readonly ILogger<UserService> _logger;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public UserService(ILogger<UserService> logger, RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager)
+    public UserService(RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager)
     {
-        _logger = logger;
         _roleManager = roleManager;
         _userManager = userManager;
     }
@@ -29,18 +26,13 @@ internal class UserService : IUserService
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            return Result.Failure(UserErrors.NotFound);
+            return Result.Failure(User.NotFound(userId));
         }
 
-        var result = await _userManager.AddPasswordAsync(user, password);
-        if (!result.Succeeded)
+        var result = await _userManager.AddPasswordAndReturnDomainResultAsync(user, password);
+        if (result.IsFailure)
         {
-            foreach (var error in result.Errors)
-            {
-                _logger.LogWarning("UserId {userId}: {errorCode} - {errorDescription}", userId, error.Code, error.Description);
-            }
-
-            return Result.Failure(UserErrors.PasswordNotAdded);
+            return Result.Failure(result.Error);
         }
 
         return Result.Success();
@@ -51,29 +43,19 @@ internal class UserService : IUserService
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            return Result.Failure(UserErrors.NotFound);
+            return Result.Failure(User.NotFound(userId));
         }
 
-        var emailResult = await _userManager.ChangeEmailAsync(user, updatedEmail, token.Value);
-        if (!emailResult.Succeeded)
+        var emailResult = await _userManager.ChangeEmailAndReturnDomainResultAsync(user, updatedEmail, token.Value);
+        if (emailResult.IsFailure)
         {
-            foreach (var error in emailResult.Errors)
-            {
-                _logger.LogWarning("UserId {userId}: {errorCode} - {errorDescription}", userId, error.Code, error.Description);
-            }
-
-            return Result.Failure(UserErrors.EmailNotChanged);
+            return Result.Failure(emailResult.Error);
         }
 
-        var usernameResult = await _userManager.SetUserNameAsync(user, updatedEmail);
-        if (!usernameResult.Succeeded)
+        var usernameResult = await _userManager.SetUserNameAndReturnDomainResultAsync(user, updatedEmail);
+        if (usernameResult.IsFailure)
         {
-            foreach (var error in usernameResult.Errors)
-            {
-                _logger.LogWarning("UserId {userId}: {errorCode} - {errorDescription}", userId, error.Code, error.Description);
-            }
-
-            return Result.Failure(UserErrors.UsernameNotChanged);
+            return Result.Failure(usernameResult.Error);
         }
 
         return Result.Success();
@@ -84,18 +66,13 @@ internal class UserService : IUserService
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            return Result.Failure(UserErrors.NotFound);
+            return Result.Failure(User.NotFound(userId));
         }
 
-        var result = await _userManager.ChangePasswordAsync(user, currentPassword, updatedPassword);
-        if (!result.Succeeded)
+        var result = await _userManager.ChangePasswordAndReturnDomainResultAsync(user, currentPassword, updatedPassword);
+        if (result.IsFailure)
         {
-            foreach (var error in result.Errors)
-            {
-                _logger.LogWarning("UserId {userId}: {errorCode} - {errorDescription}", userId, error.Code, error.Description);
-            }
-
-            return Result.Failure(UserErrors.PasswordNotChanged);
+            return Result.Failure(result.Error);
         }
 
         return Result.Success();
@@ -109,15 +86,10 @@ internal class UserService : IUserService
             UserName = email,
         };
 
-        var result = await _userManager.CreateAsync(user);
-        if (!result.Succeeded)
+        var result = await _userManager.CreateAndReturnDomainResultAsync(user);
+        if (result.IsFailure)
         {
-            foreach (var error in result.Errors)
-            {
-                _logger.LogWarning("Email {email}: {errorCode} - {errorDescription}", email, error.Code, error.Description);
-            }
-
-            return Result.Failure(UserErrors.NotCreated);
+            return Result.Failure(result.Error);
         }
 
         return Result.Success();
@@ -128,18 +100,13 @@ internal class UserService : IUserService
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            return Result.Failure(UserErrors.NotFound);
+            return Result.Failure(User.NotFound(userId));
         }
 
-        var result = await _userManager.DeleteAsync(user);
-        if (!result.Succeeded)
+        var result = await _userManager.DeleteAndReturnDomainResultAsync(user);
+        if (result.IsFailure)
         {
-            foreach (var error in result.Errors)
-            {
-                _logger.LogWarning("UserId {userId}: {errorCode} - {errorDescription}", userId, error.Code, error.Description);
-            }
-
-            return Result.Failure(UserErrors.NotDeleted);
+            return Result.Failure(result.Error);
         }
 
         return Result.Success();
@@ -150,7 +117,7 @@ internal class UserService : IUserService
         var user = await _userManager.FindByEmailAsync(email);
         if (user is null)
         {
-            return Result.Failure<ApplicationUserDto>(UserErrors.NotFound);
+            return Result.Failure<ApplicationUserDto>(User.EmailNotFound(email));
         }
 
         var role = await GetUserRole(user);
@@ -162,7 +129,7 @@ internal class UserService : IUserService
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            return Result.Failure<ApplicationUserDto>(UserErrors.NotFound);
+            return Result.Failure<ApplicationUserDto>(User.NotFound(userId));
         }
 
         var role = await GetUserRole(user);
@@ -173,12 +140,12 @@ internal class UserService : IUserService
     {
         if (pageNumber <= 0)
         {
-            return Result.Failure<PaginatedList<ApplicationUserDto>>(ApplicationErrors.PaginatedList.InvalidPageNumber);
+            return Result.Failure<PaginatedList<ApplicationUserDto>>(PaginatedList.InvalidPageNumber(pageNumber));
         }
 
         if (pageSize <= 0)
         {
-            return Result.Failure<PaginatedList<ApplicationUserDto>>(ApplicationErrors.PaginatedList.InvalidPageSize);
+            return Result.Failure<PaginatedList<ApplicationUserDto>>(PaginatedList.InvalidPageSize(pageSize));
         }
 
         var query = _userManager.Users.Select(u => new
@@ -234,7 +201,7 @@ internal class UserService : IUserService
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            return Result.Failure<bool>(UserErrors.NotFound);
+            return Result.Failure<bool>(User.NotFound(userId));
         }
 
         var response = await _userManager.HasPasswordAsync(user);
@@ -246,43 +213,67 @@ internal class UserService : IUserService
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            return Result.Failure<bool>(UserErrors.NotFound);
+            return Result.Failure<bool>(User.NotFound(userId));
         }
 
         var response = await _userManager.IsEmailConfirmedAsync(user);
         return Result.Success(response);
     }
 
-    public async Task<Result> UpdateRoleAsync(string userId, string role, CancellationToken cancellationToken = default)
+    public async Task<Result> UpdateRoleAsync(string userId, string? role, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            return Result.Failure(UserErrors.NotFound);
+            return Result.Failure(User.NotFound(userId));
         }
 
-        // NOTE: User can have many Roles, but in this app we treat role as singular.
+        // NOTE:
+        // IdentityUser and IdentityRole has a Many to Many relationship by default.
+        // In this app, we enforce user can only have one role.
+
         var currentRoles = await _userManager.GetRolesAsync(user);
-        if (currentRoles.FirstOrDefault() != role)
+
+        // Force removal if user has more than one role.
+        if (currentRoles.Count > 1)
         {
-            foreach (var currentRole in  currentRoles)
+            var forceRemoveRolesResult = await _userManager.RemoveFromRolesAndReturnDomainResultAsync(user, currentRoles);
+            if (forceRemoveRolesResult.IsFailure)
             {
-                var removeResult = await _userManager.RemoveFromRoleAsync(user, currentRole);
-                if (!removeResult.Succeeded)
-                {
-                    return Result.Failure(UserErrors.NotAddedToRole);
-                }
+                return Result.Failure(forceRemoveRolesResult.Error);
             }
+
+            // Refresh.
+            currentRoles = await _userManager.GetRolesAsync(user);
         }
 
-        // NOTE: Only add to valid role - Not whitespace.
-        if (!string.IsNullOrWhiteSpace(role))
+        // Now there should only be 0 or 1 role.
+        var currentRole = currentRoles.SingleOrDefault();
+
+        // Short-circuit if the user already has the exact role.
+        if (currentRole == role)
         {
-            var roleResult = await _userManager.AddToRoleAsync(user, role);
-            if (!roleResult.Succeeded)
-            {
-                return Result.Failure(UserErrors.NotAddedToRole);
-            }
+            return Result.Success();
+        }
+
+        // Otherwise remove.
+        var removeRoleResult = await _userManager.RemoveFromRoleAndReturnDomainResultAsync(user, currentRole);
+        if (removeRoleResult.IsFailure)
+        {
+            return Result.Failure(removeRoleResult.Error);
+        }
+
+        // Then check is a valid role.
+        if (!string.IsNullOrWhiteSpace(role) && Roles.AllRoles.Contains(role))
+        {
+            return Result.Failure(Role.InvalidRole(role));
+        }
+
+        // Then add.
+        var addRoleResult = await _userManager.AddToRoleAndReturnDomainResultAsync(user, role);
+        if (addRoleResult.IsFailure)
+        {
+            return Result.Failure(addRoleResult.Error);
         }
 
         return Result.Success();

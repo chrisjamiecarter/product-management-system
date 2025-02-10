@@ -34,7 +34,7 @@ internal sealed class RequestEmailConfirmationCommandHandler : ICommandHandler<R
         var userResult = await _userService.FindByEmailAsync(request.Email, cancellationToken);
         if (userResult.IsFailure)
         {
-            _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, userResult.Error.Code, userResult.Error.Message);
+            _logger.LogWarning("{@Error}", userResult.Error);
             return Result.Success();
         }
 
@@ -43,7 +43,7 @@ internal sealed class RequestEmailConfirmationCommandHandler : ICommandHandler<R
         var tokenResult = await _authService.GenerateEmailConfirmationTokenAsync(request.Email, cancellationToken);
         if (tokenResult.IsFailure)
         {
-            _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, tokenResult.Error.Code, tokenResult.Error.Message);
+            _logger.LogWarning("{@Error}", tokenResult.Error);
             return Result.Failure(tokenResult.Error);
         }
 
@@ -52,8 +52,8 @@ internal sealed class RequestEmailConfirmationCommandHandler : ICommandHandler<R
         var emailResult = await _emailService.SendEmailConfirmationAsync(request.Email, emailConfirmationLink, cancellationToken);
         if (emailResult.IsFailure)
         {
-            _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, emailResult.Error.Code, emailResult.Error.Message);
-            return Result.Failure(tokenResult.Error);
+            _logger.LogWarning("{@Error}", emailResult.Error);
+            return Result.Failure(emailResult.Error);
         }
 
         _logger.LogInformation("Sent confirm email link for User {id} successfully", user.Id);

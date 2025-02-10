@@ -26,14 +26,14 @@ internal sealed class CreateProductCommandHandler : ICommandHandler<CreateProduc
         var nameResult = ProductName.Create(request.Name);
         if (nameResult.IsFailure)
         {
-            _logger.LogWarning("Failed to create Product: {@error}", nameResult.Error);
+            _logger.LogWarning("{@Error}", nameResult.Error);
             return Result.Failure(nameResult.Error);
         }
 
         var priceResult = ProductPrice.Create(request.Price);
         if (priceResult.IsFailure)
         {
-            _logger.LogWarning("Failed to create Product: {@error}", priceResult.Error);
+            _logger.LogWarning("{@Error}", priceResult.Error);
             return Result.Failure(priceResult.Error);
         }
 
@@ -45,7 +45,7 @@ internal sealed class CreateProductCommandHandler : ICommandHandler<CreateProduc
         var createResult = await _productRepository.CreateAsync(product, cancellationToken);
         if (createResult.IsFailure)
         {
-            _logger.LogWarning("Failed to create Product: {@error}", createResult.Error);
+            _logger.LogWarning("{@Error}", createResult.Error);
             return Result.Failure(createResult.Error);
         }
 

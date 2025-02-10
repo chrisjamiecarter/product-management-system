@@ -24,7 +24,7 @@ internal sealed class GetProductByIdQueryHandler : IQueryHandler<GetProductByIdQ
         var result = await _productRepository.ReturnByIdAsync(request.ProductId, cancellationToken);
         if (result.IsFailure)
         {
-            _logger.LogWarning("Failed to get Product {id}: {@error}", request.ProductId, result.Error);
+            _logger.LogWarning("{@Error}", result.Error);
             return Result.Failure<GetProductByIdQueryResponse>(result.Error);
         }
 

@@ -31,30 +31,30 @@ internal sealed class CreateUserCommandHandler : ICommandHandler<CreateUserComma
         var createResult = await _userService.CreateAsync(request.Email, cancellationToken);
         if (createResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler}: {@error}", nameof(CreateUserCommandHandler), createResult.Error);
+            _logger.LogWarning("{@Error}", createResult.Error);
             return Result.Failure(createResult.Error);
         }
 
         var userResult = await _userService.FindByEmailAsync(request.Email, cancellationToken);
         if (userResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler}: {@error}", nameof(CreateUserCommandHandler), userResult.Error);
+            _logger.LogWarning("{@Error}", userResult.Error);
             return Result.Failure(userResult.Error);
         }
 
         var user = userResult.Value;
 
-        var roleResult = await _authService.AddToRoleAsync(user.Id, request.Role, cancellationToken);
+        var roleResult = await _userService.UpdateRoleAsync(user.Id, request.Role, cancellationToken);
         if (roleResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler}: {@error}", nameof(CreateUserCommandHandler), roleResult.Error);
+            _logger.LogWarning("{@Error}", roleResult.Error);
             return Result.Failure(roleResult.Error);
         }
 
         var tokenResult = await _authService.GenerateEmailConfirmationTokenAsync(request.Email, cancellationToken);
         if (tokenResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler}: {@error}", nameof(CreateUserCommandHandler), tokenResult.Error);
+            _logger.LogWarning("{@Error}", tokenResult.Error);
             return Result.Failure(tokenResult.Error);
         }
 
@@ -63,8 +63,8 @@ internal sealed class CreateUserCommandHandler : ICommandHandler<CreateUserComma
         var emailResult = await _emailService.SendEmailConfirmationAsync(request.Email, emailConfirmationLink, cancellationToken);
         if (emailResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler}: {@error}", nameof(CreateUserCommandHandler), emailResult.Error);
-            return Result.Failure(tokenResult.Error);
+            _logger.LogWarning("{@Error}", emailResult.Error);
+            return Result.Failure(emailResult.Error);
         }
 
         _logger.LogInformation("Created User {id} successfully", user.Id);

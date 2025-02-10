@@ -24,7 +24,7 @@ internal sealed class GetUserByEmailQueryHandler : IQueryHandler<GetUserByEmailQ
         var result = await _userService.FindByEmailAsync(request.Email, cancellationToken);
         if (result.IsFailure)
         {
-            _logger.LogWarning("Failed to get User {email}: {@error}", request.Email, result.Error);
+            _logger.LogWarning("{@Error}", result.Error);
             return Result.Failure<GetUserByEmailQueryResponse>(result.Error);
         }
 

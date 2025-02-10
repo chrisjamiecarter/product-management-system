@@ -24,7 +24,7 @@ internal sealed class SignInCommandHandler : ICommandHandler<SignInCommand>
         var signInResult = await _authService.PasswordSignInAsync(request.Email, request.Password, request.Remember, cancellationToken);
         if (signInResult.IsFailure)
         {
-            _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, signInResult.Error.Code, signInResult.Error.Message);
+            _logger.LogWarning("{@Error}", signInResult.Error);
             return Result.Failure(signInResult.Error);
         }
 

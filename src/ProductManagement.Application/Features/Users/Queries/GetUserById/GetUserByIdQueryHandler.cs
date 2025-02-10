@@ -25,7 +25,7 @@ internal sealed class GetUserByIdQueryHandler : IQueryHandler<GetUserByIdQuery, 
         var result = await _userService.FindByIdAsync(request.UserId, cancellationToken);
         if (result.IsFailure)
         {
-            _logger.LogWarning("Failed to get User {id}: {@error}", request.UserId, result.Error);
+            _logger.LogWarning("{@Error}", result.Error);
             return Result.Failure<GetUserByIdQueryResponse>(result.Error);
         }
 

@@ -25,21 +25,21 @@ internal sealed class UpdateProductCommandHandler : ICommandHandler<UpdateProduc
         var nameResult = ProductName.Create(request.Name);
         if (nameResult.IsFailure)
         {
-            _logger.LogWarning("Failed to update Product {id}: {@error}", request.ProductId, nameResult.Error);
+            _logger.LogWarning("{@Error}", nameResult.Error);
             return Result.Failure(nameResult.Error);
         }
 
         var priceResult = ProductPrice.Create(request.Price);
         if (priceResult.IsFailure)
         {
-            _logger.LogWarning("Failed to update Product {id}: {@error}", request.ProductId, priceResult.Error);
+            _logger.LogWarning("{@Error}", priceResult.Error);
             return Result.Failure(priceResult.Error);
         }
 
         var productResult = await _productRepository.ReturnByIdAsync(request.ProductId, cancellationToken);
         if (productResult.IsFailure)
         {
-            _logger.LogWarning("Failed to update Product {id}: {@error}", request.ProductId, productResult.Error);
+            _logger.LogWarning("{@Error}", productResult.Error);
             return Result.Failure(productResult.Error);
         }
 
@@ -52,7 +52,7 @@ internal sealed class UpdateProductCommandHandler : ICommandHandler<UpdateProduc
         var updateResult = await _productRepository.UpdateAsync(product, cancellationToken);
         if (updateResult.IsFailure)
         {
-            _logger.LogWarning("Failed to update Product {id}: {@error}", request.ProductId, updateResult.Error);
+            _logger.LogWarning("{@Error}", updateResult.Error);
             return Result.Failure(updateResult.Error);
         }
 

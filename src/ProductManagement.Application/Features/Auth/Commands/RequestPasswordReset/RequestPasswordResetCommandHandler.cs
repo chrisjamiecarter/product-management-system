@@ -34,7 +34,7 @@ internal sealed class RequestPasswordResetCommandHandler : ICommandHandler<Reque
         var userResult = await _userService.FindByEmailAsync(request.Email, cancellationToken);
         if (userResult.IsFailure)
         {
-            _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, userResult.Error.Code, userResult.Error.Message);
+            _logger.LogWarning("{@Error}", userResult.Error);
             return Result.Success();
         }
 
@@ -43,7 +43,7 @@ internal sealed class RequestPasswordResetCommandHandler : ICommandHandler<Reque
         var tokenResult = await _authService.GeneratePasswordResetTokenAsync(request.Email, cancellationToken);
         if (tokenResult.IsFailure)
         {
-            _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, tokenResult.Error.Code, tokenResult.Error.Message);
+            _logger.LogWarning("{@Error}", tokenResult.Error);
             return Result.Failure(tokenResult.Error);
         }
 
@@ -52,7 +52,7 @@ internal sealed class RequestPasswordResetCommandHandler : ICommandHandler<Reque
         var emailResult = await _emailService.SendPasswordResetAsync(request.Email, passwordResetLink, cancellationToken);
         if (emailResult.IsFailure)
         {
-            _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, emailResult.Error.Code, emailResult.Error.Message);
+            _logger.LogWarning("{@Error}", emailResult.Error);
             return Result.Failure(emailResult.Error);
         }
 

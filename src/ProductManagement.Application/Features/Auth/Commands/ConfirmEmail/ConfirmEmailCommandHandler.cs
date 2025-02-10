@@ -30,21 +30,21 @@ internal sealed class ConfirmEmailCommandHandler : ICommandHandler<ConfirmEmailC
         var userResult = await _userService.FindByIdAsync(request.UserId, cancellationToken);
         if (userResult.IsFailure)
         {
-            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, userResult.Error.Code, userResult.Error.Message);
+            _logger.LogWarning("{@Error}", userResult.Error);
             return Result.Success();
         }
 
         var confirmEmailResult = await _authService.ConfirmEmailAsync(request.UserId, request.Token, cancellationToken);
         if (confirmEmailResult.IsFailure)
         {
-            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, confirmEmailResult.Error.Code, confirmEmailResult.Error.Message);
+            _logger.LogWarning("{@Error}", confirmEmailResult.Error);
             return Result.Failure(confirmEmailResult.Error);
         }
 
         var signInResult = await _authService.RefreshSignInAsync(request.UserId, cancellationToken);
         if (signInResult.IsFailure)
         {
-            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, signInResult.Error.Code, signInResult.Error.Message);
+            _logger.LogWarning("{@Error}", signInResult.Error);
             return Result.Failure(signInResult.Error);
         }
 

@@ -36,7 +36,7 @@ internal sealed class GetProductsPaginatedQueryHandler : IQueryHandler<GetProduc
                                                                 cancellationToken);
         if (result.IsFailure)
         {
-            _logger.LogWarning("Failed to get Products: {@error}", result.Error);
+            _logger.LogWarning("{@Error}", result.Error);
             return Result.Failure<PaginatedList<GetProductsPaginatedQueryResponse>>(result.Error);
         }
 

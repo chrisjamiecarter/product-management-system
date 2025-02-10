@@ -2,7 +2,10 @@
 
 namespace ProductManagement.Domain.Errors;
 
-public class DomainErrors
+/// <summary>
+/// Defines error codes and messages related to the domain.
+/// </summary>
+public static class DomainErrors
 {
     public static class ProductName
     {

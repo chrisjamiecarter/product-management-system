@@ -2,70 +2,95 @@
 
 namespace ProductManagement.Application.Errors;
 
+/// <summary>
+/// Defines error codes and messages related to the application.
+/// </summary>
 public static class ApplicationErrors
 {
+    public static class Email
+    {
+        public static Error NotSent(string toEmailAddress) => new(
+            "Email.NotSent",
+            $"Unable to send email to {toEmailAddress}");
+    }
+
     public static class PaginatedList
     {
-        public static readonly Error InvalidPageNumber = new(
+        public static Error InvalidPageNumber(int pageNumber) => new(
             "PaginatedList.InvalidPageNumber",
-            "The paginated list page number is invalid.");
+            $"The page number {pageNumber} is invalid");
 
-        public static readonly Error InvalidPageSize = new(
+        public static Error InvalidPageSize(int pageSize) => new(
             "PaginatedList.InvalidPageSize",
-            "The paginated list page size is invalid.");
+            $"The page size {pageSize} is invalid");
     }
 
     public static class Product
     {
         public static readonly Error NotCreated = new(
             "Product.NotCreated",
-            "The product was not created.");
+            "Unable to create product");
 
-        public static readonly Error NotDeleted = new(
+        public static Error NotDeleted(Guid id) => new(
             "Product.NotDeleted",
-            "The product was not deleted.");
+            $"Unable to delete product {id}");
 
-        public static readonly Error NotFound = new(
+        public static Error NotFound(Guid id) => new(
             "Product.NotFound",
-            "The product was not found.");
+            $"Unable to find product {id}");
 
-        public static readonly Error NotUpdated = new(
+        public static Error NotUpdated(Guid id) => new(
             "Product.NotUpdated",
-            "The product was not updated.");
+            $"Unable to update product {id}");
+    }
+
+    public static class Role
+    {
+        public static Error InvalidRole(string role) => new(
+            "Role.InvalidRole",
+            $"The role {role} is invalid");
     }
 
     public static class User
     {
-        public static readonly Error CannotDeleteSelf = new(
+        public static Error CannotDeleteSelf(string id) => new(
             "User.CannotDeleteSelf",
-            "You cannot delete yourself.");
+            $"User {id} cannot delete self");
 
-        public static readonly Error CannotUpdateSelf = new(
+        public static Error CannotUpdateSelf(string id) => new(
             "User.CannotUpdateSelf",
-            "You cannot update yourself.");
+            $"User {id} cannot update self");
 
-        public static readonly Error NotCreated = new(
-            "User.NotCreated",
-            "The user was not created.");
+        public static Error EmailNotFound(string email) => new(
+            "User.EmailNotFound",
+            $"Unable to find user with email {email}");
 
-        public static readonly Error NotDeleted = new(
-            "User.NotDeleted",
-            "The user was not deleted.");
-
-        public static readonly Error NotFound = new(
-            "User.NotFound",
-            "The user was not found.");
-
-        public static readonly Error NotRegistered = new(
-            "User.NotRegistered",
-            "The user was not registered.");
-
-        public static readonly Error NotUpdated = new(
-            "User.NotUpdated",
-            "The user was not updated.");
-
-        public static readonly Error EmailTaken = new(
+        public static Error EmailTaken(string email) => new(
             "User.EmailTaken",
-            "This email is already linked to another account.");
+            $"The email {email} is already linked to another account");
+
+        public static Error InvalidSecurityStamp(string id) => new(
+            "User.InvalidSecurityStamp",
+            $"Invalid security stamp for {id}");
+
+        public static Error InvalidSignInAttempt(string email) => new(
+            "User.InvalidSignInAttempt",
+            $"Invalid sign in attempt for {email}");
+
+        public static Error LockedOut(string email) => new(
+            "User.LockedOut",
+            $"The user {email} is locked out");
+
+        public static Error NotAllowed(string email) => new(
+            "User.NotAllowed",
+            $"The user {email} is not allowed to sign in");
+
+        public static Error NotFound(string id) => new(
+            "User.IdNotFound",
+            $"Unable to find user {id}");
+
+        public static Error RequiresTwoFactor(string email) => new(
+            "User.RequiresTwoFactor",
+            $"The user {email} requires two factor authentication");
     }
 }

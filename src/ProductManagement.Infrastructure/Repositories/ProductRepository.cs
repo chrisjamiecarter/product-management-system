@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ProductManagement.Application.Errors;
-using ProductManagement.Application.Features.Products.Queries.GetProductsPaginated;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Entities;
@@ -28,7 +27,7 @@ internal class ProductRepository(ProductManagementDbContext context, ILogger<Pro
         var deleted = await SaveAsync(cancellationToken);
         return deleted > 0
             ? Result.Success()
-            : Result.Failure(ApplicationErrors.Product.NotDeleted);
+            : Result.Failure(ApplicationErrors.Product.NotDeleted(product.Id));
     }
 
     public async Task<Result<Product>> ReturnByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -36,7 +35,7 @@ internal class ProductRepository(ProductManagementDbContext context, ILogger<Pro
         var product = await context.Products.FindAsync(id, cancellationToken);
         return product != null
             ? Result.Success(product)
-            : Result.Failure<Product>(ApplicationErrors.Product.NotFound);
+            : Result.Failure<Product>(ApplicationErrors.Product.NotFound(id));
     }
 
     public async Task<Result<PaginatedList<Product>>> ReturnByPageAsync(string? searchName,
@@ -53,12 +52,12 @@ internal class ProductRepository(ProductManagementDbContext context, ILogger<Pro
     {
         if (pageNumber <= 0)
         {
-            return Result.Failure<PaginatedList<Product>>(ApplicationErrors.PaginatedList.InvalidPageNumber);
+            return Result.Failure<PaginatedList<Product>>(ApplicationErrors.PaginatedList.InvalidPageNumber(pageNumber));
         }
 
         if (pageSize <= 0)
         {
-            return Result.Failure<PaginatedList<Product>>(ApplicationErrors.PaginatedList.InvalidPageSize);
+            return Result.Failure<PaginatedList<Product>>(ApplicationErrors.PaginatedList.InvalidPageSize(pageSize));
         }
 
         var query = context.Products.AsQueryable();
@@ -114,7 +113,7 @@ internal class ProductRepository(ProductManagementDbContext context, ILogger<Pro
         var updated = await SaveAsync(cancellationToken);
         return updated > 0
             ? Result.Success()
-            : Result.Failure(ApplicationErrors.Product.NotUpdated);
+            : Result.Failure(ApplicationErrors.Product.NotUpdated(product.Id));
     }
 
     private static Expression<Func<Product, object>> GetSortProperty(string? sortColumn)

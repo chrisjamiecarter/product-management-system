@@ -30,21 +30,21 @@ internal sealed class ChangePasswordCommandHandler : ICommandHandler<ChangePassw
         var userResult = await _userService.FindByIdAsync(request.UserId, cancellationToken);
         if (userResult.IsFailure)
         {
-            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, userResult.Error.Code, userResult.Error.Message);
+            _logger.LogWarning("{@Error}", userResult.Error);
             return Result.Success();
         }
 
         var passwordResult = await _userService.ChangePasswordAsync(request.UserId, request.CurrentPassword, request.UpdatedPassword, cancellationToken);
         if (passwordResult.IsFailure)
         {
-            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, passwordResult.Error.Code, passwordResult.Error.Message);
+            _logger.LogWarning("{@Error}", passwordResult.Error);
             return Result.Failure(passwordResult.Error);
         }
 
         var refreshResult = await _authService.RefreshSignInAsync(request.UserId, cancellationToken);
         if (refreshResult.IsFailure)
         {
-            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, refreshResult.Error.Code, refreshResult.Error.Message);
+            _logger.LogWarning("{@Error}", refreshResult.Error);
             return Result.Failure(refreshResult.Error);
         }
 

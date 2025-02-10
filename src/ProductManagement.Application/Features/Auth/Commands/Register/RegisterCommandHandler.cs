@@ -31,14 +31,14 @@ internal sealed class RegisterCommandHandler : ICommandHandler<RegisterCommand>
         var registerResult = await _authService.RegisterAsync(request.Email, request.Password, cancellationToken);
         if (registerResult.IsFailure)
         {
-            _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, registerResult.Error.Code, registerResult.Error.Message);
+            _logger.LogWarning("{@Error}", registerResult.Error);
             return Result.Failure(registerResult.Error);
         }
 
         var userResult = await _userService.FindByEmailAsync(request.Email, cancellationToken);
         if (userResult.IsFailure)
         {
-            _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, userResult.Error.Code, userResult.Error.Message);
+            _logger.LogWarning("{@Error}", userResult.Error);
             return Result.Failure(userResult.Error);
         }
         
@@ -47,7 +47,7 @@ internal sealed class RegisterCommandHandler : ICommandHandler<RegisterCommand>
         var tokenResult = await _authService.GenerateEmailConfirmationTokenAsync(request.Email, cancellationToken);
         if (tokenResult.IsFailure)
         {
-            _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, tokenResult.Error.Code, tokenResult.Error.Message);
+            _logger.LogWarning("{@Error}", tokenResult.Error);
             return Result.Failure(tokenResult.Error);
         }
 
@@ -56,8 +56,8 @@ internal sealed class RegisterCommandHandler : ICommandHandler<RegisterCommand>
         var emailResult = await _emailService.SendEmailConfirmationAsync(request.Email, emailConfirmationLink, cancellationToken);
         if (emailResult.IsFailure)
         {
-            _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, emailResult.Error.Code, emailResult.Error.Message);
-            return Result.Failure(tokenResult.Error);
+            _logger.LogWarning("{@Error}", emailResult.Error);
+            return Result.Failure(emailResult.Error);
         }
 
         _logger.LogInformation("Registered User {id} successfully", user.Id);

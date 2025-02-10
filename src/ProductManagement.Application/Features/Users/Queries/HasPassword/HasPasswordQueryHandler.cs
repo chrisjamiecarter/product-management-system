@@ -24,7 +24,7 @@ internal sealed class HasPasswordQueryHandler : IQueryHandler<HasPasswordQuery, 
         var result = await _userService.HasPasswordAsync(request.UserId, cancellationToken);
         if (result.IsFailure)
         {
-            _logger.LogWarning("Failed to get HasPassword for User {id}: {@error}", request.UserId, result.Error);
+            _logger.LogWarning("{@Error}", result.Error);
             return Result.Failure<HasPasswordQueryResponse>(result.Error);
         }
 

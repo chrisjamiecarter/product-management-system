@@ -6,7 +6,6 @@ namespace ProductManagement.Application.Interfaces.Infrastructure;
 
 public interface IAuthService
 {
-    Task<Result> AddToRoleAsync(string userId, string? role, CancellationToken cancellationToken = default);
     Task<Result> ConfirmEmailAsync(string userId, AuthToken token, CancellationToken cancellationToken = default);
     Task<Result<AuthToken>> GenerateEmailChangeTokenAsync(string userId, string updatedEmail, CancellationToken cancellationToken = default);
     Task<Result<AuthToken>> GenerateEmailConfirmationTokenAsync(string email, CancellationToken cancellationToken = default);

@@ -1,10 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using ProductManagement.Application.Abstractions.Messaging;
 using ProductManagement.Application.Errors;
 using ProductManagement.Application.Features.Users.Commands.DeleteUser;
 using ProductManagement.Application.Interfaces.Application;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;
+using static ProductManagement.Application.Errors.ApplicationErrors;
 
 namespace ProductManagement.Application.Features.Users.Commands.UpdateRole;
 
@@ -30,16 +32,15 @@ internal sealed class UpdateRoleCommandHandler : ICommandHandler<UpdateRoleComma
         var userResult = await _userService.FindByIdAsync(request.UserId, cancellationToken);
         if (userResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler}: {@error}", nameof(UpdateRoleCommandHandler), userResult.Error);
+            _logger.LogWarning("{@Error}", userResult.Error);
             return Result.Failure(userResult.Error);
         }
 
-        var currentUserId = _currentUserService.UserId;
-        if (currentUserId == request.UserId)
+        var validRequestResult = IsValidRequest(request.UserId);
+        if (validRequestResult.IsFailure)
         {
-            var error = ApplicationErrors.User.CannotUpdateSelf;
-            _logger.LogWarning("Failure during {handler}: {@error}", nameof(UpdateRoleCommandHandler), error);
-            return Result.Failure(error);
+            _logger.LogWarning("{@Error}", validRequestResult.Error);
+            return Result.Failure(validRequestResult.Error);
         }
 
         // Future Enhancements:
@@ -50,11 +51,18 @@ internal sealed class UpdateRoleCommandHandler : ICommandHandler<UpdateRoleComma
         var updateResult = await _userService.UpdateRoleAsync(request.UserId, request.Role, cancellationToken);
         if (updateResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler}: {@error}", nameof(UpdateRoleCommandHandler), updateResult.Error);
+            _logger.LogWarning("{@Error}", updateResult.Error);
             return Result.Failure(updateResult.Error);
         }
 
         _logger.LogInformation("Updated User {id} successfully", request.UserId);
         return Result.Success();
+    }
+
+    private Result IsValidRequest(string userId)
+    {
+        return _currentUserService.UserId != userId
+            ? Result.Success()
+            : Result.Failure(User.CannotUpdateSelf(userId));
     }
 }

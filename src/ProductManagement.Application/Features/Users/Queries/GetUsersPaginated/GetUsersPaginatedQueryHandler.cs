@@ -34,7 +34,7 @@ internal sealed class GetUsersPaginatedQueryHandler : IQueryHandler<GetUsersPagi
                                                          cancellationToken);
         if (result.IsFailure)
         {
-            _logger.LogWarning("Failed to get Users: {@error}", result.Error);
+            _logger.LogWarning("{@Error}", result.Error);
             return Result.Failure<PaginatedList<GetUsersPaginatedQueryResponse>>(result.Error);
         }
 

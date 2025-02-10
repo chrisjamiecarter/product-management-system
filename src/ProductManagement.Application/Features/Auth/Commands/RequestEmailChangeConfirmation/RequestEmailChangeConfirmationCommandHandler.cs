@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using ProductManagement.Application.Abstractions.Messaging;
 using ProductManagement.Application.Errors;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;
+using static ProductManagement.Application.Errors.ApplicationErrors;
 
 namespace ProductManagement.Application.Features.Auth.Commands.RequestEmailChangeConfirmation;
 
@@ -35,22 +37,21 @@ internal sealed class RequestEmailChangeConfirmationCommandHandler : ICommandHan
         var userResult = await _userService.FindByIdAsync(request.UserId, cancellationToken);
         if (userResult.IsFailure)
         {
-            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, userResult.Error.Code, userResult.Error.Message);
+            _logger.LogWarning("{@Error}", userResult.Error);
             return Result.Success();
         }
 
-        var duplicateEmailResult = await _userService.FindByEmailAsync(request.UpdatedEmail, cancellationToken);
-        if (duplicateEmailResult.IsSuccess)
+        var uniqueEmailResult = await IsUniqueEmailAsync(request.UpdatedEmail, cancellationToken);
+        if (uniqueEmailResult.IsFailure)
         {
-            var error = ApplicationErrors.User.EmailTaken;
-            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, error.Code, error.Message);
-            return Result.Failure(error);
+            _logger.LogWarning("{@Error}", uniqueEmailResult.Error);
+            return Result.Failure(uniqueEmailResult.Error);
         }
 
         var tokenResult = await _authService.GenerateEmailChangeTokenAsync(request.UserId, request.UpdatedEmail, cancellationToken);
         if (tokenResult.IsFailure)
         {
-            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, tokenResult.Error.Code, tokenResult.Error.Message);
+            _logger.LogWarning("{@Error}", tokenResult.Error);
             return Result.Failure(tokenResult.Error);
         }
 
@@ -59,11 +60,20 @@ internal sealed class RequestEmailChangeConfirmationCommandHandler : ICommandHan
         var emailResult = await _emailService.SendChangeEmailConfirmationAsync(request.UpdatedEmail, changeEmailConfirmationLink, cancellationToken);
         if (emailResult.IsFailure)
         {
-            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, emailResult.Error.Code, emailResult.Error.Message);
-            return Result.Failure(tokenResult.Error);
+            _logger.LogWarning("{@Error}", emailResult.Error);
+            return Result.Failure(emailResult.Error);
         }
 
         _logger.LogInformation("Sent confirm email change link for User {id} successfully", request.UserId);
         return Result.Success();
+    }
+
+    private async Task<Result> IsUniqueEmailAsync(string email, CancellationToken cancellationToken = default)
+    {
+        var result = await _userService.FindByEmailAsync(email, cancellationToken);
+
+        return result.IsFailure
+            ? Result.Success()
+            : Result.Failure(User.EmailTaken(email));
     }
 }

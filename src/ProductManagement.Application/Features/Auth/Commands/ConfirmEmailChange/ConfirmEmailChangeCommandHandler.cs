@@ -31,21 +31,21 @@ internal sealed class ConfirmEmailChangeCommandHandler : ICommandHandler<Confirm
         var userResult = await _userService.FindByIdAsync(request.UserId, cancellationToken);
         if (userResult.IsFailure)
         {
-            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, userResult.Error.Code, userResult.Error.Message);
+            _logger.LogWarning("{@Error}", userResult.Error);
             return Result.Success();
         }
 
         var emailResult = await _userService.ChangeEmailAsync(request.UserId, request.Email, request.Token, cancellationToken);
         if (emailResult.IsFailure)
         {
-            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, emailResult.Error.Code, emailResult.Error.Message);
+            _logger.LogWarning("{@Error}", emailResult.Error);
             return Result.Failure(emailResult.Error);
         }
 
         var refreshResult = await _authService.RefreshSignInAsync(request.UserId, cancellationToken);
         if (refreshResult.IsFailure)
         {
-            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, refreshResult.Error.Code, refreshResult.Error.Message);
+            _logger.LogWarning("{@Error}", refreshResult.Error);
             return Result.Failure(refreshResult.Error);
         }
 

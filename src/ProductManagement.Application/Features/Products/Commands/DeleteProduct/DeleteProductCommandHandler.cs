@@ -24,14 +24,14 @@ internal class DeleteProductCommandHandler : ICommandHandler<DeleteProductComman
         var productResult = await _productRepository.ReturnByIdAsync(request.ProductId, cancellationToken);
         if (productResult.IsFailure)
         {
-            _logger.LogWarning("Failed to delete Product {id}: {@error}", request.ProductId, productResult.Error);
+            _logger.LogWarning("{@Error}", productResult.Error);
             return Result.Failure(productResult.Error);
         }
 
         var deleteResult = await _productRepository.DeleteAsync(productResult.Value, cancellationToken);
         if (deleteResult.IsFailure)
         {
-            _logger.LogWarning("Failed to delete Product {id}: {@error}", request.ProductId, deleteResult.Error);
+            _logger.LogWarning("{@Error}", deleteResult.Error);
             return Result.Failure(deleteResult.Error);
         }
 

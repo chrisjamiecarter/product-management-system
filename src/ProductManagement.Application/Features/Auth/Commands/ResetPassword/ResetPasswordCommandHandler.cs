@@ -29,7 +29,7 @@ internal sealed class ResetPasswordCommandHandler : ICommandHandler<ResetPasswor
         var userResult = await _userService.FindByEmailAsync(request.Email, cancellationToken);
         if (userResult.IsFailure)
         {
-            _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, userResult.Error.Code, userResult.Error.Message);
+            _logger.LogWarning("{@Error}", userResult.Error);
             return Result.Success();
         }
 
@@ -38,7 +38,7 @@ internal sealed class ResetPasswordCommandHandler : ICommandHandler<ResetPasswor
         var resetResult = await _authService.ResetPasswordAsync(request.Email, request.Password, request.Token, cancellationToken);
         if (resetResult.IsFailure)
         {
-            _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, userResult.Error.Code, userResult.Error.Message);
+            _logger.LogWarning("{@Error}", resetResult.Error);
             return Result.Failure(resetResult.Error);
         }
 

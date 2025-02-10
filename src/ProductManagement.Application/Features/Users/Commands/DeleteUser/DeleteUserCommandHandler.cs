@@ -4,6 +4,7 @@ using ProductManagement.Application.Errors;
 using ProductManagement.Application.Interfaces.Application;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;
+using static ProductManagement.Application.Errors.ApplicationErrors;
 
 namespace ProductManagement.Application.Features.Users.Commands.DeleteUser;
 
@@ -29,26 +30,32 @@ internal class DeleteUserCommandHandler : ICommandHandler<DeleteUserCommand>
         var userResult = await _userService.FindByIdAsync(request.UserId, cancellationToken);
         if (userResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler}: {@error}", nameof(DeleteUserCommandHandler), userResult.Error);
+            _logger.LogWarning("{@Error}", userResult.Error);
             return Result.Failure(userResult.Error);
         }
 
-        var currentUserId = _currentUserService.UserId;
-        if (currentUserId == request.UserId)
+        var validRequestResult = IsValidRequest(request.UserId);
+        if (validRequestResult.IsFailure)
         {
-            var error = ApplicationErrors.User.CannotDeleteSelf;
-            _logger.LogWarning("Failure during {handler}: {@error}", nameof(DeleteUserCommandHandler), error);
-            return Result.Failure(error);
+            _logger.LogWarning("{@Error}", validRequestResult.Error);
+            return Result.Failure(validRequestResult.Error);
         }
 
         var deleteResult = await _userService.DeleteAsync(request.UserId, cancellationToken);
         if (deleteResult.IsFailure)
         {
-            _logger.LogWarning("Failure during {handler}: {@error}", nameof(DeleteUserCommandHandler), deleteResult.Error);
+            _logger.LogWarning("{@Error}", deleteResult.Error);
             return Result.Failure(deleteResult.Error);
         }
 
         _logger.LogInformation("Deleted User {id} successfully", request.UserId);
         return Result.Success();
+    }
+
+    private Result IsValidRequest(string userId)
+    {
+        return _currentUserService.UserId != userId
+            ? Result.Success()
+            : Result.Failure(User.CannotUpdateSelf(userId));
     }
 }

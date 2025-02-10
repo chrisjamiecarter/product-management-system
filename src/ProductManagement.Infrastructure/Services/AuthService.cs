@@ -1,56 +1,28 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using ProductManagement.Application.Constants;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Shared;
-using ProductManagement.Infrastructure.Errors;
+using ProductManagement.Infrastructure.Extensions;
 using ProductManagement.Infrastructure.Models;
 using static ProductManagement.Application.Errors.ApplicationErrors;
+
 
 namespace ProductManagement.Infrastructure.Services;
 
 internal class AuthService : IAuthService
 {
-    private readonly ILogger<AuthService> _logger;
     private readonly IdentityOptions _options;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public AuthService(ILogger<AuthService> logger, IOptions<IdentityOptions> options, SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+    public AuthService(IOptions<IdentityOptions> options, SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
     {
-        _logger = logger;
         _options = options.Value;
         _signInManager = signInManager;
         _userManager = userManager;
-    }
-
-    public async Task<Result> AddToRoleAsync(string userId, string? role, CancellationToken cancellationToken = default)
-    {
-        var user = await _userManager.FindByIdAsync(userId);
-        if (user is null)
-        {
-            return Result.Success();
-        }
-
-        if (string.IsNullOrWhiteSpace(role))
-        {
-            return Result.Success();
-        }
-
-        var result = await _userManager.AddToRoleAsync(user, role);
-        if (result.Succeeded)
-        {
-            return Result.Success();
-        }
-        else
-        {
-            var identityError = result.Errors.First();
-            return identityError != null
-                ? Result.Failure(new Error(identityError.Code, identityError.Description))
-                : Result.Failure(UserErrors.NotAddedToRole);
-        }
     }
 
     public async Task<Result> ConfirmEmailAsync(string userId, AuthToken token, CancellationToken cancellationToken = default)
@@ -58,18 +30,13 @@ internal class AuthService : IAuthService
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            return Result.Failure(UserErrors.NotFound);
+            return Result.Failure(User.NotFound(userId));
         }
 
-        var result = await _userManager.ConfirmEmailAsync(user, token.Value);
-        if (!result.Succeeded)
+        var result = await _userManager.ConfirmEmailAndReturnDomainResultAsync(user, token.Value);
+        if (result.IsFailure)
         {
-            foreach (var error in result.Errors)
-            {
-                _logger.LogWarning("IdentityError during {method} for {userId}: {errorCode} - {errorDescription}", nameof(ConfirmEmailAsync), userId, error.Code, error.Description);
-            }
-
-            return Result.Failure(UserErrors.EmailConfirmedNotChanged);
+            return Result.Failure(result.Error);
         }
 
         return Result.Success();
@@ -80,7 +47,7 @@ internal class AuthService : IAuthService
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            return Result.Failure<AuthToken>(UserErrors.NotFound);
+            return Result.Failure<AuthToken>(User.NotFound(userId));
         }
 
         var token = AuthToken.Encode(await _userManager.GenerateChangeEmailTokenAsync(user, updatedEmail));
@@ -93,7 +60,7 @@ internal class AuthService : IAuthService
         var user = await _userManager.FindByEmailAsync(email);
         if (user is null)
         {
-            return Result.Failure<AuthToken>(UserErrors.NotFound);
+            return Result.Failure<AuthToken>(User.EmailNotFound(email));
         }
 
         var token = AuthToken.Encode(await _userManager.GenerateEmailConfirmationTokenAsync(user));
@@ -105,7 +72,7 @@ internal class AuthService : IAuthService
         var user = await _userManager.FindByEmailAsync(email);
         if (user is null)
         {
-            return Result.Failure<AuthToken>(UserErrors.NotFound);
+            return Result.Failure<AuthToken>(User.EmailNotFound(email));
         }
 
         var token = AuthToken.Encode(await _userManager.GeneratePasswordResetTokenAsync(user));
@@ -117,7 +84,7 @@ internal class AuthService : IAuthService
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            return Result.Failure<ApplicationUserDto>(UserErrors.NotFound);
+            return Result.Failure<ApplicationUserDto>(User.NotFound(userId));
         }
 
         var roles = await _userManager.GetRolesAsync(user);
@@ -137,20 +104,20 @@ internal class AuthService : IAuthService
 
         if (result.IsLockedOut)
         {
-            return Result.Failure(UserErrors.LockedOut);
+            return Result.Failure(User.LockedOut(email));
         }
 
         if (result.IsNotAllowed)
         {
-            return Result.Failure(UserErrors.NotAllowed);
+            return Result.Failure(User.NotAllowed(email));
         }
 
         if (result.RequiresTwoFactor)
         {
-            return Result.Failure(UserErrors.RequiresTwoFactor);
+            return Result.Failure(User.RequiresTwoFactor(email));
         }
 
-        return Result.Failure(UserErrors.InvalidSignInAttempt);
+        return Result.Failure(User.InvalidSignInAttempt(email));
     }
 
     public async Task<Result> RefreshSignInAsync(string userId, CancellationToken cancellationToken = default)
@@ -158,7 +125,7 @@ internal class AuthService : IAuthService
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            return Result.Failure(UserErrors.NotFound);
+            return Result.Failure(User.NotFound(userId));
         }
 
         await _signInManager.RefreshSignInAsync(user);
@@ -173,17 +140,12 @@ internal class AuthService : IAuthService
             UserName = email,
         };
 
-        var result = await _userManager.CreateAsync(user, password);
-        if (!result.Succeeded)
+        var result = await _userManager.CreateAndReturnDomainResultAsync(user, password);
+        if (result.IsFailure)
         {
-            foreach (var error in result.Errors)
-            {
-                _logger.LogWarning("IdentityError during {method} for {email}: {errorCode} - {errorDescription}", nameof(RegisterAsync), email, error.Code, error.Description);
-            }
-
-            return Result.Failure(UserErrors.NotRegistered);
+            return Result.Failure(result.Error);
         }
-                
+
         return Result.Success();
     }
 
@@ -192,18 +154,13 @@ internal class AuthService : IAuthService
         var user = await _userManager.FindByEmailAsync(email);
         if (user is null)
         {
-            return Result.Failure(AuthErrors.NotFound);
+            return Result.Failure(User.EmailNotFound(email));
         }
 
-        var result = await _userManager.ResetPasswordAsync(user, token.Value, password);
-        if (!result.Succeeded)
+        var result = await _userManager.ResetPasswordAndReturnDomainResultAsync(user, token.Value, password);
+        if (result.IsFailure)
         {
-            foreach (var error in result.Errors)
-            {
-                _logger.LogWarning("IdentityError during {method} for {email}: {errorCode} - {errorDescription}", nameof(ResetPasswordAsync), email, error.Code, error.Description);
-            }
-
-            return Result.Failure(AuthErrors.PasswordNotReset);
+            return Result.Failure(result.Error);
         }
 
         return Result.Success();
@@ -214,7 +171,7 @@ internal class AuthService : IAuthService
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            return Result.Failure(UserErrors.NotFound);
+            return Result.Failure(User.NotFound(userId));
         }
 
         await _signInManager.SignInAsync(user, false);
@@ -229,10 +186,12 @@ internal class AuthService : IAuthService
 
     public async Task<Result> ValidateSecurityStampAsync(ClaimsPrincipal principal, CancellationToken cancellationToken = default)
     {
-        var user = await _userManager.GetUserAsync(principal);
+        var userId = principal.FindFirstValue(_options.ClaimsIdentity.UserIdClaimType) ?? string.Empty;
+
+        var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            return Result.Failure(UserErrors.NotFound);
+            return Result.Failure(User.NotFound(userId));
         }
 
         if (!_userManager.SupportsUserSecurityStamp)
@@ -245,6 +204,6 @@ internal class AuthService : IAuthService
 
         return principalStamp == userStamp
             ? Result.Success()
-            : Result.Failure(UserErrors.InvalidSecurityStamp);
+            : Result.Failure(User.InvalidSecurityStamp(userId));
     }
 }
