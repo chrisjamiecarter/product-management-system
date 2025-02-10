@@ -1,33 +1,33 @@
 ﻿@page "/products/edit/{Id:guid}"
 
-@inject NavigationManager NavigationManager
 @inject ISenderService Sender
 @inject IToastService ToastService
+@inject NavigationManager NavigationManager
 
 @rendermode InteractiveServer
 
 <PageTitle>Edit Product</PageTitle>
 
-@if (Input is null || EditContext is null)
-{
-    <LoadingSpinner />
-}
-else
-{
-    <div class="container-md py-3">
+<div class="container-md py-3">
 
-        <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-            <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><NavLink class="link-dark link-underline-opacity-0 link-underline-opacity-100-hover" href="products">Products</NavLink></li>
-                <li class="breadcrumb-item active" aria-current="page">Edit</li>
-            </ol>
-        </nav>
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><NavLink class="link-dark link-underline-opacity-0 link-underline-opacity-100-hover" href="products">Products</NavLink></li>
+            <li class="breadcrumb-item active" aria-current="page">Edit</li>
+        </ol>
+    </nav>
 
-        <div class="d-flex gap-3 align-items-center mb-4">
-            <CartDashFillSvg Height="1.5rem" Width="1.5rem" />
-            <h1 class="h2 mb-0">Edit Product</h1>
-        </div>
+    <div class="d-flex gap-3 align-items-center mb-4">
+        <CartDashFillSvg Height="1.5rem" Width="1.5rem" />
+        <h1 class="h2 mb-0">Edit Product</h1>
+    </div>
 
+    @if (Input is null || EditContext is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
         <div class="form-group col-lg-6">
             <EditForm EditContext="EditContext" FormName="EditProduct" OnValidSubmit="EditProductAsync">
                 <DataAnnotationsValidator />
@@ -59,21 +59,32 @@ else
                     <LoadingButton Type="submit" IsProcessing="@isProcessing" CssClass="btn btn-outline-dark w-100">
                         Update
                     </LoadingButton>
-                    <button class="btn btn-dark w-100" type="button" @onclick="() => NavigateToProducts()">Back</button>
+                    <NavLink class="btn btn-dark w-100" href="products" aria-label="Back to Products" title="Back to Products">
+                        Back
+                    </NavLink>
                 </div>
             </EditForm>
         </div>
-    </div>
-}
+    }
+</div>
 
 @code {
     [Parameter] public Guid Id { get; set; }
 
-    private UpdateProductInputModel? Input;
-    private EditContext? EditContext;
+    private EditContext? EditContext { get; set; }
+    private UpdateProductInputModel? Input { get; set; }
+    
     private bool isProcessing = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadProductAsync();
+        }
+    }
+
+    private async Task LoadProductAsync()
     {
         var query = new GetProductByIdQuery(Id);
 
@@ -85,9 +96,10 @@ else
         }
         else
         {
-            // TODO: Log.
             ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
         }
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task EditProductAsync()
@@ -109,19 +121,13 @@ else
         if (response.IsSuccess)
         {
             ToastService.ShowToast("Product updated", ToastLevel.Success);
-            NavigateToProducts();
+            NavigationManager.NavigateTo("products");
         }
         else
         {
-            // TODO: Log.
             ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
         }
 
         isProcessing = false;
-    }
-
-    private void NavigateToProducts()
-    {
-        NavigationManager.NavigateTo("/products");
     }
 }

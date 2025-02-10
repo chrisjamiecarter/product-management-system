@@ -1,91 +1,90 @@
 ﻿@page "/products"
 
-@inject NavigationManager NavigationManager
 @inject ISenderService Sender
 @inject IToastService ToastService
 
 @rendermode InteractiveServer
 
 <PageTitle>Products</PageTitle>
-    
-@if (ProductsPage is null)
-{
-    <LoadingSpinner />
-}
-else
-{
-    <div class="container-md py-3">
 
-        <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-            <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item active" aria-current="page">Products</li>
-                <li class="breadcrumb-item active" aria-current="page">List</li>
-            </ol>
-        </nav>
+<div class="container-md py-3">
 
-        <div class="d-flex justify-content-between mb-4">
-            <div class="d-flex gap-3 align-items-center">
-                <CartFillSvg Height="1.5rem" Width="1.5rem" />
-                <h1 class="h2 mb-0">Products</h1>
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item active" aria-current="page">Products</li>
+            <li class="breadcrumb-item active" aria-current="page">List</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between mb-4">
+        <div class="d-flex gap-3 align-items-center">
+            <CartFillSvg Height="1.5rem" Width="1.5rem" />
+            <h1 class="h2 mb-0">Products</h1>
+        </div>
+        <button class="btn btn-lg btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#productSearchForm" aria-expanded="false" aria-controls="productSearchForm">
+            <div class="d-flex align-items-center justify-content-center">
+                <SearchSvg />
             </div>
-            <button class="btn btn-lg btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#productSearchForm" aria-expanded="false" aria-controls="productSearchForm">
-                <div class="d-flex align-items-center justify-content-center">
-                    <SearchSvg />
-                </div>
-            </button>
-        </div>
+        </button>
+    </div>
 
-        <div id="productSearchForm" class="collapse pb-3">
-            <EditForm Model="Input" OnValidSubmit="() => GetProductsAsync()" FormName="SearchProducts">
-                <div class="row">
-                    <div class="col-8 col-lg-10">
-                        <div class="form-floating mb-3">
-                            <InputText id="Input.SearchName" class="form-control" placeholder="name" @bind-Value="Input.SearchName" />
-                            <label for="Input.SearchName" class="form-label">Name</label>
-                        </div>
-                    </div>
-                    <div class="col-4 col-lg-2">
-                        <div class="form-floating mb-3">
-                            <FixedInputSelect id="Input.SearchIsActive" class="form-select" @bind-Value="Input.SearchIsActive">
-                                <option value="">All</option>
-                                <option value="true">Yes</option>
-                                <option value="false">No</option>
-                            </FixedInputSelect>
-                            <label for="Input.SearchIsActive">Active</label>
-                        </div>
-                    </div>
-                    <div class="col-6 col-lg-3">
-                        <div class="form-floating mb-3">
-                            <InputDate id="Input.SearchFromAddedOnDateUtc" class="form-control" @bind-Value="Input.SearchFromAddedOnDateUtc" />
-                            <label for="Input.SearchFromAddedOnDateUtc">Added From</label>
-                        </div>
-                    </div>
-                    <div class="col-6 col-lg-3">
-                        <div class="form-floating mb-3">
-                            <InputDate id="Input.SearchToAddedOnDateUtc" class="form-control" @bind-Value="Input.SearchToAddedOnDateUtc" />
-                            <label for="Input.SearchToAddedOnDateUtc">Added To</label>
-                        </div>
-                    </div>
-                    <div class="col-6 col-lg-3">
-                        <div class="form-floating mb-3">
-                            <InputNumber id="Input.SearchFromPrice" class="form-control" @bind-Value="Input.SearchFromPrice" />
-                            <label for="Input.SearchFromPrice">Price From</label>
-                        </div>
-                    </div>
-                    <div class="col-6 col-lg-3">
-                        <div class="form-floating mb-3">
-                            <InputNumber id="Input.SearchToPrice" class="form-control" @bind-Value="Input.SearchToPrice" />
-                            <label for="Input.SearchToPrice">Price To</label>
-                        </div>
+    <div id="productSearchForm" class="collapse pb-3">
+        <EditForm Model="Input" OnValidSubmit="() => LoadProductsPageAsync()" FormName="SearchProducts">
+            <div class="row">
+                <div class="col-8 col-lg-10">
+                    <div class="form-floating mb-3">
+                        <InputText id="Input.SearchName" class="form-control" placeholder="name" @bind-Value="Input.SearchName" />
+                        <label for="Input.SearchName" class="form-label">Name</label>
                     </div>
                 </div>
-                <div class="d-flex gap-1 mb-3">
-                    <button class="btn btn-sm btn-outline-dark w-100" type="submit" data-bs-toggle="collapse" data-bs-target="#productSearchForm">Search</button>
-                    <button class="btn btn-sm btn-dark w-100" type="button" data-bs-toggle="collapse" data-bs-target="#productSearchForm" @onclick="ResetSearchProductsDto">Reset</button>
+                <div class="col-4 col-lg-2">
+                    <div class="form-floating mb-3">
+                        <FixedInputSelect id="Input.SearchIsActive" class="form-select" @bind-Value="Input.SearchIsActive">
+                            <option value="">All</option>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </FixedInputSelect>
+                        <label for="Input.SearchIsActive">Active</label>
+                    </div>
                 </div>
-            </EditForm>
-        </div>
+                <div class="col-6 col-lg-3">
+                    <div class="form-floating mb-3">
+                        <InputDate id="Input.SearchFromAddedOnDateUtc" class="form-control" @bind-Value="Input.SearchFromAddedOnDateUtc" />
+                        <label for="Input.SearchFromAddedOnDateUtc">Added From</label>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="form-floating mb-3">
+                        <InputDate id="Input.SearchToAddedOnDateUtc" class="form-control" @bind-Value="Input.SearchToAddedOnDateUtc" />
+                        <label for="Input.SearchToAddedOnDateUtc">Added To</label>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="form-floating mb-3">
+                        <InputNumber id="Input.SearchFromPrice" class="form-control" @bind-Value="Input.SearchFromPrice" />
+                        <label for="Input.SearchFromPrice">Price From</label>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="form-floating mb-3">
+                        <InputNumber id="Input.SearchToPrice" class="form-control" @bind-Value="Input.SearchToPrice" />
+                        <label for="Input.SearchToPrice">Price To</label>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-1 mb-3">
+                <button class="btn btn-sm btn-outline-dark w-100" type="submit" data-bs-toggle="collapse" data-bs-target="#productSearchForm">Search</button>
+                <button class="btn btn-sm btn-dark w-100" type="button" data-bs-toggle="collapse" data-bs-target="#productSearchForm" @onclick="ResetSearchProductsDto">Reset</button>
+            </div>
+        </EditForm>
+    </div>
 
+    @if (ProductsPage is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
         <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead>
@@ -112,11 +111,11 @@ else
                             Active
                         </th>
                         <th scope="col" class="col-1">
-                            <button class="btn btn-sm btn-outline-dark w-100 h-100" type="button" aria-label="Add Product" title="Add Product" @onclick="() => NavigateToAddProduct()">
+                            <NavLink class="btn btn-sm btn-outline-dark w-100 h-100" href="products/add" aria-label="Add Product" title="Add Product">
                                 <div class="d-flex align-items-center justify-content-center">
                                     <CartPlusSvg />
                                 </div>
-                            </button>
+                            </NavLink>
                         </th>
                     </tr>
                 </thead>
@@ -139,16 +138,16 @@ else
                             </td>
                             <td scope="row">
                                 <div class="d-flex flex-column flex-md-row gap-1">
-                                    <button class="btn btn-sm btn-outline-dark w-100" type="button" aria-label="Edit Product" title="Edit Product" @onclick="() => NavigateToEditProduct(product.Id)">
+                                    <NavLink class="btn btn-sm btn-outline-dark w-100" href=@($"products/edit/{@product.Id}") aria-label="Edit Product" title="Edit Product">
                                         <div class="d-flex align-items-center justify-content-center">
                                             <CartDashSvg />
                                         </div>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-dark w-100" type="button" aria-label="Delete Product" title="Delete Product" @onclick="() => NavigateToDeleteProduct(product.Id)">
+                                    </NavLink>
+                                    <NavLink class="btn btn-sm btn-outline-dark w-100" href=@($"products/delete/{@product.Id}") aria-label="Delete Product" title="Delete Product">
                                         <div class="d-flex align-items-center justify-content-center">
                                             <CartXSvg />
                                         </div>
-                                    </button>
+                                    </NavLink>
                                 </div>
                             </td>
                         </tr>
@@ -163,14 +162,14 @@ else
                 <nav aria-label="Select page">
                     <ul class="pagination">
                         <li class="page-item @(ProductsPage.IsFirstPage ? "disabled" : "")">
-                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetProductsAsync(1))">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => LoadProductsPageAsync(1))">
                                 <div class="d-flex align-items-center">
                                     <ChevronDoubleLeftSvg />
                                 </div>
                             </button>
                         </li>
                         <li class="page-item @(ProductsPage.HasPreviousPage ? "" : "disabled")">
-                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetProductsAsync(ProductsPage.PageNumber - 1))">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => LoadProductsPageAsync(ProductsPage.PageNumber - 1))">
                                 <div class="d-flex align-items-center">
                                     <ChevronLeftSvg />
                                 </div>
@@ -180,14 +179,14 @@ else
                             <button class="page-link h-100" type="button">@(ProductsPage.PageNumber) of @(ProductsPage.TotalPages)</button>
                         </li>
                         <li class="page-item @(ProductsPage.HasNextPage ? "" : "disabled")">
-                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetProductsAsync(ProductsPage.PageNumber + 1))">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => LoadProductsPageAsync(ProductsPage.PageNumber + 1))">
                                 <div class="d-flex align-items-center">
                                     <ChevronRightSvg />
                                 </div>
                             </button>
                         </li>
                         <li class="page-item @(ProductsPage.IsLastPage ? "disabled" : "")">
-                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetProductsAsync(ProductsPage.TotalPages))">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => LoadProductsPageAsync(ProductsPage.TotalPages))">
                                 <div class="d-flex align-items-center">
                                     <ChevronDoubleRightSvg />
                                 </div>
@@ -197,20 +196,22 @@ else
                 </nav>
             </div>
         </div>
-    </div>
-}
+    }
+</div>
 
 @code {
+    private SearchProductsInputModel Input { get; set; } = new();
     private PaginatedList<GetProductsPaginatedQueryResponse>? ProductsPage { get; set; }
 
-    private SearchProductsInputModel Input { get; set; } = new();
-
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await GetProductsAsync();
+        if (firstRender)
+        {
+            await LoadProductsPageAsync();
+        }
     }
 
-    private async Task GetProductsAsync(int pageNumber = 1)
+    private async Task LoadProductsPageAsync(int pageNumber = 1)
     {
         if (string.IsNullOrWhiteSpace(Input.SortColumn))
         {
@@ -242,6 +243,8 @@ else
             ProductsPage = PaginatedList<GetProductsPaginatedQueryResponse>.Create([], 0, query.PageNumber, query.PageSize);
             ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
         }
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private Type GetSortIcon(string columnName)
@@ -263,31 +266,16 @@ else
         }
     }
 
-    private void NavigateToAddProduct()
-    {
-        NavigationManager.NavigateTo("/products/add");
-    }
-
-    private void NavigateToDeleteProduct(Guid id)
-    {
-        NavigationManager.NavigateTo($"/products/delete/{id}");
-    }
-
-    private void NavigateToEditProduct(Guid id)
-    {
-        NavigationManager.NavigateTo($"/products/edit/{id}");
-    }
-
     private async Task ResetSearchProductsDto()
     {
         Input = new();
-        await GetProductsAsync();
+        await LoadProductsPageAsync();
     }
 
     private async Task SortTable(string columnName)
     {
         Input.SortColumn = columnName;
         Input.SortOrder = Input.SortOrder == "asc" ? "desc" : "asc";
-        await GetProductsAsync();
+        await LoadProductsPageAsync();
     }
 }
