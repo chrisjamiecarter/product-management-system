@@ -7,72 +7,72 @@
 
 <PageTitle>Users</PageTitle>
 
-@if (UsersPage is null)
-{
-    <LoadingSpinner />
-}
-else
-{
-    <div class="container-md py-3">
+<div class="container-md py-3">
 
-        <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-            <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item active" aria-current="page">Users</li>
-                <li class="breadcrumb-item active" aria-current="page">List</li>
-            </ol>
-        </nav>
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item active" aria-current="page">Users</li>
+            <li class="breadcrumb-item active" aria-current="page">List</li>
+        </ol>
+    </nav>
 
-        <div class="d-flex justify-content-between mb-4">
-            <div class="d-flex gap-3 align-items-center">
-                <PeopleFillSvg Height="1.5rem" Width="1.5rem" />
-                <h1 class="h2 mb-0">Users</h1>
+    <div class="d-flex justify-content-between mb-4">
+        <div class="d-flex gap-3 align-items-center">
+            <PeopleFillSvg Height="1.5rem" Width="1.5rem" />
+            <h1 class="h2 mb-0">Users</h1>
+        </div>
+        <button class="btn btn-lg btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#userSearchForm" aria-expanded="false" aria-controls="userSearchForm">
+            <div class="d-flex align-items-center justify-content-center">
+                <SearchSvg />
             </div>
-            <button class="btn btn-lg btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#userSearchForm" aria-expanded="false" aria-controls="userSearchForm">
-                <div class="d-flex align-items-center justify-content-center">
-                    <SearchSvg />
-                </div>
-            </button>
-        </div>
+        </button>
+    </div>
 
-        <div id="userSearchForm" class="collapse pb-3">
-            <EditForm Model="Input" OnValidSubmit="() => LoadUsersPageAsync()" FormName="SearchUsers">
-                <div class="row">
-                    <div class="col-12 col-lg-6">
-                        <div class="form-floating mb-3">
-                            <InputText id="Input.SearchEmail" class="form-control" placeholder="name@example.com" @bind-Value="Input.SearchEmail" />
-                            <label for="Input.SearchEmail" class="form-label">Email</label>
-                        </div>
+    <div id="userSearchForm" class="collapse pb-3">
+        <EditForm Model="Input" OnValidSubmit="() => LoadUsersPageAsync()" FormName="SearchUsers">
+            <div class="row">
+                <div class="col-12 col-lg-6">
+                    <div class="form-floating mb-3">
+                        <InputText id="Input.SearchEmail" class="form-control" placeholder="name@example.com" @bind-Value="Input.SearchEmail" />
+                        <label for="Input.SearchEmail" class="form-label">Email</label>
                     </div>
-                    <div class="col-12 col-md-6 col-lg-3">
-                        <div class="form-floating mb-3">
-                            <FixedInputSelect id="Input.SearchEmailConfirmed" class="form-select" @bind-Value="Input.SearchEmailConfirmed">
-                                <option value="">All</option>
-                                <option value="true">Yes</option>
-                                <option value="false">No</option>
-                            </FixedInputSelect>
-                            <label for="Input.SearchEmailConfirmed">Email Confirmed</label>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6 col-lg-3">
-                        <div class="form-floating mb-3">
-                            <FixedInputSelect id="Input.SearchRole" class="form-select" @bind-Value="Input.SearchRole">
-                                <option value="">All</option>
-                                <option value="Owner">Owner</option>
-                                <option value="Admin">Admin</option>
-                                <option value="User">User</option>
-                            </FixedInputSelect>
-                            <label for="Input.SearchRole">Role</label>
-                        </div>
-                    </div>
-
                 </div>
-                <div class="d-flex gap-1 mb-3">
-                    <button class="btn btn-sm btn-outline-dark w-100" type="submit" data-bs-toggle="collapse" data-bs-target="#userSearchForm">Search</button>
-                    <button class="btn btn-sm btn-dark w-100" type="button" data-bs-toggle="collapse" data-bs-target="#userSearchForm" @onclick="ResetSearchUsersDto">Reset</button>
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="form-floating mb-3">
+                        <FixedInputSelect id="Input.SearchEmailConfirmed" class="form-select" @bind-Value="Input.SearchEmailConfirmed">
+                            <option value="">All</option>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </FixedInputSelect>
+                        <label for="Input.SearchEmailConfirmed">Email Confirmed</label>
+                    </div>
                 </div>
-            </EditForm>
-        </div>
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="form-floating mb-3">
+                        <FixedInputSelect id="Input.SearchRole" class="form-select" @bind-Value="Input.SearchRole">
+                            <option value="">All</option>
+                            <option value="Owner">Owner</option>
+                            <option value="Admin">Admin</option>
+                            <option value="User">User</option>
+                        </FixedInputSelect>
+                        <label for="Input.SearchRole">Role</label>
+                    </div>
+                </div>
 
+            </div>
+            <div class="d-flex gap-1 mb-3">
+                <button class="btn btn-sm btn-outline-dark w-100" type="submit" data-bs-toggle="collapse" data-bs-target="#userSearchForm">Search</button>
+                <button class="btn btn-sm btn-dark w-100" type="button" data-bs-toggle="collapse" data-bs-target="#userSearchForm" @onclick="ResetSearchUsersDto">Reset</button>
+            </div>
+        </EditForm>
+    </div>
+
+    @if (UsersPage is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
         <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead>
@@ -180,13 +180,12 @@ else
                 </nav>
             </div>
         </div>
-    </div>
-}
+    }
+</div>
 
 @code {
-    private PaginatedList<GetUsersPaginatedQueryResponse>? UsersPage { get; set; }
-
     private SearchUsersInputModel Input { get; set; } = new();
+    private PaginatedList<GetUsersPaginatedQueryResponse>? UsersPage { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

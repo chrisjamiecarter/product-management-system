@@ -8,26 +8,26 @@
 
 <PageTitle>Delete User</PageTitle>
 
-@if (Input is null)
-{
-    <LoadingSpinner />
-}
-else
-{
-    <div class="container-md py-3">
+<div class="container-md py-3">
 
-        <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-            <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><NavLink class="link-dark link-underline-opacity-0 link-underline-opacity-100-hover" href="users">Users</NavLink></li>
-                <li class="breadcrumb-item active" aria-current="page">Delete</li>
-            </ol>
-        </nav>
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><NavLink class="link-dark link-underline-opacity-0 link-underline-opacity-100-hover" href="users">Users</NavLink></li>
+            <li class="breadcrumb-item active" aria-current="page">Delete</li>
+        </ol>
+    </nav>
 
-        <div class="d-flex gap-3 align-items-center mb-4">
-            <PersonFillXSvg Height="1.5rem" Width="1.5rem" />
-            <h1 class="h2 mb-0">Delete User</h1>
-        </div>
+    <div class="d-flex gap-3 align-items-center mb-4">
+        <PersonFillXSvg Height="1.5rem" Width="1.5rem" />
+        <h1 class="h2 mb-0">Delete User</h1>
+    </div>
 
+    @if (Input is null)
+    {
+        <LoadingSpinner />
+    }
+    else
+    {
         <div class="form-group col-lg-6">
             <EditForm Model="Input" FormName="DeleteUser" OnValidSubmit="ShowConfirmation">
                 <div class="form-floating mb-3">
@@ -53,32 +53,33 @@ else
             </EditForm>
         </div>
 
-        @if (ShowConfirmationModal)
+        @if (showConfirmationModal)
         {
             <ConfirmationModal Title="Delete this user?"
             Message="Do you really want to delete this user? This action cannot be undone."
             OnCancelCallback="HideConfirmation"
             OnConfirmCallback="DeleteUserAsync" />
         }
-    </div>
-}
+    }
+</div>
 
 @code {
     [Parameter] public string Id { get; set; } = string.Empty;
 
-    private DeleteUserInputModel? Input;
-    private bool ShowConfirmationModal { get; set; }
+    private DeleteUserInputModel? Input { get; set; }
+    
     private bool isProcessing = false;
+    private bool showConfirmationModal { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await LoadUser();
+            await LoadUserAsync();
         }
     }
 
-    private async Task LoadUser()
+    private async Task LoadUserAsync()
     {
         var query = new GetUserByIdQuery(Id);
 
@@ -123,11 +124,11 @@ else
 
     private void ShowConfirmation()
     {
-        ShowConfirmationModal = true;
+        showConfirmationModal = true;
     }
 
     private void HideConfirmation()
     {
-        ShowConfirmationModal = false;
+        showConfirmationModal = false;
     }
 }
