@@ -42,8 +42,9 @@ internal sealed class RequestEmailChangeConfirmationCommandHandler : ICommandHan
         var duplicateEmailResult = await _userService.FindByEmailAsync(request.UpdatedEmail, cancellationToken);
         if (duplicateEmailResult.IsSuccess)
         {
-            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, duplicateEmailResult.Error.Code, duplicateEmailResult.Error.Message);
-            return Result.Failure(ApplicationErrors.User.EmailTaken);
+            var error = ApplicationErrors.User.EmailTaken;
+            _logger.LogWarning("UserId {userId}: {errorCode} - {errorMessage}", request.UserId, error.Code, error.Message);
+            return Result.Failure(error);
         }
 
         var tokenResult = await _authService.GenerateEmailChangeTokenAsync(request.UserId, request.UpdatedEmail, cancellationToken);
