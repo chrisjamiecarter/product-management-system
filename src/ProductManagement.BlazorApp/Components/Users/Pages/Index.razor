@@ -1,6 +1,5 @@
 ﻿@page "/users"
 
-@inject NavigationManager NavigationManager
 @inject ISenderService Sender
 @inject IToastService ToastService
 
@@ -36,7 +35,7 @@ else
         </div>
 
         <div id="userSearchForm" class="collapse pb-3">
-            <EditForm Model="Input" OnValidSubmit="() => GetUsersAsync()" FormName="SearchUsers">
+            <EditForm Model="Input" OnValidSubmit="() => LoadUsersPageAsync()" FormName="SearchUsers">
                 <div class="row">
                     <div class="col-12 col-lg-6">
                         <div class="form-floating mb-3">
@@ -97,11 +96,11 @@ else
                             </div>
                         </th>
                         <th scope="col" class="col-1">
-                            <button class="btn btn-sm btn-outline-dark w-100 h-100" type="button" aria-label="Add User" title="Add User" @onclick="() => NavigateToAddUser()">
+                            <NavLink class="btn btn-sm btn-outline-dark w-100 h-100" href="users/add" aria-label="Add User" title="Add User">
                                 <div class="d-flex align-items-center justify-content-center">
                                     <PersonAddSvg />
                                 </div>
-                            </button>
+                            </NavLink>
                         </th>
                     </tr>
                 </thead>
@@ -123,16 +122,16 @@ else
                             <td>@user.Role</td>
                             <td scope="row">
                                 <div class="d-flex flex-column flex-md-row gap-1">
-                                    <button class="btn btn-sm btn-outline-dark w-100" type="button" aria-label="Edit User" title="Edit User" @onclick="() => NavigateToEditUser(user.Id)">
+                                    <NavLink class="btn btn-sm btn-outline-dark w-100" href=@($"users/edit/{@user.Id}") aria-label="Edit User" title="Edit User">
                                         <div class="d-flex align-items-center justify-content-center">
                                             <PersonDashSvg />
                                         </div>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-dark w-100" type="button" aria-label="Delete User" title="Delete User" @onclick="() => NavigateToDeleteUser(user.Id)">
+                                    </NavLink>
+                                    <NavLink class="btn btn-sm btn-outline-dark w-100" href=@($"users/delete/{@user.Id}") aria-label="Delete User" title="Delete User">
                                         <div class="d-flex align-items-center justify-content-center">
                                             <PersonXSvg />
                                         </div>
-                                    </button>
+                                    </NavLink>
                                 </div>
                             </td>
                         </tr>
@@ -147,14 +146,14 @@ else
                 <nav aria-label="Select page">
                     <ul class="pagination">
                         <li class="page-item @(UsersPage.IsFirstPage ? "disabled" : "")">
-                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetUsersAsync(1))">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => LoadUsersPageAsync(1))">
                                 <div class="d-flex align-items-center">
                                     <ChevronDoubleLeftSvg />
                                 </div>
                             </button>
                         </li>
                         <li class="page-item @(UsersPage.HasPreviousPage ? "" : "disabled")">
-                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetUsersAsync(UsersPage.PageNumber - 1))">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => LoadUsersPageAsync(UsersPage.PageNumber - 1))">
                                 <div class="d-flex align-items-center">
                                     <ChevronLeftSvg />
                                 </div>
@@ -164,14 +163,14 @@ else
                             <button class="page-link h-100" type="button">@(UsersPage.PageNumber) of @(UsersPage.TotalPages)</button>
                         </li>
                         <li class="page-item @(UsersPage.HasNextPage ? "" : "disabled")">
-                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetUsersAsync(UsersPage.PageNumber + 1))">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => LoadUsersPageAsync(UsersPage.PageNumber + 1))">
                                 <div class="d-flex align-items-center">
                                     <ChevronRightSvg />
                                 </div>
                             </button>
                         </li>
                         <li class="page-item @(UsersPage.IsLastPage ? "disabled" : "")">
-                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => GetUsersAsync(UsersPage.TotalPages))">
+                            <button class="page-link link-dark h-100" type="button" @onclick="@(() => LoadUsersPageAsync(UsersPage.TotalPages))">
                                 <div class="d-flex align-items-center">
                                     <ChevronDoubleRightSvg />
                                 </div>
@@ -189,12 +188,15 @@ else
 
     private SearchUsersInputModel Input { get; set; } = new();
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await GetUsersAsync();
+        if (firstRender)
+        {
+            await LoadUsersPageAsync();
+        }
     }
 
-    private async Task GetUsersAsync(int pageNumber = 1)
+    private async Task LoadUsersPageAsync(int pageNumber = 1)
     {
         if (string.IsNullOrWhiteSpace(Input.SortColumn))
         {
@@ -222,6 +224,8 @@ else
             UsersPage = PaginatedList<GetUsersPaginatedQueryResponse>.Create([], 0, 1, 1);
             ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
         }
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private Type GetSortIcon(string columnName)
@@ -243,31 +247,16 @@ else
         }
     }
 
-    private void NavigateToAddUser()
-    {
-        NavigationManager.NavigateTo("/users/add");
-    }
-
-    private void NavigateToDeleteUser(string id)
-    {
-        NavigationManager.NavigateTo($"/users/delete/{id}");
-    }
-
-    private void NavigateToEditUser(string id)
-    {
-        NavigationManager.NavigateTo($"/users/edit/{id}");
-    }
-
     private async Task ResetSearchUsersDto()
     {
         Input = new();
-        await GetUsersAsync();
+        await LoadUsersPageAsync();
     }
 
     private async Task SortTable(string columnName)
     {
         Input.SortColumn = columnName;
         Input.SortOrder = Input.SortOrder == "asc" ? "desc" : "asc";
-        await GetUsersAsync();
+        await LoadUsersPageAsync();
     }
 }

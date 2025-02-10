@@ -1,8 +1,8 @@
 ﻿@page "/users/add"
 
-@inject NavigationManager NavigationManager
 @inject ISenderService Sender
 @inject IToastService ToastService
+@inject NavigationManager NavigationManager
 
 @rendermode InteractiveServer
 
@@ -51,7 +51,9 @@ else
                     <LoadingButton Type="submit" IsProcessing="@isProcessing" CssClass="btn btn-outline-dark w-100">
                         Create
                     </LoadingButton>
-                    <button class="btn btn-dark w-100" type="button" @onclick="() => NavigateToUsers()">Back</button>
+                    <NavLink class="btn btn-dark w-100" href="users" aria-label="Back to Users" title="Back to Users">
+                        Back
+                    </NavLink>
                 </div>
             </EditForm>
         </div>
@@ -63,9 +65,13 @@ else
     private EditContext? EditContext;
     private bool isProcessing = false;
 
-    protected override void OnInitialized()
+    protected override void OnAfterRender(bool firstRender)
     {
-        EditContext = new EditContext(Input);
+        if (firstRender)
+        {
+            EditContext = new EditContext(Input);
+            StateHasChanged();
+        }
     }
 
     private async Task AddUserAsync()
@@ -77,19 +83,13 @@ else
         if (response.IsSuccess)
         {
             ToastService.ShowToast("User created", ToastLevel.Success);
-            NavigateToUsers();
+            NavigationManager.NavigateTo("users");
         }
         else
         {
-            // TODO: Log.
             ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
         }
 
         isProcessing = false;
-    }
-
-    private void NavigateToUsers()
-    {
-        NavigationManager.NavigateTo("/users");
     }
 }

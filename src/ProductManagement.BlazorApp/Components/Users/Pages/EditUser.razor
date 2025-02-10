@@ -1,8 +1,8 @@
 ﻿@page "/users/edit/{Id}"
 
-@inject NavigationManager NavigationManager
 @inject ISenderService Sender
 @inject IToastService ToastService
+@inject NavigationManager NavigationManager
 
 @rendermode InteractiveServer
 
@@ -55,7 +55,9 @@ else
                     <LoadingButton Type="submit" IsProcessing="@isProcessing" CssClass="btn btn-outline-dark w-100">
                         Update
                     </LoadingButton>
-                    <button class="btn btn-dark w-100" type="button" @onclick="() => NavigateToUsers()">Back</button>
+                    <NavLink class="btn btn-dark w-100" href="users" aria-label="Back to Users" title="Back to Users">
+                        Back
+                    </NavLink>
                 </div>
             </EditForm>
         </div>
@@ -69,7 +71,15 @@ else
     private EditContext? EditContext;
     private bool isProcessing = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadUser();
+        }
+    }
+
+    private async Task LoadUser()
     {
         var query = new GetUserByIdQuery(Id);
 
@@ -81,9 +91,10 @@ else
         }
         else
         {
-            // TODO: Log.
             ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
         }
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task EditUserAsync()
@@ -92,7 +103,7 @@ else
         {
             return;
         }
-        
+
         isProcessing = true;
 
         var command = new UpdateRoleCommand(Input.Id,
@@ -102,19 +113,13 @@ else
         if (response.IsSuccess)
         {
             ToastService.ShowToast("User updated", ToastLevel.Success);
-            NavigateToUsers();
+            NavigationManager.NavigateTo("users");
         }
         else
         {
-            // TODO: Log.
             ToastService.ShowToast(response.Error.Message, ToastLevel.Error);
         }
 
         isProcessing = false;
-    }
-
-    private void NavigateToUsers()
-    {
-        NavigationManager.NavigateTo("/users");
     }
 }
