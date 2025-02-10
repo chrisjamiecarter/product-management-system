@@ -8,6 +8,7 @@ internal static class Tables
     public static readonly string ApplicationUserRole = "UserRoles";
     public static readonly string ApplicationUserToken = "UserTokens";
     public static readonly string AuditLog = "Log";
+    public static readonly string EntityFrameworkCoreMigrations = "MigrationsHistory";
     public static readonly string Product = "Product";
     public static readonly string Role = "Roles";
     public static readonly string RoleClaim = "RoleClaims";

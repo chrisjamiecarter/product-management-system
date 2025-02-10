@@ -7,13 +7,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProductManagement.Infrastructure.Contexts;
 
-
 #nullable disable
 
-namespace ProductManagement.Infrastructure.Database.Migrations
+namespace ProductManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(ProductManagementDbContext))]
-    [Migration("20250120204647_InitialCreate")]
+    [Migration("20250210155036_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -188,7 +187,7 @@ namespace ProductManagement.Infrastructure.Database.Migrations
                     b.ToTable("Product", "core");
                 });
 
-            modelBuilder.Entity("ProductManagement.Infrastructure.Database.Identity.ApplicationUser", b =>
+            modelBuilder.Entity("ProductManagement.Infrastructure.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -253,6 +252,40 @@ namespace ProductManagement.Infrastructure.Database.Migrations
                     b.ToTable("Users", "security");
                 });
 
+            modelBuilder.Entity("ProductManagement.Infrastructure.Models.AuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Exception")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MessageTemplate")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Properties")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("TimeStamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Log", "audit");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -264,7 +297,7 @@ namespace ProductManagement.Infrastructure.Database.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("ProductManagement.Infrastructure.Database.Identity.ApplicationUser", null)
+                    b.HasOne("ProductManagement.Infrastructure.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -273,7 +306,7 @@ namespace ProductManagement.Infrastructure.Database.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("ProductManagement.Infrastructure.Database.Identity.ApplicationUser", null)
+                    b.HasOne("ProductManagement.Infrastructure.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -288,8 +321,8 @@ namespace ProductManagement.Infrastructure.Database.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProductManagement.Infrastructure.Database.Identity.ApplicationUser", null)
-                        .WithMany()
+                    b.HasOne("ProductManagement.Infrastructure.Models.ApplicationUser", null)
+                        .WithMany("UserRoles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -297,11 +330,16 @@ namespace ProductManagement.Infrastructure.Database.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("ProductManagement.Infrastructure.Database.Identity.ApplicationUser", null)
+                    b.HasOne("ProductManagement.Infrastructure.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ProductManagement.Infrastructure.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618
         }

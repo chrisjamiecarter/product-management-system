@@ -25,7 +25,13 @@ public static class InfrastructureInstaller
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("ProductManagement") ?? throw new InvalidOperationException("Connection string 'ProductManagement' not found.");
-        services.AddDbContext<ProductManagementDbContext>(options => options.UseSqlServer(connectionString));
+        services.AddDbContext<ProductManagementDbContext>(options =>
+        {
+            options.UseSqlServer(connectionString, sqlServerOptions =>
+            {
+                sqlServerOptions.MigrationsHistoryTable(Tables.EntityFrameworkCoreMigrations, Schemas.EntityFrameworkCore);
+            });
+        });
 
         services.AddIdentityCore<ApplicationUser>(options =>
         {
