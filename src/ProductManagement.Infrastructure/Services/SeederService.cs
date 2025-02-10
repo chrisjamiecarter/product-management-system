@@ -72,8 +72,9 @@ internal class SeederService
             };
 
             var p = new StringBuilder();
-            p.Append(user.Email.Substring(0, 1).ToUpper());
-            p.Append(user.Email.Substring(1, user.Email.IndexOf('@')).ToLower());
+            var userName = user.Email[..user.Email.IndexOf('@')].ToLower();
+            p.Append(char.ToUpper(userName[0]));
+            p.Append(userName[1 ..]);
             p.Append("123###");
                         
             var result = await _userManager.CreateAsync(applicationUser, p.ToString());
