@@ -66,6 +66,6 @@ public static class ApplicationErrors
 
         public static readonly Error EmailTaken = new(
             "User.EmailTaken",
-            "The email is already taken.");
+            "This email is already linked to another account.");
     }
 }

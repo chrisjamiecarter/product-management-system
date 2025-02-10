@@ -1,6 +1,4 @@
-﻿@inject ICurrentUserService CurrentUserService
-@inject ISenderService Sender
-@inject IdentityRedirectManager RedirectManager
+﻿@inject ISenderService Sender
 
 <h3 class="mb-3 fw-normal">Change email</h3>
 <div class="row mb-4">
@@ -55,11 +53,15 @@
 
         var command = new GenerateEmailChangeCommand(User.Id, Input.UpdatedEmail);
         var result = await Sender.SendAsync(command);
-        if (result.IsFailure)
+        if (result.IsSuccess)
+        {
+            status = new StatusModel("Confirmation link to change email sent. Please check your email.", MessageLevel.Success);
+        }
+        else
         {
             status = new StatusModel(result.Error.Message, MessageLevel.Error);
         }
 
-        RedirectManager.RedirectToCurrentPageWithStatus(new StatusModel("Confirmation link to change email sent. Please check your email.", MessageLevel.Success), HttpContext);
+        //RedirectManager.RedirectToCurrentPageWithStatus(new StatusModel("Confirmation link to change email sent. Please check your email.", MessageLevel.Success), HttpContext);
     }
 }
