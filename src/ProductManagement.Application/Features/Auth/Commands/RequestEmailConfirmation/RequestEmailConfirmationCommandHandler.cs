@@ -3,24 +3,24 @@ using ProductManagement.Application.Abstractions.Messaging;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;
 
-namespace ProductManagement.Application.Features.Auth.Commands.ForgotPassword;
+namespace ProductManagement.Application.Features.Auth.Commands.RequestEmailConfirmation;
 
 /// <summary>
-/// Handles the <see cref="ForgotPasswordCommand"/> by generating a password reset token, 
-/// building a reset link, and sending it via email.
+/// Handles the <see cref="RequestEmailConfirmationCommand"> command by validating the user, 
+/// generating an email confirmation token, and sending a confirmation email.
 /// </summary>
-/// <remarks>
+/// /// <remarks>
 /// The <see cref="Handle"/> method will return a Success Result if the user is not found to obfuscate from attackers.
 /// </remarks>
-internal sealed class ForgotPasswordCommandHandler : ICommandHandler<ForgotPasswordCommand>
+internal sealed class RequestEmailConfirmationCommandHandler : ICommandHandler<RequestEmailConfirmationCommand>
 {
-    private readonly ILogger<ForgotPasswordCommandHandler> _logger;
+    private readonly ILogger<RequestEmailConfirmationCommandHandler> _logger;
     private readonly IAuthService _authService;
     private readonly IEmailService _emailService;
     private readonly ILinkBuilderService _linkBuilderService;
     private readonly IUserService _userService;
 
-    public ForgotPasswordCommandHandler(ILogger<ForgotPasswordCommandHandler> logger, IAuthService authService, IEmailService emailService, ILinkBuilderService linkBuilderService, IUserService userService)
+    public RequestEmailConfirmationCommandHandler(ILogger<RequestEmailConfirmationCommandHandler> logger, IAuthService authService, IEmailService emailService, ILinkBuilderService linkBuilderService, IUserService userService)
     {
         _logger = logger;
         _authService = authService;
@@ -29,7 +29,7 @@ internal sealed class ForgotPasswordCommandHandler : ICommandHandler<ForgotPassw
         _userService = userService;
     }
 
-    public async Task<Result> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken = default)
+    public async Task<Result> Handle(RequestEmailConfirmationCommand request, CancellationToken cancellationToken)
     {
         var userResult = await _userService.FindByEmailAsync(request.Email, cancellationToken);
         if (userResult.IsFailure)
@@ -40,23 +40,23 @@ internal sealed class ForgotPasswordCommandHandler : ICommandHandler<ForgotPassw
 
         var user = userResult.Value;
 
-        var tokenResult = await _authService.GeneratePasswordResetTokenAsync(request.Email, cancellationToken);
+        var tokenResult = await _authService.GenerateEmailConfirmationTokenAsync(request.Email, cancellationToken);
         if (tokenResult.IsFailure)
         {
             _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, tokenResult.Error.Code, tokenResult.Error.Message);
             return Result.Failure(tokenResult.Error);
         }
 
-        var passwordResetLink = await _linkBuilderService.BuildPasswordResetLinkAsync(tokenResult.Value, cancellationToken);
+        var emailConfirmationLink = await _linkBuilderService.BuildEmailConfirmationLinkAsync(user.Id, tokenResult.Value, cancellationToken);
 
-        var emailResult = await _emailService.SendPasswordResetAsync(request.Email, passwordResetLink, cancellationToken);
+        var emailResult = await _emailService.SendEmailConfirmationAsync(request.Email, emailConfirmationLink, cancellationToken);
         if (emailResult.IsFailure)
         {
             _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, emailResult.Error.Code, emailResult.Error.Message);
-            return Result.Failure(emailResult.Error);
+            return Result.Failure(tokenResult.Error);
         }
 
-        _logger.LogInformation("Sent reset password link for User {id} successfully", user.Id);
+        _logger.LogInformation("Sent confirm email link for User {id} successfully", user.Id);
         return Result.Success();
     }
 }

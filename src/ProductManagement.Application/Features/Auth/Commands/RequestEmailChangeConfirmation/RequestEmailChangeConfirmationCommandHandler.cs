@@ -4,24 +4,24 @@ using ProductManagement.Application.Errors;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;
 
-namespace ProductManagement.Application.Features.Auth.Commands.GenerateEmailChange;
+namespace ProductManagement.Application.Features.Auth.Commands.RequestEmailChangeConfirmation;
 
 /// <summary>
-/// Handles the <see cref="GenerateEmailChangeCommand"/> by validating the user, ensuring the new email 
+/// Handles the <see cref="RequestEmailChangeConfirmationCommand"/> by validating the user, ensuring the new email 
 /// is not already taken, generating an email change token, and sending a confirmation email.
 /// </summary>
 /// <remarks>
 /// The <see cref="Handle"/> method will return a Success Result if the user is not found to obfuscate from attackers.
 /// </remarks>
-internal sealed class GenerateEmailChangeCommandHandler : ICommandHandler<GenerateEmailChangeCommand>
+internal sealed class RequestEmailChangeConfirmationCommandHandler : ICommandHandler<RequestEmailChangeConfirmationCommand>
 {
-    private readonly ILogger<GenerateEmailChangeCommandHandler> _logger;
+    private readonly ILogger<RequestEmailChangeConfirmationCommandHandler> _logger;
     private readonly IAuthService _authService;
     private readonly IEmailService _emailService;
     private readonly ILinkBuilderService _linkBuilderService;
     private readonly IUserService _userService;
 
-    public GenerateEmailChangeCommandHandler(ILogger<GenerateEmailChangeCommandHandler> logger, IAuthService authService, IEmailService emailService, ILinkBuilderService linkBuilderService, IUserService userService)
+    public RequestEmailChangeConfirmationCommandHandler(ILogger<RequestEmailChangeConfirmationCommandHandler> logger, IAuthService authService, IEmailService emailService, ILinkBuilderService linkBuilderService, IUserService userService)
     {
         _logger = logger;
         _authService = authService;
@@ -30,7 +30,7 @@ internal sealed class GenerateEmailChangeCommandHandler : ICommandHandler<Genera
         _userService = userService;
     }
 
-    public async Task<Result> Handle(GenerateEmailChangeCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(RequestEmailChangeConfirmationCommand request, CancellationToken cancellationToken)
     {
         var userResult = await _userService.FindByIdAsync(request.UserId, cancellationToken);
         if (userResult.IsFailure)

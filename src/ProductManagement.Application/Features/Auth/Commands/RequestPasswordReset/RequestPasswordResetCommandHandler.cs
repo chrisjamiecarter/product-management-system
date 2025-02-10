@@ -3,24 +3,24 @@ using ProductManagement.Application.Abstractions.Messaging;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;
 
-namespace ProductManagement.Application.Features.Auth.Commands.GenerateEmailConfirmation;
+namespace ProductManagement.Application.Features.Auth.Commands.RequestPasswordReset;
 
 /// <summary>
-/// Handles the <see cref="GenerateEmailConfirmationCommand"> command by validating the user, 
-/// generating an email confirmation token, and sending a confirmation email.
+/// Handles the <see cref="RequestPasswordResetCommand"/> by generating a password reset token, 
+/// building a reset link, and sending it via email.
 /// </summary>
-/// /// <remarks>
+/// <remarks>
 /// The <see cref="Handle"/> method will return a Success Result if the user is not found to obfuscate from attackers.
 /// </remarks>
-internal sealed class GenerateEmailConfirmationCommandHandler : ICommandHandler<GenerateEmailConfirmationCommand>
+internal sealed class RequestPasswordResetCommandHandler : ICommandHandler<RequestPasswordResetCommand>
 {
-    private readonly ILogger<GenerateEmailConfirmationCommandHandler> _logger;
+    private readonly ILogger<RequestPasswordResetCommandHandler> _logger;
     private readonly IAuthService _authService;
     private readonly IEmailService _emailService;
     private readonly ILinkBuilderService _linkBuilderService;
     private readonly IUserService _userService;
 
-    public GenerateEmailConfirmationCommandHandler(ILogger<GenerateEmailConfirmationCommandHandler> logger, IAuthService authService, IEmailService emailService, ILinkBuilderService linkBuilderService, IUserService userService)
+    public RequestPasswordResetCommandHandler(ILogger<RequestPasswordResetCommandHandler> logger, IAuthService authService, IEmailService emailService, ILinkBuilderService linkBuilderService, IUserService userService)
     {
         _logger = logger;
         _authService = authService;
@@ -29,7 +29,7 @@ internal sealed class GenerateEmailConfirmationCommandHandler : ICommandHandler<
         _userService = userService;
     }
 
-    public async Task<Result> Handle(GenerateEmailConfirmationCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(RequestPasswordResetCommand request, CancellationToken cancellationToken = default)
     {
         var userResult = await _userService.FindByEmailAsync(request.Email, cancellationToken);
         if (userResult.IsFailure)
@@ -40,23 +40,23 @@ internal sealed class GenerateEmailConfirmationCommandHandler : ICommandHandler<
 
         var user = userResult.Value;
 
-        var tokenResult = await _authService.GenerateEmailConfirmationTokenAsync(request.Email, cancellationToken);
+        var tokenResult = await _authService.GeneratePasswordResetTokenAsync(request.Email, cancellationToken);
         if (tokenResult.IsFailure)
         {
             _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, tokenResult.Error.Code, tokenResult.Error.Message);
             return Result.Failure(tokenResult.Error);
         }
 
-        var emailConfirmationLink = await _linkBuilderService.BuildEmailConfirmationLinkAsync(user.Id, tokenResult.Value, cancellationToken);
+        var passwordResetLink = await _linkBuilderService.BuildPasswordResetLinkAsync(tokenResult.Value, cancellationToken);
 
-        var emailResult = await _emailService.SendEmailConfirmationAsync(request.Email, emailConfirmationLink, cancellationToken);
+        var emailResult = await _emailService.SendPasswordResetAsync(request.Email, passwordResetLink, cancellationToken);
         if (emailResult.IsFailure)
         {
             _logger.LogWarning("Email {email}: {errorCode} - {errorMessage}", request.Email, emailResult.Error.Code, emailResult.Error.Message);
-            return Result.Failure(tokenResult.Error);
+            return Result.Failure(emailResult.Error);
         }
 
-        _logger.LogInformation("Sent confirm email link for User {id} successfully", user.Id);
+        _logger.LogInformation("Sent reset password link for User {id} successfully", user.Id);
         return Result.Success();
     }
 }

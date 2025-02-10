@@ -45,7 +45,7 @@
             return;
         }
 
-        var command = new GenerateEmailConfirmationCommand(Input.Email);
+        var command = new RequestEmailConfirmationCommand(Input.Email);
         var result = await Sender.SendAsync(command);
         if (result.IsSuccess)
         {

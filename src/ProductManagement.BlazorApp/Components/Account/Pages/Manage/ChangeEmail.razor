@@ -51,7 +51,7 @@
             return;
         }
 
-        var command = new GenerateEmailChangeCommand(User.Id, Input.UpdatedEmail);
+        var command = new RequestEmailChangeConfirmationCommand(User.Id, Input.UpdatedEmail);
         var result = await Sender.SendAsync(command);
         if (result.IsSuccess)
         {
@@ -61,7 +61,5 @@
         {
             status = new StatusModel(result.Error.Message, MessageLevel.Error);
         }
-
-        //RedirectManager.RedirectToCurrentPageWithStatus(new StatusModel("Confirmation link to change email sent. Please check your email.", MessageLevel.Success), HttpContext);
     }
 }
