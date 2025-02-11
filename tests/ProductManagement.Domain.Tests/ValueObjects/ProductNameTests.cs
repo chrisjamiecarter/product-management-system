@@ -3,9 +3,10 @@ using ProductManagement.Domain.ValueObjects;
 
 namespace ProductManagement.Domain.Tests.ValueObjects;
 
-// Arrange.
-// Act.
-// Assert.
+/// <summary>
+/// Unit tests for the <see cref="ProductName"/> value object, verifying creation, equality, 
+/// and behavior of atomic values and explicit conversion.
+/// </summary>
 public class ProductNameTests
 {
     [Fact]
@@ -67,7 +68,7 @@ public class ProductNameTests
         Assert.Single(result);
         Assert.Equal(productName, result.First());
     }
-    
+
     [Fact]
     public void Equals_ShouldReturnTrue_WhenSameValue()
     {

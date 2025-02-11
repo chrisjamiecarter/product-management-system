@@ -1,12 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
-using ProductManagement.Application.Models;
-using ProductManagement.Domain.Shared;
+﻿using ProductManagement.Application.Models;
 
 namespace ProductManagement.Application.Tests.Models;
 
-// Arrange.
-// Act.
-// Assert.
+/// <summary>
+/// Unit tests for the <see cref="AuthToken"/> class, ensuring correct encoding and decoding behavior.
+/// </summary>
 public class AuthTokenTests
 {
     [Theory]
@@ -97,7 +95,7 @@ public class AuthTokenTests
 
     [Theory]
     [InlineData(null)]
-    public void Dencode_ShouldThrowArgumentNullException_WhenCodeIsNull(string? code)
+    public void Decode_ShouldThrowArgumentNullException_WhenCodeIsNull(string? code)
     {
         // Arrange.
 

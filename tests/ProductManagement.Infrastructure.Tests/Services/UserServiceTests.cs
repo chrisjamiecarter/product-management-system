@@ -1,112 +1,85 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Moq;
+using NSubstitute;
+using NSubstitute.Extensions;
+using ProductManagement.Application.Constants;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
+using ProductManagement.Domain.Shared;
+using ProductManagement.Infrastructure.Extensions;
+using ProductManagement.Infrastructure.Interfaces;
 using ProductManagement.Infrastructure.Models;
 using ProductManagement.Infrastructure.Services;
+using ProductManagement.Infrastructure.Wrappers;
 using static ProductManagement.Application.Errors.ApplicationErrors;
 
 namespace ProductManagement.Infrastructure.Tests.Services;
 
 public class UserServiceTests
 {
-    private readonly Mock<RoleManager<IdentityRole>> _roleManagerMock;
-    private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
+    private static readonly ApplicationUser? DefaultNullApplicationUser = null;
+    private static readonly Result DefaultIdentityFailureResult = IdentityResult.Failed(new IdentityError { Code = "Code", Description = "Description" }).ToDomainResult();
+    private static readonly Result DefaultSuccessResult = Result.Success();
+
+    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserManagerWrapper _userManagerWrapper;
     private readonly IUserService _userService;
 
     public UserServiceTests()
     {
-        var keyNormalizer = new Mock<ILookupNormalizer>();
-        var errors = new Mock<IdentityErrorDescriber>();
-        var options = new Mock<IOptions<IdentityOptions>>();
-        var passwordHasher = new Mock<IPasswordHasher<ApplicationUser>>();
-        var passwordValidators = new List<IPasswordValidator<ApplicationUser>>();
-        var services = new Mock<IServiceProvider>();
+        _roleManager = Substitute.For<RoleManager<IdentityRole>>(Substitute.For<IRoleStore<IdentityRole>>(), null, null, null, null);
+        _userManager = Substitute.For<UserManager<ApplicationUser>>(Substitute.For<IUserStore<ApplicationUser>>(), null, null, null, null, null, null, null, null);
+        _userManagerWrapper = Substitute.For<IUserManagerWrapper>();
 
-        var roleLogger = new Mock<ILogger<RoleManager<IdentityRole>>>();
-        var roleStore = new Mock<IRoleStore<IdentityRole>>();
-        var roleValidators = new List<IRoleValidator<IdentityRole>>();
-
-        var userLogger = new Mock<ILogger<UserManager<ApplicationUser>>>();
-        var userStore = new Mock<IUserStore<ApplicationUser>>();
-        var userValidators = new List<IUserValidator<ApplicationUser>>();
-
-        _roleManagerMock = new Mock<RoleManager<IdentityRole>>(roleStore.Object,
-                                                               roleValidators,
-                                                               keyNormalizer.Object,
-                                                               errors.Object,
-                                                               roleLogger.Object);
-
-        _userManagerMock = new Mock<UserManager<ApplicationUser>>(userStore.Object,
-                                                                  options.Object,
-                                                                  passwordHasher.Object,
-                                                                  userValidators,
-                                                                  passwordValidators,
-                                                                  keyNormalizer.Object,
-                                                                  errors.Object,
-                                                                  services.Object,
-                                                                  userLogger.Object);
-
-        _userService = new UserService(_roleManagerMock.Object, _userManagerMock.Object);
+        _userService = new UserService(_roleManager, _userManager, _userManagerWrapper);
     }
 
     [Fact]
     public async Task AddPasswordAsync_ReturnsFailure_WhenUserNotFound()
     {
         // Arrange.
-        var user = new ApplicationUser { Id = "userId" };
-        var password = "TestPassword123###";
-        ApplicationUser? nullUser = null;
+        string userId = Guid.NewGuid().ToString();
+        string password = "password";
 
-        _userManagerMock.Setup(m => m.FindByIdAsync(user.Id))
-                        .ReturnsAsync(nullUser);
+        _userManager.FindByIdAsync(userId).Returns(DefaultNullApplicationUser);
 
-        _userManagerMock.Setup(m => m.AddPasswordAsync(user, password))
-                        .ReturnsAsync(IdentityResult.Success);
+        // Act.
+        var result = await _userService.AddPasswordAsync(userId, password);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(User.NotFound(userId), result.Error);
+    }
+
+    [Fact]
+    public async Task AddPasswordAsync_ReturnsFailure_WhenPasswordNotAdded()
+    {
+        // Arrange.
+        string userId = Guid.NewGuid().ToString();
+        string password = "password";
+        ApplicationUser user = new ApplicationUser { Id = userId };
+
+        _userManager.FindByIdAsync(userId).Returns(user);
+        _userManagerWrapper.AddPasswordAndReturnDomainResultAsync(user, password).Returns(DefaultIdentityFailureResult);
 
         // Act.
         var result = await _userService.AddPasswordAsync(user.Id, password);
 
         // Assert.
         Assert.True(result.IsFailure);
-        Assert.Equal(User.NotFound(user.Id), result.Error);
+        Assert.Equal(DefaultIdentityFailureResult.Error, result.Error);
     }
 
     [Fact]
-    public async Task AddPasswordAsync_ReturnsFailure_WhenUserPasswordNotAdded()
+    public async Task AddPasswordAsync_ReturnsSuccess_WhenPasswordAdded()
     {
         // Arrange.
-        var user = new ApplicationUser { Id = "userId" };
-        var password = "TestPassword123###";
+        string userId = Guid.NewGuid().ToString();
+        string password = "password";
+        ApplicationUser user = new ApplicationUser { Id = userId };
 
-        _userManagerMock.Setup(m => m.FindByIdAsync(user.Id))
-                        .ReturnsAsync(user);
-
-        _userManagerMock.Setup(m => m.AddPasswordAsync(user, password))
-                        .ReturnsAsync(IdentityResult.Failed());
-
-        // Act.
-        var result = await _userService.AddPasswordAsync(user.Id, password);
-
-        // Assert.
-        Assert.True(result.IsFailure);
-        //Assert.Equal(UserErrors.PasswordNotAdded, result.Error);
-    }
-
-    [Fact]
-    public async Task AddPasswordAsync_ReturnsSuccess_WhenUserPasswordChanged()
-    {
-        // Arrange.
-        var user = new ApplicationUser { Id = "userId" };
-        var password = "TestPassword123###";
-
-        _userManagerMock.Setup(m => m.FindByIdAsync(user.Id))
-                        .ReturnsAsync(user);
-
-        _userManagerMock.Setup(m => m.AddPasswordAsync(user, password))
-                        .ReturnsAsync(IdentityResult.Success);
+        _userManager.FindByIdAsync(userId).Returns(user);
+        _userManagerWrapper.AddPasswordAndReturnDomainResultAsync(user, password).Returns(DefaultSuccessResult);
 
         // Act.
         var result = await _userService.AddPasswordAsync(user.Id, password);
@@ -119,14 +92,14 @@ public class UserServiceTests
     public async Task ChangeEmailAsync_ReturnsFailure_WhenUserNotFound()
     {
         // Arrange.
-        var userId = "userId";
-        var token = AuthToken.Encode("token");
+        string userId = Guid.NewGuid().ToString();
+        var email = "user@testing.com";
+        AuthToken token = AuthToken.Encode("token");
 
-        _userManagerMock.Setup(m => m.FindByIdAsync(userId))
-                        .ReturnsAsync((ApplicationUser?)null);
+        _userManager.FindByIdAsync(userId).Returns(DefaultNullApplicationUser);
 
         // Act.
-        var result = await _userService.ChangeEmailAsync(userId, "email", token);
+        var result = await _userService.ChangeEmailAsync(userId, email, token);
 
         // Assert.
         Assert.True(result.IsFailure);
@@ -134,71 +107,202 @@ public class UserServiceTests
     }
 
     [Fact]
-    public async Task ChangeEmailAsync_ReturnsFailure_WhenUserEmailNotChanged()
+    public async Task ChangeEmailAsync_ReturnsFailure_WhenEmailNotChanged()
     {
         // Arrange.
-        var user = new ApplicationUser();
-        var updatedEmail = "update@email.com";
-        var token = AuthToken.Encode("token");
+        string userId = Guid.NewGuid().ToString();
+        var email = "user@testing.com";
+        ApplicationUser user = new ApplicationUser { Id = userId, UserName = email, Email = email };
+        AuthToken token = AuthToken.Encode("token");
 
-        _userManagerMock.Setup(m => m.FindByIdAsync(user.Id))
-                        .ReturnsAsync(user);
-
-        _userManagerMock.Setup(m => m.ChangeEmailAsync(user, updatedEmail, token.Value))
-                        .ReturnsAsync(IdentityResult.Failed());
+        _userManager.FindByIdAsync(userId).Returns(user);
+        _userManagerWrapper.ChangeEmailAndReturnDomainResultAsync(user, email, token.Value).Returns(DefaultIdentityFailureResult);
 
         // Act.
-        var result = await _userService.ChangeEmailAsync(user.Id, updatedEmail, token);
+        var result = await _userService.ChangeEmailAsync(user.Id, email, token);
 
         // Assert.
         Assert.True(result.IsFailure);
-        //Assert.Equal(UserErrors.EmailNotChanged, result.Error);
+        Assert.Equal(DefaultIdentityFailureResult.Error, result.Error);
     }
 
     [Fact]
-    public async Task ChangeEmailAsync_ReturnsFailure_WhenUserUsernameNotChanged()
+    public async Task ChangeEmailAsync_ReturnsFailure_WhenUsernameNotChanged()
     {
         // Arrange.
-        var user = new ApplicationUser();
-        var updatedEmail = "update@email.com";
-        var token = AuthToken.Encode("token");
+        string userId = Guid.NewGuid().ToString();
+        var email = "user@testing.com";
+        ApplicationUser user = new ApplicationUser { Id = userId, UserName = email, Email = email };
+        AuthToken token = AuthToken.Encode("token");
 
-        _userManagerMock.Setup(m => m.FindByIdAsync(user.Id))
-                        .ReturnsAsync(user);
-
-        _userManagerMock.Setup(m => m.ChangeEmailAsync(user, updatedEmail, token.Value))
-                        .ReturnsAsync(IdentityResult.Success);
-
-        _userManagerMock.Setup(m => m.SetUserNameAsync(user, updatedEmail))
-                        .ReturnsAsync(IdentityResult.Failed());
+        _userManager.FindByIdAsync(userId).Returns(user);
+        _userManagerWrapper.ChangeEmailAndReturnDomainResultAsync(user, email, token.Value).Returns(DefaultSuccessResult);
+        _userManagerWrapper.SetUserNameAndReturnDomainResultAsync(user, email).Returns(DefaultIdentityFailureResult);
 
         // Act.
-        var result = await _userService.ChangeEmailAsync(user.Id, updatedEmail, token);
+        var result = await _userService.ChangeEmailAsync(user.Id, email, token);
 
         // Assert.
         Assert.True(result.IsFailure);
-        //Assert.Equal(UserErrors.UsernameNotChanged, result.Error);
+        Assert.Equal(DefaultIdentityFailureResult.Error, result.Error);
     }
 
     [Fact]
-    public async Task ChangeEmailAsync_ReturnsSuccess_WhenUserEmailChanged()
+    public async Task ChangeEmailAsync_ReturnsSuccess_WhenEmailChanged()
     {
         // Arrange.
-        var user = new ApplicationUser { Id = "userId" };
-        var updatedEmail = "update@email.com";
-        var token = AuthToken.Encode("token");
+        string userId = Guid.NewGuid().ToString();
+        var email = "user@testing.com";
+        ApplicationUser user = new ApplicationUser { Id = userId, UserName = email, Email = email };
+        AuthToken token = AuthToken.Encode("token");
 
-        _userManagerMock.Setup(m => m.FindByIdAsync(user.Id))
-                        .ReturnsAsync(user);
-
-        _userManagerMock.Setup(m => m.ChangeEmailAsync(user, updatedEmail, token.Value))
-                        .ReturnsAsync(IdentityResult.Success);
-
-        _userManagerMock.Setup(m => m.SetUserNameAsync(user, updatedEmail))
-                        .ReturnsAsync(IdentityResult.Success);
+        _userManager.FindByIdAsync(userId).Returns(user);
+        _userManagerWrapper.ChangeEmailAndReturnDomainResultAsync(user, email, token.Value).Returns(DefaultSuccessResult);
+        _userManagerWrapper.SetUserNameAndReturnDomainResultAsync(user, email).Returns(DefaultSuccessResult);
 
         // Act.
-        var result = await _userService.ChangeEmailAsync(user.Id, updatedEmail, token);
+        var result = await _userService.ChangeEmailAsync(user.Id, email, token);
+
+        // Assert.
+        Assert.True(result.IsSuccess);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_ReturnsFailure_WhenUserNotFound()
+    {
+        // Arrange.
+        string userId = Guid.NewGuid().ToString();
+        string currentPassword = "currentPassword";
+        string updatedPassword = "updatedPassword";
+
+        _userManager.FindByIdAsync(userId).Returns(DefaultNullApplicationUser);
+
+        // Act.
+        var result = await _userService.ChangePasswordAsync(userId, currentPassword, updatedPassword);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(User.NotFound(userId), result.Error);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_ReturnsFailure_WhenPasswordNotChanged()
+    {
+        // Arrange.
+        string userId = Guid.NewGuid().ToString();
+        string currentPassword = "currentPassword";
+        string updatedPassword = "updatedPassword";
+        ApplicationUser user = new ApplicationUser { Id = userId };
+
+        _userManager.FindByIdAsync(userId).Returns(DefaultNullApplicationUser);
+        _userManagerWrapper.ChangePasswordAndReturnDomainResultAsync(user, currentPassword, updatedPassword).Returns(DefaultIdentityFailureResult);
+
+        // Act.
+        var result = await _userService.ChangePasswordAsync(userId, currentPassword, updatedPassword);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(User.NotFound(userId), result.Error);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_ReturnsSuccess_WhenPasswordChanged()
+    {
+        // Arrange.
+        string userId = Guid.NewGuid().ToString();
+        string currentPassword = "currentPassword";
+        string updatedPassword = "updatedPassword";
+        ApplicationUser user = new ApplicationUser { Id = userId };
+
+        _userManager.FindByIdAsync(userId).Returns(user);
+        _userManagerWrapper.ChangePasswordAndReturnDomainResultAsync(user, currentPassword, updatedPassword).Returns(DefaultSuccessResult);
+
+        // Act.
+        var result = await _userService.ChangePasswordAsync(userId, currentPassword, updatedPassword);
+
+        // Assert.
+        Assert.True(result.IsSuccess);
+    }
+
+    [Fact]
+    public async Task CreateAsync_ReturnsFailure_WhenUserNotCreated()
+    {
+        // Arrange.
+        var email = "user@testing.com";
+        ApplicationUser user = new ApplicationUser { Email = email, UserName = email };
+
+        _userManagerWrapper.CreateAndReturnDomainResultAsync(user).ReturnsForAnyArgs(DefaultIdentityFailureResult);
+
+        // Act.
+        var result = await _userService.CreateAsync(email);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(DefaultIdentityFailureResult.Error, result.Error);
+    }
+
+    [Fact]
+    public async Task CreateAsync_ReturnsSuccess_WhenUserCreated()
+    {
+        // Arrange.
+        var email = "user@testing.com";
+        ApplicationUser user = new ApplicationUser { Email = email, UserName = email };
+
+        _userManagerWrapper.CreateAndReturnDomainResultAsync(user).ReturnsForAnyArgs(DefaultSuccessResult);
+
+        // Act.
+        var result = await _userService.CreateAsync(email);
+
+        // Assert.
+        Assert.True(result.IsSuccess);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_ReturnsFailure_WhenUserNotFound()
+    {
+        // Arrange.
+        string userId = Guid.NewGuid().ToString();
+
+        _userManager.FindByIdAsync(userId).Returns(DefaultNullApplicationUser);
+
+        // Act.
+        var result = await _userService.DeleteAsync(userId);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(User.NotFound(userId), result.Error);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_ReturnsFailure_WhenUserNotDeleted()
+    {
+        // Arrange.
+        string userId = Guid.NewGuid().ToString();
+        ApplicationUser user = new ApplicationUser { Id = userId };
+
+        _userManager.FindByIdAsync(userId).Returns(user);
+        _userManagerWrapper.DeleteAndReturnDomainResultAsync(user).ReturnsForAnyArgs(DefaultIdentityFailureResult);
+
+        // Act.
+        var result = await _userService.DeleteAsync(userId);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(DefaultIdentityFailureResult.Error, result.Error);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_ReturnsSuccess_WhenUserDeleted()
+    {
+        // Arrange.
+        string userId = Guid.NewGuid().ToString();
+        ApplicationUser user = new ApplicationUser { Id = userId };
+
+        _userManager.FindByIdAsync(userId).Returns(user);
+        _userManagerWrapper.DeleteAndReturnDomainResultAsync(user).ReturnsForAnyArgs(DefaultSuccessResult);
+
+        // Act.
+        var result = await _userService.DeleteAsync(userId);
 
         // Assert.
         Assert.True(result.IsSuccess);
@@ -208,10 +312,9 @@ public class UserServiceTests
     public async Task FindByEmailAsync_ReturnsFailure_WhenUserNotFound()
     {
         // Arrange.
-        var email = "user@example.com";
-        ApplicationUser? nullUser = null;
+        var email = "user@testing.com";
 
-        _userManagerMock.Setup(m => m.FindByEmailAsync(email)).ReturnsAsync(nullUser);
+        _userManager.FindByEmailAsync(email).Returns(DefaultNullApplicationUser);
 
         // Act.
         var result = await _userService.FindByEmailAsync(email);
@@ -225,11 +328,10 @@ public class UserServiceTests
     public async Task FindByEmailAsync_ReturnsSuccess_WhenUserFound()
     {
         // Arrange.
-        var email = "user@example.com";
+        var email = "user@testing.com";
         var user = new ApplicationUser { Email = email, UserName = email };
 
-        _userManagerMock.Setup(m => m.FindByEmailAsync(email))
-                        .ReturnsAsync(user);
+        _userManager.FindByEmailAsync(email).Returns(user);
 
         // Act.
         var result = await _userService.FindByEmailAsync(email);
@@ -243,11 +345,9 @@ public class UserServiceTests
     public async Task FindByIdAsync_ReturnsFailure_WhenUserNotFound()
     {
         // Arrange.
-        var userId = "userId";
-        ApplicationUser? nullUser = null;
+        string userId = Guid.NewGuid().ToString();
 
-        _userManagerMock.Setup(m => m.FindByIdAsync(userId))
-                        .ReturnsAsync(nullUser);
+        _userManager.FindByIdAsync(userId).Returns(DefaultNullApplicationUser);
 
         // Act.
         var result = await _userService.FindByIdAsync(userId);
@@ -261,11 +361,10 @@ public class UserServiceTests
     public async Task FindByIdAsync_ReturnsSuccess_WhenUserFound()
     {
         // Arrange.
-        var userId = "userId";
-        var user = new ApplicationUser { Id = userId };
+        string userId = Guid.NewGuid().ToString();
+        ApplicationUser user = new ApplicationUser { Id = userId };
 
-        _userManagerMock.Setup(m => m.FindByIdAsync(userId))
-                        .ReturnsAsync(user);
+        _userManager.FindByIdAsync(userId).Returns(user);
 
         // Act.
         var result = await _userService.FindByIdAsync(userId);
@@ -275,15 +374,57 @@ public class UserServiceTests
         Assert.Equal(userId, result.Value.Id);
     }
 
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(0)]
+    public async Task GetPageAsync_ReturnsFailure_WhenInvalidPageNumber(int pageNumber)
+    {
+        // Arrange.
+        int pageSize = 10;
+
+        // Act.
+        var result = await _userService.GetPageAsync(searchEmail: null,
+                                                     searchEmailConfirmed: null,
+                                                     searchRole: null,
+                                                     sortColumn: null,
+                                                     sortOrder: null,
+                                                     pageNumber,
+                                                     pageSize);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(PaginatedList.InvalidPageNumber(pageNumber), result.Error);
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(0)]
+    public async Task GetPageAsync_ReturnsFailure_WhenInvalidPageSize(int pageSize)
+    {
+        // Arrange.
+        int pageNumber = 1;
+
+        // Act.
+        var result = await _userService.GetPageAsync(searchEmail: null,
+                                                     searchEmailConfirmed: null,
+                                                     searchRole: null,
+                                                     sortColumn: null,
+                                                     sortOrder: null,
+                                                     pageNumber,
+                                                     pageSize);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(PaginatedList.InvalidPageSize(pageSize), result.Error);
+    }
+
     [Fact]
     public async Task HasPasswordAsync_ReturnsFailure_WhenUserNotFound()
     {
         // Arrange.
-        var userId = "userId";
-        ApplicationUser? nullUser = null;
+        string userId = Guid.NewGuid().ToString();
 
-        _userManagerMock.Setup(m => m.FindByIdAsync(userId))
-                        .ReturnsAsync(nullUser);
+        _userManager.FindByIdAsync(userId).Returns(DefaultNullApplicationUser);
 
         // Act.
         var result = await _userService.HasPasswordAsync(userId);
@@ -293,45 +434,185 @@ public class UserServiceTests
         Assert.Equal(User.NotFound(userId), result.Error);
     }
 
-    [Fact]
-    public async Task HasPasswordAsync_ReturnsSuccessAndFalse_WhenUserFoundAndHasPasswordIsFalse()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task HasPasswordAsync_ReturnsSuccess_WhenUserFound(bool hasPassword)
     {
         // Arrange.
-        var userId = "userId";
-        var user = new ApplicationUser { Id = userId };
+        string userId = Guid.NewGuid().ToString();
+        ApplicationUser user = new ApplicationUser { Id = userId };
 
-        _userManagerMock.Setup(m => m.FindByIdAsync(userId))
-                        .ReturnsAsync(user);
-
-        _userManagerMock.Setup(m => m.HasPasswordAsync(user))
-                        .ReturnsAsync(false);
+        _userManager.FindByIdAsync(userId).Returns(user);
+        _userManager.HasPasswordAsync(user).Returns(hasPassword);
 
         // Act.
         var result = await _userService.HasPasswordAsync(userId);
 
         // Assert.
         Assert.True(result.IsSuccess);
-        Assert.False(result.Value);
+        Assert.Equal(hasPassword, result.Value);
     }
 
     [Fact]
-    public async Task HasPasswordAsync_ReturnsSuccessAndTrue_WhenUserFoundAndHasPasswordIsTrue()
+    public async Task IsEmailConfirmedAsync_ReturnsFailure_WhenUserNotFound()
     {
         // Arrange.
-        var userId = "userId";
-        var user = new ApplicationUser { Id = userId };
+        string userId = Guid.NewGuid().ToString();
 
-        _userManagerMock.Setup(m => m.FindByIdAsync(userId))
-                        .ReturnsAsync(user);
-
-        _userManagerMock.Setup(m => m.HasPasswordAsync(user))
-                        .ReturnsAsync(true);
+        _userManager.FindByIdAsync(userId).Returns(DefaultNullApplicationUser);
 
         // Act.
-        var result = await _userService.HasPasswordAsync(userId);
+        var result = await _userService.IsEmailConfirmedAsync(userId);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(User.NotFound(userId), result.Error);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task IsEmailConfirmedAsync_ReturnsSuccess_WhenUserFound(bool emailConfirmed)
+    {
+        // Arrange.
+        string userId = Guid.NewGuid().ToString();
+        ApplicationUser user = new ApplicationUser { Id = userId };
+
+        _userManager.FindByIdAsync(userId).Returns(user);
+        _userManager.IsEmailConfirmedAsync(user).Returns(emailConfirmed);
+
+        // Act.
+        var result = await _userService.IsEmailConfirmedAsync(userId);
 
         // Assert.
         Assert.True(result.IsSuccess);
-        Assert.True(result.Value);
+        Assert.Equal(emailConfirmed, result.Value);
+    }
+
+    [Fact]
+    public async Task UpdateRoleAsync_ReturnsFailure_WhenUserNotFound()
+    {
+        // Arrange.
+        string userId = Guid.NewGuid().ToString();
+        ApplicationUser user = new ApplicationUser { Id = userId };
+        string updatedRole = "updatedRole";
+
+        _userManager.FindByIdAsync(userId).Returns(DefaultNullApplicationUser);
+
+        // Act.
+        var result = await _userService.UpdateRoleAsync(userId, updatedRole);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(User.NotFound(userId), result.Error);
+    }
+
+    [Fact]
+    public async Task UpdateRoleAsync_ReturnsFailure_WhenNotRemovedFromRole()
+    {
+        // Arrange.
+        string userId = Guid.NewGuid().ToString();
+        ApplicationUser user = new ApplicationUser { Id = userId };
+        string currentRole = "currentRole";
+        string[] currentRoles = [currentRole];
+        string updatedRole = "updatedRole";
+
+        _userManager.FindByIdAsync(userId).Returns(user);
+        _userManager.GetRolesAsync(user).Returns(currentRoles);
+        _userManagerWrapper.RemoveFromRoleAndReturnDomainResultAsync(user, currentRole).Returns(DefaultIdentityFailureResult);
+
+        // Act.
+        var result = await _userService.UpdateRoleAsync(userId, updatedRole);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(DefaultIdentityFailureResult.Error, result.Error);
+    }
+
+    [Fact]
+    public async Task UpdateRoleAsync_ReturnsFailure_WhenNotRemovedFromRoles()
+    {
+        // Arrange.
+        string userId = Guid.NewGuid().ToString();
+        ApplicationUser user = new ApplicationUser { Id = userId };
+        string[] currentRoles = ["currentRole1", "currentRole2", "currentRole3"];
+        string updatedRole = "updatedRole";
+
+        _userManager.FindByIdAsync(userId).Returns(user);
+        _userManager.GetRolesAsync(user).Returns(currentRoles);
+        _userManagerWrapper.RemoveFromRolesAndReturnDomainResultAsync(user, currentRoles).Returns(DefaultIdentityFailureResult);
+
+        // Act.
+        var result = await _userService.UpdateRoleAsync(userId, updatedRole);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(DefaultIdentityFailureResult.Error, result.Error);
+    }
+
+    [Fact]
+    public async Task UpdateRoleAsync_ReturnsFailure_WhenRoleIsInvalid()
+    {
+        // Arrange.
+        string userId = Guid.NewGuid().ToString();
+        ApplicationUser user = new ApplicationUser { Id = userId };
+        string currentRole = "currentRole";
+        string updatedRole = "updatedRole";
+
+        _userManager.FindByIdAsync(userId).Returns(user);
+        _userManager.GetRolesAsync(user).Returns([currentRole]);
+        _userManagerWrapper.RemoveFromRoleAndReturnDomainResultAsync(user, currentRole).Returns(DefaultSuccessResult);
+
+        // Act.
+        var result = await _userService.UpdateRoleAsync(userId, updatedRole);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(Role.InvalidRole(updatedRole), result.Error);
+    }
+
+    [Fact]
+    public async Task UpdateRoleAsync_ReturnsSuccess_WhenCurrentRoleIsEqualToUpdatedRole()
+    {
+        // Arrange.
+        string userId = Guid.NewGuid().ToString();
+        ApplicationUser user = new ApplicationUser { Id = userId };
+        string currentRole = Roles.User;
+        string updatedRole = Roles.User;
+
+        _userManager.FindByIdAsync(userId).Returns(user);
+        _userManager.GetRolesAsync(user).Returns([currentRole]);
+        
+        // Act.
+        var result = await _userService.UpdateRoleAsync(userId, updatedRole);
+
+        // Assert.
+        Assert.True(result.IsSuccess);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("Owner")]
+    [InlineData("Admin")]
+    [InlineData("User")]
+    public async Task UpdateRoleAsync_ReturnsSuccess_WhenRoleUpdated(string updatedRole)
+    {
+        // Arrange.
+        string userId = Guid.NewGuid().ToString();
+        ApplicationUser user = new ApplicationUser { Id = userId };
+        string[] currentRoles = ["lots", "of", "roles"];
+
+        _userManager.FindByIdAsync(userId).Returns(user);
+        _userManager.GetRolesAsync(user).Returns(x => currentRoles, x => []);
+        _userManagerWrapper.RemoveFromRolesAndReturnDomainResultAsync(user, currentRoles).Returns(DefaultSuccessResult);
+        _userManagerWrapper.RemoveFromRoleAndReturnDomainResultAsync(user, null).Returns(DefaultSuccessResult);
+        _userManagerWrapper.AddToRoleAndReturnDomainResultAsync(user, updatedRole).Returns(DefaultSuccessResult);
+
+        // Act.
+        var result = await _userService.UpdateRoleAsync(userId, updatedRole);
+
+        // Assert.
+        Assert.True(result.IsSuccess);
     }
 }
