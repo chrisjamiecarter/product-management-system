@@ -14,7 +14,7 @@ internal static class IdentityResultExtensions
             return Result.Success();
         }
 
-        var message = string.Join(Environment.NewLine, identityResult.Errors.Select(e => e.Description));
+        var message = string.Join(' ', identityResult.Errors.Select(e => e.Description));
         return Result.Failure(new Error(Code, message));
     }
 }
