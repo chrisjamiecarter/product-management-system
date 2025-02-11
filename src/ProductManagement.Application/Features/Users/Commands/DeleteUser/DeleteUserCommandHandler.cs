@@ -56,6 +56,6 @@ internal class DeleteUserCommandHandler : ICommandHandler<DeleteUserCommand>
     {
         return _currentUserService.UserId != userId
             ? Result.Success()
-            : Result.Failure(User.CannotUpdateSelf(userId));
+            : Result.Failure(User.CannotDeleteSelf(userId));
     }
 }
