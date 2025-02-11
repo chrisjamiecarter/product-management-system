@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using NSubstitute;
-using NSubstitute.Extensions;
 using ProductManagement.Application.Constants;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
@@ -9,7 +8,6 @@ using ProductManagement.Infrastructure.Extensions;
 using ProductManagement.Infrastructure.Interfaces;
 using ProductManagement.Infrastructure.Models;
 using ProductManagement.Infrastructure.Services;
-using ProductManagement.Infrastructure.Wrappers;
 using static ProductManagement.Application.Errors.ApplicationErrors;
 
 namespace ProductManagement.Infrastructure.Tests.Services;
@@ -583,7 +581,7 @@ public class UserServiceTests
 
         _userManager.FindByIdAsync(userId).Returns(user);
         _userManager.GetRolesAsync(user).Returns([currentRole]);
-        
+
         // Act.
         var result = await _userService.UpdateRoleAsync(userId, updatedRole);
 
