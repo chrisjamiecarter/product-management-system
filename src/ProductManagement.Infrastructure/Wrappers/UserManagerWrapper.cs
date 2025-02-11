@@ -1,11 +1,20 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using ProductManagement.Domain.Shared;
+using ProductManagement.Infrastructure.Extensions;
+using ProductManagement.Infrastructure.Interfaces;
 using ProductManagement.Infrastructure.Models;
 
-namespace ProductManagement.Infrastructure.Extensions;
+namespace ProductManagement.Infrastructure.Wrappers;
 
-internal static class UserManagerExtensions
+internal class UserManagerWrapper : IUserManagerWrapper
 {
+    private readonly UserManager<ApplicationUser> _userManager;
+
+    public UserManagerWrapper(UserManager<ApplicationUser> userManager)
+    {
+        _userManager = userManager;
+    }
+
     /// <summary>
     /// Adds the <paramref name="password"/> to the specified <paramref name="user"/> only if the user
     /// does not already have a password.
@@ -16,9 +25,9 @@ internal static class UserManagerExtensions
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="Result"/>
     /// of the operation, which has been mapped from the <see cref="IdentityResult"/>.
     /// </returns>
-    public static async Task<Result> AddPasswordAndReturnDomainResultAsync(this UserManager<ApplicationUser> userManager, ApplicationUser user, string password)
+    public async Task<Result> AddPasswordAndReturnDomainResultAsync(ApplicationUser user, string password)
     {
-        var result = await userManager.AddPasswordAsync(user, password);
+        var result = await _userManager.AddPasswordAsync(user, password);
         return result.ToDomainResult();
     }
 
@@ -34,14 +43,14 @@ internal static class UserManagerExtensions
     /// <remarks>
     /// If the named role is null or white space, then a Success <see cref="Result"/> is returned straight away.
     /// </remarks>
-    public static async Task<Result> AddToRoleAndReturnDomainResultAsync(this UserManager<ApplicationUser> userManager, ApplicationUser user, string? role)
+    public async Task<Result> AddToRoleAndReturnDomainResultAsync(ApplicationUser user, string? role)
     {
         if (string.IsNullOrWhiteSpace(role))
         {
             return Result.Success();
         }
 
-        var result = await userManager.AddToRoleAsync(user, role);
+        var result = await _userManager.AddToRoleAsync(user, role);
         return result.ToDomainResult();
     }
 
@@ -55,9 +64,9 @@ internal static class UserManagerExtensions
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="Result"/>
     /// of the operation, which has been mapped from the <see cref="IdentityResult"/>.
     /// </returns>
-    public static async Task<Result> ChangeEmailAndReturnDomainResultAsync(this UserManager<ApplicationUser> userManager, ApplicationUser user, string newEmail, string token)
+    public async Task<Result> ChangeEmailAndReturnDomainResultAsync(ApplicationUser user, string newEmail, string token)
     {
-        var result = await userManager.ChangeEmailAsync(user, newEmail, token);
+        var result = await _userManager.ChangeEmailAsync(user, newEmail, token);
         return result.ToDomainResult();
     }
 
@@ -72,9 +81,9 @@ internal static class UserManagerExtensions
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="Result"/>
     /// of the operation, which has been mapped from the <see cref="IdentityResult"/>.
     /// </returns>
-    public static async Task<Result> ChangePasswordAndReturnDomainResultAsync(this UserManager<ApplicationUser> userManager, ApplicationUser user, string currentPassword, string newPassword)
+    public async Task<Result> ChangePasswordAndReturnDomainResultAsync(ApplicationUser user, string currentPassword, string newPassword)
     {
-        var result = await userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
         return result.ToDomainResult();
     }
 
@@ -87,9 +96,9 @@ internal static class UserManagerExtensions
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="Result"/>
     /// of the operation, which has been mapped from the <see cref="IdentityResult"/>.
     /// </returns>
-    public static async Task<Result> ConfirmEmailAndReturnDomainResultAsync(this UserManager<ApplicationUser> userManager, ApplicationUser user, string token)
+    public async Task<Result> ConfirmEmailAndReturnDomainResultAsync(ApplicationUser user, string token)
     {
-        var result = await userManager.ConfirmEmailAsync(user, token);
+        var result = await _userManager.ConfirmEmailAsync(user, token);
         return result.ToDomainResult();
     }
 
@@ -102,9 +111,9 @@ internal static class UserManagerExtensions
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="Result"/>
     /// of the operation, which has been mapped from the <see cref="IdentityResult"/>.
     /// </returns>
-    public static async Task<Result> CreateAndReturnDomainResultAsync(this UserManager<ApplicationUser> userManager, ApplicationUser user)
+    public async Task<Result> CreateAndReturnDomainResultAsync(ApplicationUser user)
     {
-        var result = await userManager.CreateAsync(user);
+        var result = await _userManager.CreateAsync(user);
         return result.ToDomainResult();
     }
 
@@ -118,9 +127,9 @@ internal static class UserManagerExtensions
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="Result"/>
     /// of the operation, which has been mapped from the <see cref="IdentityResult"/>.
     /// </returns>
-    public static async Task<Result> CreateAndReturnDomainResultAsync(this UserManager<ApplicationUser> userManager, ApplicationUser user, string password)
+    public async Task<Result> CreateAndReturnDomainResultAsync(ApplicationUser user, string password)
     {
-        var result = await userManager.CreateAsync(user, password);
+        var result = await _userManager.CreateAsync(user, password);
         return result.ToDomainResult();
     }
 
@@ -132,9 +141,9 @@ internal static class UserManagerExtensions
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="Result"/>
     /// of the operation, which has been mapped from the <see cref="IdentityResult"/>.
     /// </returns>
-    public static async Task<Result> DeleteAndReturnDomainResultAsync(this UserManager<ApplicationUser> userManager, ApplicationUser user)
+    public async Task<Result> DeleteAndReturnDomainResultAsync(ApplicationUser user)
     {
-        var result = await userManager.DeleteAsync(user);
+        var result = await _userManager.DeleteAsync(user);
         return result.ToDomainResult();
     }
 
@@ -151,14 +160,14 @@ internal static class UserManagerExtensions
     /// <remarks>
     /// If the named role is null or white space, then a Success <see cref="Result"/> is returned straight away.
     /// </remarks>
-    public static async Task<Result> RemoveFromRoleAndReturnDomainResultAsync(this UserManager<ApplicationUser> userManager, ApplicationUser user, string? role)
+    public async Task<Result> RemoveFromRoleAndReturnDomainResultAsync(ApplicationUser user, string? role)
     {
         if (string.IsNullOrWhiteSpace(role))
         {
             return Result.Success();
         }
 
-        var result = await userManager.RemoveFromRoleAsync(user, role);
+        var result = await _userManager.RemoveFromRoleAsync(user, role);
         return result.ToDomainResult();
     }
 
@@ -171,9 +180,9 @@ internal static class UserManagerExtensions
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="Result"/>
     /// of the operation, which has been mapped from the <see cref="IdentityResult"/>.
     /// </returns>
-    public static async Task<Result> RemoveFromRolesAndReturnDomainResultAsync(this UserManager<ApplicationUser> userManager, ApplicationUser user, IEnumerable<string> roles)
+    public async Task<Result> RemoveFromRolesAndReturnDomainResultAsync(ApplicationUser user, IEnumerable<string> roles)
     {
-        var result = await userManager.RemoveFromRolesAsync(user, roles);
+        var result = await _userManager.RemoveFromRolesAsync(user, roles);
         return result.ToDomainResult();
     }
 
@@ -188,9 +197,9 @@ internal static class UserManagerExtensions
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="Result"/>
     /// of the operation, which has been mapped from the <see cref="IdentityResult"/>.
     /// </returns>
-    public static async Task<Result> ResetPasswordAndReturnDomainResultAsync(this UserManager<ApplicationUser> userManager, ApplicationUser user, string token, string newPassword)
+    public async Task<Result> ResetPasswordAndReturnDomainResultAsync(ApplicationUser user, string token, string newPassword)
     {
-        var result = await userManager.ResetPasswordAsync(user, token, newPassword);
+        var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
         return result.ToDomainResult();
     }
 
@@ -203,9 +212,10 @@ internal static class UserManagerExtensions
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="Result"/>
     /// of the operation, which has been mapped from the <see cref="IdentityResult"/>.
     /// </returns>
-    public static async Task<Result> SetUserNameAndReturnDomainResultAsync(this UserManager<ApplicationUser> userManager, ApplicationUser user, string? userName)
+    public async Task<Result> SetUserNameAndReturnDomainResultAsync(ApplicationUser user, string? userName)
     {
-        var result = await userManager.SetUserNameAsync(user, userName);
+        var result = await _userManager.SetUserNameAsync(user, userName);
         return result.ToDomainResult();
     }
+
 }

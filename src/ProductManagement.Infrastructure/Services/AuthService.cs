@@ -6,6 +6,7 @@ using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Shared;
 using ProductManagement.Infrastructure.Extensions;
+using ProductManagement.Infrastructure.Interfaces;
 using ProductManagement.Infrastructure.Models;
 using static ProductManagement.Application.Errors.ApplicationErrors;
 
@@ -17,12 +18,14 @@ internal class AuthService : IAuthService
     private readonly IdentityOptions _options;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserManagerWrapper _userManagerWrapper;
 
-    public AuthService(IOptions<IdentityOptions> options, SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+    public AuthService(IOptions<IdentityOptions> options, SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, IUserManagerWrapper userManagerWrapper)
     {
         _options = options.Value;
         _signInManager = signInManager;
         _userManager = userManager;
+        _userManagerWrapper = userManagerWrapper;
     }
 
     public async Task<Result> ConfirmEmailAsync(string userId, AuthToken token, CancellationToken cancellationToken = default)
@@ -33,7 +36,7 @@ internal class AuthService : IAuthService
             return Result.Failure(User.NotFound(userId));
         }
 
-        var result = await _userManager.ConfirmEmailAndReturnDomainResultAsync(user, token.Value);
+        var result = await _userManagerWrapper.ConfirmEmailAndReturnDomainResultAsync(user, token.Value);
         if (result.IsFailure)
         {
             return Result.Failure(result.Error);
@@ -140,7 +143,7 @@ internal class AuthService : IAuthService
             UserName = email,
         };
 
-        var result = await _userManager.CreateAndReturnDomainResultAsync(user, password);
+        var result = await _userManagerWrapper.CreateAndReturnDomainResultAsync(user, password);
         if (result.IsFailure)
         {
             return Result.Failure(result.Error);
@@ -157,7 +160,7 @@ internal class AuthService : IAuthService
             return Result.Failure(User.EmailNotFound(email));
         }
 
-        var result = await _userManager.ResetPasswordAndReturnDomainResultAsync(user, token.Value, password);
+        var result = await _userManagerWrapper.ResetPasswordAndReturnDomainResultAsync(user, token.Value, password);
         if (result.IsFailure)
         {
             return Result.Failure(result.Error);

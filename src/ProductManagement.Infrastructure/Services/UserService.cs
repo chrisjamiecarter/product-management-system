@@ -4,7 +4,7 @@ using ProductManagement.Application.Constants;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Shared;
-using ProductManagement.Infrastructure.Extensions;
+using ProductManagement.Infrastructure.Interfaces;
 using ProductManagement.Infrastructure.Models;
 using static ProductManagement.Application.Errors.ApplicationErrors;
 
@@ -14,11 +14,13 @@ internal class UserService : IUserService
 {
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserManagerWrapper _userManagerWrapper;
 
-    public UserService(RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager)
+    public UserService(RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager, IUserManagerWrapper userManagerWrapper)
     {
         _roleManager = roleManager;
         _userManager = userManager;
+        _userManagerWrapper = userManagerWrapper;
     }
 
     public async Task<Result> AddPasswordAsync(string userId, string password, CancellationToken cancellationToken = default)
@@ -29,7 +31,7 @@ internal class UserService : IUserService
             return Result.Failure(User.NotFound(userId));
         }
 
-        var result = await _userManager.AddPasswordAndReturnDomainResultAsync(user, password);
+        var result = await _userManagerWrapper.AddPasswordAndReturnDomainResultAsync(user, password);
         if (result.IsFailure)
         {
             return Result.Failure(result.Error);
@@ -46,13 +48,13 @@ internal class UserService : IUserService
             return Result.Failure(User.NotFound(userId));
         }
 
-        var emailResult = await _userManager.ChangeEmailAndReturnDomainResultAsync(user, updatedEmail, token.Value);
+        var emailResult = await _userManagerWrapper.ChangeEmailAndReturnDomainResultAsync(user, updatedEmail, token.Value);
         if (emailResult.IsFailure)
         {
             return Result.Failure(emailResult.Error);
         }
 
-        var usernameResult = await _userManager.SetUserNameAndReturnDomainResultAsync(user, updatedEmail);
+        var usernameResult = await _userManagerWrapper.SetUserNameAndReturnDomainResultAsync(user, updatedEmail);
         if (usernameResult.IsFailure)
         {
             return Result.Failure(usernameResult.Error);
@@ -69,7 +71,7 @@ internal class UserService : IUserService
             return Result.Failure(User.NotFound(userId));
         }
 
-        var result = await _userManager.ChangePasswordAndReturnDomainResultAsync(user, currentPassword, updatedPassword);
+        var result = await _userManagerWrapper.ChangePasswordAndReturnDomainResultAsync(user, currentPassword, updatedPassword);
         if (result.IsFailure)
         {
             return Result.Failure(result.Error);
@@ -86,7 +88,7 @@ internal class UserService : IUserService
             UserName = email,
         };
 
-        var result = await _userManager.CreateAndReturnDomainResultAsync(user);
+        var result = await _userManagerWrapper.CreateAndReturnDomainResultAsync(user);
         if (result.IsFailure)
         {
             return Result.Failure(result.Error);
@@ -103,7 +105,7 @@ internal class UserService : IUserService
             return Result.Failure(User.NotFound(userId));
         }
 
-        var result = await _userManager.DeleteAndReturnDomainResultAsync(user);
+        var result = await _userManagerWrapper.DeleteAndReturnDomainResultAsync(user);
         if (result.IsFailure)
         {
             return Result.Failure(result.Error);
@@ -237,7 +239,7 @@ internal class UserService : IUserService
         // Force removal if user has more than one role.
         if (currentRoles.Count > 1)
         {
-            var forceRemoveRolesResult = await _userManager.RemoveFromRolesAndReturnDomainResultAsync(user, currentRoles);
+            var forceRemoveRolesResult = await _userManagerWrapper.RemoveFromRolesAndReturnDomainResultAsync(user, currentRoles);
             if (forceRemoveRolesResult.IsFailure)
             {
                 return Result.Failure(forceRemoveRolesResult.Error);
@@ -257,20 +259,20 @@ internal class UserService : IUserService
         }
 
         // Otherwise remove.
-        var removeRoleResult = await _userManager.RemoveFromRoleAndReturnDomainResultAsync(user, currentRole);
+        var removeRoleResult = await _userManagerWrapper.RemoveFromRoleAndReturnDomainResultAsync(user, currentRole);
         if (removeRoleResult.IsFailure)
         {
             return Result.Failure(removeRoleResult.Error);
         }
 
         // Then check is a valid role.
-        if (!string.IsNullOrWhiteSpace(role) && Roles.AllRoles.Contains(role))
+        if (!string.IsNullOrWhiteSpace(role) && !Roles.AllRoles.Contains(role))
         {
             return Result.Failure(Role.InvalidRole(role));
         }
 
         // Then add.
-        var addRoleResult = await _userManager.AddToRoleAndReturnDomainResultAsync(user, role);
+        var addRoleResult = await _userManagerWrapper.AddToRoleAndReturnDomainResultAsync(user, role);
         if (addRoleResult.IsFailure)
         {
             return Result.Failure(addRoleResult.Error);

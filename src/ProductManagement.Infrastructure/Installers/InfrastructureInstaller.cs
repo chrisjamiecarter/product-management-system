@@ -7,10 +7,12 @@ using ProductManagement.Infrastructure.Constants;
 using ProductManagement.Infrastructure.Contexts;
 using ProductManagement.Infrastructure.EmailRender.Interfaces;
 using ProductManagement.Infrastructure.EmailRender.Services;
+using ProductManagement.Infrastructure.Interfaces;
 using ProductManagement.Infrastructure.Models;
 using ProductManagement.Infrastructure.Options;
 using ProductManagement.Infrastructure.Repositories;
 using ProductManagement.Infrastructure.Services;
+using ProductManagement.Infrastructure.Wrappers;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.MSSqlServer;
@@ -75,6 +77,7 @@ public static class InfrastructureInstaller
         services.AddScoped<IEmailService, EmailService>();
 
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserManagerWrapper, UserManagerWrapper>();
         services.AddScoped<IUserService, UserService>();
 
         services.AddMediatR(config => config.RegisterServicesFromAssembly(AssemblyReference.Assembly));
