@@ -250,7 +250,7 @@ internal class UserService : IUserService
         }
 
         // Now there should only be 0 or 1 role.
-        var currentRole = currentRoles.SingleOrDefault();
+        var currentRole = currentRoles.SingleOrDefault() ?? string.Empty;
 
         // Short-circuit if the user already has the exact role.
         if (currentRole == role)
