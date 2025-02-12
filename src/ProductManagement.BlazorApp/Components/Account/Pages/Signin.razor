@@ -52,8 +52,8 @@
 </section>
 
 @code {
-    private StatusModel status = StatusModel.None;
     private bool showValidation = false;
+    private StatusModel status = StatusModel.None;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -85,8 +85,8 @@
 
     public async Task SignInUserAsync()
     {
-        status = new StatusModel(null, null);
         showValidation = false;
+        status = new StatusModel(null, null);
 
         var command = new SignInCommand(Input.Email, Input.Password, Input.RememberMe);
         var result = await Sender.SendAsync(command);

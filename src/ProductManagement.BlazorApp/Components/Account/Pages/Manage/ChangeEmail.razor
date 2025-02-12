@@ -1,33 +1,31 @@
 ﻿@inject ISenderService Sender
 
-<h3 class="mb-3 fw-normal">Change email</h3>
-<div class="row mb-4">
-    <div class="col-xl-6">
+<section class="row mb-4">
+    <div class="col-md-8 col-lg-6 col-xl-5">
+        <h3 class="mb-3 fw-normal">Change email</h3>
         @if (Input is not null)
         {
             <StatusMessage Status="@status" />
-            <EditForm Model="Input" FormName="change-email" OnValidSubmit="EditEmailAsync" method="post" data-loading-button>
+            <EditForm Model="Input" FormName="change-email" OnValidSubmit="EditEmailAsync" OnInvalidSubmit="HandleInvalidSubmit" method="post" data-loading-button>
                 <DataAnnotationsValidator />
                 <div class="form-floating mb-3">
                     <input type="text" value="@User.Email" id="email" class="form-control" placeholder="Enter your email" disabled readonly />
                     <label for="email" class="form-label">Email</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.UpdatedEmail" id="Input.UpdatedEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Enter a new email" />
+                    <InputText @bind-Value="Input.UpdatedEmail" id="Input.UpdatedEmail" class=@($"form-control {ValidationHelper.GetValidationCssClass(Input, nameof(Input.UpdatedEmail), showValidation)}") autocomplete="email" aria-required="true" placeholder="Enter a new email" />
                     <label for="Input.UpdatedEmail" class="form-label">New email</label>
-                    <ValidationMessage For="() => Input.UpdatedEmail" class="text-danger" />
+                    <ValidationMessage For="() => Input.UpdatedEmail" class="invalid-feedback" />
                 </div>
                 <button class="btn btn-dark w-100" type="submit">Update email</button>
             </EditForm>
         }
     </div>
-</div>
+</section>
 
 @code {
+    private bool showValidation = false;
     private StatusModel status = StatusModel.None;
-
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
 
     [Parameter, EditorRequired]
     public ApplicationUserDto User { get; set; } = default!;
@@ -45,6 +43,9 @@
 
     private async Task EditEmailAsync()
     {
+        showValidation = false;
+        status = new StatusModel(null, null);
+
         if (Input.UpdatedEmail is null || Input.UpdatedEmail == User.Email)
         {
             status = new StatusModel("Your email is unchanged.", MessageLevel.Warning);
@@ -53,15 +54,17 @@
 
         var command = new RequestEmailChangeConfirmationCommand(User.Id, Input.UpdatedEmail);
         var result = await Sender.SendAsync(command);
-        if (result.IsSuccess)
-        {
-            status = new StatusModel("Confirmation link to change email sent. Please check your email.", MessageLevel.Success);
-            return;
-        }
-        else
+        if (result.IsFailure)
         {
             status = new StatusModel(result.Error.Message, MessageLevel.Error);
             return;
         }
+        
+        status = new StatusModel("Confirmation link to change email sent. Please check your email.", MessageLevel.Success);
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        showValidation = true;
     }
 }

@@ -19,17 +19,17 @@
                     <div class="form-floating mb-3">
                         <InputText @bind-Value="Input.Email" id="Input.Email" class=@($"form-control form-control-lg {ValidationHelper.GetValidationCssClass(Input, nameof(Input.Email), showValidation)}") autocomplete="email" aria-required="true" placeholder="name@example.com" />
                         <label for="Input.Email">Email</label>
-                        <ValidationMessage For="() => Input.Email" class="text-danger" />
+                        <ValidationMessage For="() => Input.Email" class="invalid-feedback" />
                     </div>
                     <div class="form-floating mb-3">
                         <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class=@($"form-control form-control-lg {ValidationHelper.GetValidationCssClass(Input, nameof(Input.Password), showValidation)}") autocomplete="new-password" aria-required="true" placeholder="password" />
                         <label for="Input.Password">Password</label>
-                        <ValidationMessage For="() => Input.Password" class="text-danger" />
+                        <ValidationMessage For="() => Input.Password" class="invalid-feedback" />
                     </div>
                     <div class="form-floating mb-3">
                         <InputText type="password" @bind-Value="Input.ConfirmPassword" id="Input.ConfirmPassword" class=@($"form-control form-control-lg {ValidationHelper.GetValidationCssClass(Input, nameof(Input.ConfirmPassword), showValidation)}") autocomplete="new-password" aria-required="true" placeholder="password" />
                         <label for="Input.ConfirmPassword">Confirm Password</label>
-                        <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
+                        <ValidationMessage For="() => Input.ConfirmPassword" class="invalid-feedback" />
                     </div>
                     <div class="text-center text-lg-start">
                         <button type="submit" class="btn btn-dark btn-lg w-100 px-3">Register</button>
@@ -44,8 +44,8 @@
 </section>
 
 @code {
-    private StatusModel status = StatusModel.None;
     private bool showValidation = false;
+    private StatusModel status = StatusModel.None;
 
     [SupplyParameterFromForm]
     private RegisterUserInputModel Input { get; set; } = new();
@@ -55,9 +55,9 @@
 
     public async Task RegisterUser()
     {
-        status = StatusModel.None;
         showValidation = true;
-        
+        status = new StatusModel(null, null);
+
         var command = new RegisterCommand(Input.Email, Input.Password);
         var result = await Sender.SendAsync(command);
         if (result.IsFailure)

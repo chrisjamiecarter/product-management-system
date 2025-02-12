@@ -28,16 +28,16 @@
 </section>
 
 @code {
-    private StatusModel status = StatusModel.None;
     private bool showValidation = false;
+    private StatusModel status = StatusModel.None;
 
     [SupplyParameterFromForm]
     private ResendEmailConfirmationInputModel Input { get; set; } = new();
 
     private async Task ResendEmailConfirmationAsync()
     {
-        status = StatusModel.None;
         showValidation = false;
+        status = new StatusModel(null, null);
 
         if (Input.Email is null)
         {
@@ -47,16 +47,13 @@
 
         var command = new RequestEmailConfirmationCommand(Input.Email);
         var result = await Sender.SendAsync(command);
-        if (result.IsSuccess)
-        {
-            status = new StatusModel("Verification email sent. Please check your email.", MessageLevel.Success);
-            return;
-        }
-        else
+        if (result.IsFailure)
         {
             status = new StatusModel(result.Error.Message, MessageLevel.Error);
             return;
         }
+     
+        status = new StatusModel("Verification email sent. Please check your email.", MessageLevel.Success);
     }
 
     private void ShowValidation()
