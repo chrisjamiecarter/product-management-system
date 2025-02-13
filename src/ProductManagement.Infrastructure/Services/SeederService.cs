@@ -11,6 +11,9 @@ using ProductManagement.Infrastructure.Options;
 
 namespace ProductManagement.Infrastructure.Services;
 
+/// <summary>
+/// Provides the service for seeding the database.
+/// </summary>
 internal class SeederService
 {
     private static readonly int Seed = 19890309;

@@ -3,6 +3,9 @@ using ProductManagement.Application.Constants;
 
 namespace ProductManagement.BlazorApp.Components.Account.Models;
 
+/// <summary>
+/// Represents the input model for changing a password.
+/// </summary>
 internal sealed class ChangePasswordInputModel
 {
     [Required]

@@ -1,5 +1,8 @@
 ﻿namespace ProductManagement.Infrastructure.Options;
 
+/// <summary>
+/// Defines the application email requirements.
+/// </summary>
 internal class EmailOptions
 {
     public string SmtpHost { get; set; } = string.Empty;

@@ -2,6 +2,9 @@
 
 namespace ProductManagement.Application.Interfaces.Infrastructure;
 
+/// <summary>
+/// Defines the service for email operations.
+/// </summary>
 public interface IEmailService
 {
     Task<Result> SendChangeEmailConfirmationAsync(string toEmailAddress, string changeEmailConfirmationLink, CancellationToken cancellationToken = default);

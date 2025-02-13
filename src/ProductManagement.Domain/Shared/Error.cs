@@ -1,5 +1,8 @@
 ﻿namespace ProductManagement.Domain.Shared;
 
+/// <summary>
+/// Represents an error with a code and message.
+/// </summary>
 public class Error : IEquatable<Error>
 {
     public static readonly Error None = new(string.Empty, string.Empty);

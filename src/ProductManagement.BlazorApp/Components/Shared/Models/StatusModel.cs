@@ -2,7 +2,10 @@
 
 namespace ProductManagement.BlazorApp.Components.Shared.Models;
 
-public class StatusModel
+/// <summary>
+/// Represents a status message with an optional message level.
+/// </summary>
+public sealed class StatusModel
 {
     public static readonly StatusModel None = new(null, null);
 

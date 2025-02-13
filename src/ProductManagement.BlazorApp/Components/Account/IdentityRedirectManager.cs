@@ -3,6 +3,11 @@ using Microsoft.AspNetCore.Components;
 using ProductManagement.BlazorApp.Components.Shared.Models;
 
 namespace ProductManagement.BlazorApp.Components.Account;
+
+/// <summary>
+/// Manages redirection logic for identity-related actions, including navigation and status message handling.
+/// </summary>
+/// <param name="navigationManager">The navigation manager object.</param>
 internal sealed class IdentityRedirectManager(NavigationManager navigationManager)
 {
     public const string StatusMessageCookieName = "Identity.StatusMessage";

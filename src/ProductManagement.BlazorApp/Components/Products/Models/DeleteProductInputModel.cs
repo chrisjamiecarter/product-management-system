@@ -3,6 +3,9 @@ using ProductManagement.Application.Features.Products.Queries.GetProductById;
 
 namespace ProductManagement.BlazorApp.Components.Products.Models;
 
+/// <summary>
+/// Represents the input model for deleting an existing product.
+/// </summary>
 public class DeleteProductinputModel
 {
     public DeleteProductinputModel(GetProductByIdQueryResponse product)

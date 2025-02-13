@@ -4,6 +4,9 @@ using ProductManagement.Domain.Shared;
 
 namespace ProductManagement.Domain.ValueObjects;
 
+/// <summary>
+/// Represents the product name value object.
+/// </summary>
 public sealed class ProductName : ValueObject
 {
     private ProductName(string value)

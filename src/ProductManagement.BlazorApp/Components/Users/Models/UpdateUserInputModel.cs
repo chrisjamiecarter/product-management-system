@@ -3,6 +3,9 @@ using ProductManagement.Application.Features.Users.Queries.GetUserById;
 
 namespace ProductManagement.BlazorApp.Components.Users.Models;
 
+/// <summary>
+/// Represents the input model for updating an existing user.
+/// </summary>
 public class UpdateUserInputModel
 {
     public UpdateUserInputModel(GetUserByIdQueryResponse user)

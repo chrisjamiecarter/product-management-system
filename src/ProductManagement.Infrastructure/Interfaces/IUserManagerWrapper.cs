@@ -3,6 +3,9 @@ using ProductManagement.Infrastructure.Models;
 
 namespace ProductManagement.Infrastructure.Interfaces;
 
+/// <summary>
+/// Defines the wrapper for the UserManager class. Handles returning a domain <see cref="Result"/> instead of an IdentityResult.
+/// </summary>
 internal interface IUserManagerWrapper
 {
     Task<Result> AddPasswordAndReturnDomainResultAsync(ApplicationUser user, string password);

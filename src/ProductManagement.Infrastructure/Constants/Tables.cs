@@ -1,5 +1,8 @@
 ﻿namespace ProductManagement.Infrastructure.Constants;
 
+/// <summary>
+/// Defines the table names used by the database.
+/// </summary>
 internal static class Tables
 {
     public static readonly string ApplicationUser = "Users";

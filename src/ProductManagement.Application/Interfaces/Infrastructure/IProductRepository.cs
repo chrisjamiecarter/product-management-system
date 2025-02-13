@@ -4,6 +4,9 @@ using ProductManagement.Domain.Shared;
 
 namespace ProductManagement.Application.Interfaces.Infrastructure;
 
+/// <summary>
+/// Defines the repository for product operations.
+/// </summary>
 public interface IProductRepository
 {
     Task<Result> CreateAsync(Product product, CancellationToken cancellationToken = default);

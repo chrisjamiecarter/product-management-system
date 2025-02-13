@@ -1,5 +1,8 @@
 ﻿namespace ProductManagement.Domain.Shared;
 
+/// <summary>
+/// Represents the outcome of an operation, including success or failure and associated error.
+/// </summary>
 public class Result
 {
     protected internal Result(bool isSuccess, Error error)

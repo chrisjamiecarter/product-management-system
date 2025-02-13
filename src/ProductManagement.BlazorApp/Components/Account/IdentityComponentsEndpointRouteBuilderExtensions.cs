@@ -3,9 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using ProductManagement.Application.Interfaces.Infrastructure;
 
 namespace Microsoft.AspNetCore.Routing;
+
+/// <summary>
+/// Extensions for endpoints required by the Identity Razor components.
+/// </summary>
 internal static class IdentityComponentsEndpointRouteBuilderExtensions
 {
-    // These endpoints are required by the Identity Razor components defined in the /Components/Account/Pages directory of this project.
     public static IEndpointConventionBuilder MapAdditionalIdentityEndpoints(this IEndpointRouteBuilder endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);

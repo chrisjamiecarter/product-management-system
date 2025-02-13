@@ -3,6 +3,9 @@ using ProductManagement.Domain.Shared;
 
 namespace ProductManagement.Infrastructure.Extensions;
 
+/// <summary>
+/// Provides extension methods for converting an IdentityResult to a domain <see cref="Result"/>.
+/// </summary>
 internal static class IdentityResultExtensions
 {
     private static readonly string Code = "Identity.Error";

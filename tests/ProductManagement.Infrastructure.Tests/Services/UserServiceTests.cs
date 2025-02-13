@@ -12,6 +12,9 @@ using static ProductManagement.Application.Errors.ApplicationErrors;
 
 namespace ProductManagement.Infrastructure.Tests.Services;
 
+/// <summary>
+/// Unit tests for the <see cref="UserService"/> class, ensuring correct behavior.
+/// </summary>
 public class UserServiceTests
 {
     private static readonly ApplicationUser? DefaultNullApplicationUser = null;

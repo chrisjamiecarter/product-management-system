@@ -3,6 +3,9 @@ using ProductManagement.Application.Constants;
 
 namespace ProductManagement.BlazorApp.Components.Account.Models;
 
+/// <summary>
+/// Represents the input model for resetting a password.
+/// </summary>
 public sealed class ResetPasswordInputModel
 {
     [Required]

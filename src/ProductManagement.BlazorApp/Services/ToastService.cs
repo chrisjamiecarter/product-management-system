@@ -5,7 +5,7 @@ using ProductManagement.BlazorApp.Interfaces;
 namespace ProductManagement.BlazorApp.Services;
 
 /// <summary>
-/// Provides a service for managing toast notifications.
+/// Provides the service for managing toast notifications.
 /// </summary>
 internal class ToastService : IDisposable, IToastService
 {

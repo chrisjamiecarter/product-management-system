@@ -2,6 +2,9 @@
 
 namespace ProductManagement.BlazorApp.Components.Account.Models;
 
+/// <summary>
+/// Represents the input model for signing in an existing user.
+/// </summary>
 public sealed class SignInUserInputModel
 {
     [Required]

@@ -3,6 +3,9 @@ using ProductManagement.Application.Features.Products.Queries.GetProductById;
 
 namespace ProductManagement.BlazorApp.Components.Products.Models;
 
+/// <summary>
+/// Represents the input model for updating an existing product.
+/// </summary>
 public class UpdateProductInputModel
 {
     public UpdateProductInputModel(GetProductByIdQueryResponse product)

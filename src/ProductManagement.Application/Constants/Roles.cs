@@ -1,5 +1,8 @@
 ﻿namespace ProductManagement.Application.Constants;
 
+/// <summary>
+/// Defines the application roles.
+/// </summary>
 public static class Roles
 {
     public static readonly string Owner = nameof(Owner);

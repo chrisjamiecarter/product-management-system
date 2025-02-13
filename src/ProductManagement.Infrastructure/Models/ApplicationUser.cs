@@ -1,17 +1,11 @@
 using Microsoft.AspNetCore.Identity;
-using ProductManagement.Application.Models;
 
 namespace ProductManagement.Infrastructure.Models;
 
+/// <summary>
+/// Represents a user in the application, extending the <see cref="IdentityUser"/> class.
+/// </summary>
 internal class ApplicationUser : IdentityUser
 {
     public virtual ICollection<IdentityUserRole<string>> UserRoles { get; set; } = [];
-}
-
-internal static class ApplicationUserExtensions
-{
-    public static ApplicationUserDto ToDto(this ApplicationUser user, string? role)
-    {
-        return new ApplicationUserDto(user.Id, user.Email, user.EmailConfirmed, role);
-    }
 }

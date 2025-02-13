@@ -10,6 +10,11 @@ using ProductManagement.Infrastructure.Contexts;
 
 namespace ProductManagement.Infrastructure.Repositories;
 
+/// <summary>
+/// Provides the repository for product operations.
+/// </summary>
+/// <param name="context">The database context object.</param>
+/// <param name="logger">The logger object.</param>
 internal class ProductRepository(ProductManagementDbContext context, ILogger<ProductRepository> logger) : IProductRepository
 {
     public async Task<Result> CreateAsync(Product product, CancellationToken cancellationToken = default)
@@ -135,7 +140,7 @@ internal class ProductRepository(ProductManagementDbContext context, ILogger<Pro
         }
         catch (Exception exception)
         {
-            logger.LogWarning("Exception when saving changes: {exceptionMessage}", exception.Message);
+            logger.LogWarning("{Exception}", exception.Message);
             return 0;
         }
     }

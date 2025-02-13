@@ -1,7 +1,7 @@
 ﻿namespace ProductManagement.BlazorApp.Enums;
 
 /// <summary>
-/// Defines the available levels for messages..
+/// Defines the available levels for messages.
 /// </summary>
 public enum MessageLevel
 {

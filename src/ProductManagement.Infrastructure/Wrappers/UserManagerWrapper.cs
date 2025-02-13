@@ -6,6 +6,9 @@ using ProductManagement.Infrastructure.Models;
 
 namespace ProductManagement.Infrastructure.Wrappers;
 
+/// <summary>
+/// Provides the wrapper for the UserManager class. Handles returning a domain <see cref="Result"/> instead of an IdentityResult.
+/// </summary>
 internal class UserManagerWrapper : IUserManagerWrapper
 {
     private readonly UserManager<ApplicationUser> _userManager;

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
 using NSubstitute;
 using ProductManagement.Application.Constants;
 using ProductManagement.Application.Interfaces.Infrastructure;
@@ -15,6 +14,9 @@ using static ProductManagement.Application.Errors.ApplicationErrors;
 
 namespace ProductManagement.Infrastructure.Tests.Services;
 
+/// <summary>
+/// Unit tests for the <see cref="AuthService"/> class, ensuring correct behavior.
+/// </summary>
 public class AuthServiceTests
 {
     private static readonly ApplicationUser? DefaultNullApplicationUser = null;
@@ -33,7 +35,7 @@ public class AuthServiceTests
         _userManager = Substitute.For<UserManager<ApplicationUser>>(Substitute.For<IUserStore<ApplicationUser>>(), null, null, null, null, null, null, null, null);
         _userManagerWrapper = Substitute.For<IUserManagerWrapper>();
         _signInManager = Substitute.For<SignInManager<ApplicationUser>>(_userManager, Substitute.For<IHttpContextAccessor>(), Substitute.For<IUserClaimsPrincipalFactory<ApplicationUser>>(), null, null, null, null);
-                
+
         _authService = new AuthService(_options, _signInManager, _userManager, _userManagerWrapper);
     }
 
@@ -345,7 +347,7 @@ public class AuthServiceTests
         ApplicationUser user = new ApplicationUser { Id = userId };
 
         _userManager.FindByIdAsync(userId).Returns(user);
-        
+
         // Act.
         var result = await _authService.RefreshSignInAsync(userId);
 

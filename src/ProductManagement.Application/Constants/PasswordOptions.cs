@@ -1,5 +1,8 @@
 ﻿namespace ProductManagement.Application.Constants;
 
+/// <summary>
+/// Defines the application password requirements.
+/// </summary>
 public static class PasswordOptions
 {
     public const int RequiredLength = 8;

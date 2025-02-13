@@ -4,6 +4,9 @@ using ProductManagement.Domain.Shared;
 
 namespace ProductManagement.Domain.ValueObjects;
 
+/// <summary>
+/// Represents the product price value object.
+/// </summary>
 public sealed class ProductPrice : ValueObject
 {
     private ProductPrice(decimal value)

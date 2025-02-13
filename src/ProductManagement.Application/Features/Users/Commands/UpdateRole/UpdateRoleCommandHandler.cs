@@ -1,8 +1,5 @@
-﻿using MediatR;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using ProductManagement.Application.Abstractions.Messaging;
-using ProductManagement.Application.Errors;
-using ProductManagement.Application.Features.Users.Commands.DeleteUser;
 using ProductManagement.Application.Interfaces.Application;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;

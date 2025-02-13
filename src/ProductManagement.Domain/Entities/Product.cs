@@ -3,6 +3,9 @@ using ProductManagement.Domain.ValueObjects;
 
 namespace ProductManagement.Domain.Entities;
 
+/// <summary>
+/// Represents a product entity.
+/// </summary>
 public class Product : AggregateRoot
 {
     public Product(Guid id, ProductName name, string description, ProductPrice price) : base(id)

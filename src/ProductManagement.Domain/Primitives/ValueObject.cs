@@ -1,5 +1,8 @@
 ﻿namespace ProductManagement.Domain.Primitives;
 
+/// <summary>
+/// Represents the base class for value objects.
+/// </summary>
 public abstract class ValueObject : IEquatable<ValueObject>
 {
     public abstract IEnumerable<object> GetAtomicValues();

@@ -1,5 +1,9 @@
 ﻿namespace ProductManagement.Domain.Shared;
 
+/// <summary>
+/// Represents the outcome of an operation with a value type, including success or failure and associated error.
+/// </summary>
+/// <typeparam name="TValue">The type of the value.</typeparam>
 public class Result<TValue> : Result
 {
     private readonly TValue? _value;

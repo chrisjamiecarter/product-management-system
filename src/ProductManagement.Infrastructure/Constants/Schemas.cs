@@ -1,5 +1,8 @@
 ﻿namespace ProductManagement.Infrastructure.Constants;
 
+/// <summary>
+/// Defines the schema names used by the database.
+/// </summary>
 internal static class Schemas
 {
     public static readonly string Audit = "audit";

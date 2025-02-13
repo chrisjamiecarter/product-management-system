@@ -2,6 +2,9 @@
 
 namespace ProductManagement.Application.Interfaces.Infrastructure;
 
+/// <summary>
+/// Defines the service for link building operations.
+/// </summary>
 public interface ILinkBuilderService
 {
     Task<string> BuildChangeEmailConfirmationLinkAsync(string userId, string email, AuthToken token, CancellationToken cancellationToken = default);

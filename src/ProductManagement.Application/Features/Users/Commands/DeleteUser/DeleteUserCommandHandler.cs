@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using ProductManagement.Application.Abstractions.Messaging;
-using ProductManagement.Application.Errors;
 using ProductManagement.Application.Interfaces.Application;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Domain.Shared;

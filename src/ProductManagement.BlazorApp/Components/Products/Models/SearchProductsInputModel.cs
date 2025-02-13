@@ -2,6 +2,9 @@
 
 namespace ProductManagement.BlazorApp.Components.Products.Models;
 
+/// <summary>
+/// Represents the input model for searching products.
+/// </summary>
 public class SearchProductsInputModel
 {
     [DataType(DataType.Text)]

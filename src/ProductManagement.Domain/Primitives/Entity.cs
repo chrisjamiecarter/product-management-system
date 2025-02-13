@@ -1,5 +1,8 @@
 ﻿namespace ProductManagement.Domain.Primitives;
 
+/// <summary>
+/// Represents the base class for all entities.
+/// </summary>
 public abstract class Entity : IEquatable<Entity>
 {
     protected Entity(Guid id)

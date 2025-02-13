@@ -4,6 +4,9 @@ using ProductManagement.Application.Models;
 
 namespace ProductManagement.BlazorApp.Services;
 
+/// <summary>
+/// Provides the service for link building operations.
+/// </summary>
 internal class LinkBuilderService : ILinkBuilderService
 {
     private readonly NavigationManager _navigationManager;

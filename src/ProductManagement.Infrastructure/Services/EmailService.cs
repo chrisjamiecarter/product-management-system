@@ -13,6 +13,9 @@ using ProductManagement.Infrastructure.Options;
 
 namespace ProductManagement.Infrastructure.Services;
 
+/// <summary>
+/// Provides the service for email operations.
+/// </summary>
 internal class EmailService : IEmailService
 {
     private readonly EmailOptions _emailOptions;

@@ -11,7 +11,12 @@ using ProductManagement.Infrastructure.EmailRender.Interfaces;
 
 namespace ProductManagement.Infrastructure.EmailRender.Services;
 
-// Code from: https://github.com/aspnet/Entropy/blob/master/samples/Mvc.RenderViewToString/RazorViewToStringRenderer.cs
+/// <summary>
+/// Provides the service for rendering a razor view to a string.
+/// </summary>
+/// <remarks>
+/// Code from: https://github.com/aspnet/Entropy/blob/master/samples/Mvc.RenderViewToString/RazorViewToStringRenderer.cs
+/// </remarks>
 public class RazorViewToStringRenderService : IRazorViewToStringRenderService
 {
     private readonly IRazorViewEngine _viewEngine;

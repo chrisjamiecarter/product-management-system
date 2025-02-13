@@ -1,5 +1,8 @@
 ﻿namespace ProductManagement.Infrastructure.Models;
 
+/// <summary>
+/// Represents an audit log entry.
+/// </summary>
 internal sealed class AuditLog
 {
     public int Id { get; set; }

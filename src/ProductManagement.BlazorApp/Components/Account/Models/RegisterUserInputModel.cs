@@ -3,6 +3,9 @@ using ProductManagement.Application.Constants;
 
 namespace ProductManagement.BlazorApp.Components.Account.Models;
 
+/// <summary>
+/// Represents the input model for registering a new user.
+/// </summary>
 public sealed class RegisterUserInputModel
 {
     [Required]

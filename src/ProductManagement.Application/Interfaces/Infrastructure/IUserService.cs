@@ -3,6 +3,9 @@ using ProductManagement.Domain.Shared;
 
 namespace ProductManagement.Application.Interfaces.Infrastructure;
 
+/// <summary>
+/// Defines the service for user operations.
+/// </summary>
 public interface IUserService
 {
     Task<Result> AddPasswordAsync(string userId, string password, CancellationToken cancellationToken = default);

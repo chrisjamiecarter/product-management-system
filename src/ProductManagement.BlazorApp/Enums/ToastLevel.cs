@@ -1,7 +1,7 @@
 ﻿namespace ProductManagement.BlazorApp.Enums;
 
 /// <summary>
-/// Defines the available levels for toasts..
+/// Defines the available levels for toasts.
 /// </summary>
 public enum ToastLevel
 {

@@ -3,6 +3,9 @@ using ProductManagement.Application.Interfaces.Application;
 
 namespace ProductManagement.BlazorApp.Services;
 
+/// <summary>
+/// Provides the service for identifying the current authenticated user.
+/// </summary>
 internal sealed class CurrentUserService : ICurrentUserService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;

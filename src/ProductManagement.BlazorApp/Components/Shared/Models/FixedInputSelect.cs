@@ -2,6 +2,10 @@
 
 namespace ProductManagement.BlazorApp.Components.Shared.Models;
 
+/// <summary>
+/// Custom input select component that formats nullable boolean values correctly for display.
+/// </summary>
+/// <typeparam name="TValue">The type of value bound to the input.</typeparam>
 public class FixedInputSelect<TValue> : InputSelect<TValue>
 {
     protected override string? FormatValueAsString(TValue? value)

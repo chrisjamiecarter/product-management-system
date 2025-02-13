@@ -3,6 +3,9 @@ using System.Linq.Expressions;
 
 namespace ProductManagement.BlazorApp.Extensions;
 
+/// <summary>
+/// Extension methods for working with EditContext in Blazor.
+/// </summary>
 public static class EditContextExtensions
 {
     public static string GetValidationClass<TValue>(this EditContext editContext, Expression<Func<TValue>> propertyExpression)

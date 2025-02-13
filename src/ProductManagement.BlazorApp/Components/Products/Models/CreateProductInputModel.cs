@@ -2,6 +2,9 @@
 
 namespace ProductManagement.BlazorApp.Components.Products.Models;
 
+/// <summary>
+/// Represents the input model for creating a new product.
+/// </summary>
 public class CreateProductInputModel
 {
     [Required]

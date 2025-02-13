@@ -4,8 +4,11 @@ using ProductManagement.Application.Interfaces.Infrastructure;
 
 namespace ProductManagement.BlazorApp.Components.Account;
 
-// This is a server-side AuthenticationStateProvider that revalidates the security stamp for the connected user
-// every 30 minutes an interactive circuit is connected.
+/// <summary>
+/// This is a server-side <see cref="AuthenticationStateProvider"/> that revalidates the security stamp for the connected user every 30 minutes an interactive circuit is connected.
+/// </summary>
+/// <param name="loggerFactory">The logger factory object.</param>
+/// <param name="scopeFactory">The scope factory object.</param>
 internal sealed class IdentityRevalidatingAuthenticationStateProvider(
         ILoggerFactory loggerFactory,
         IServiceScopeFactory scopeFactory)
@@ -16,7 +19,7 @@ internal sealed class IdentityRevalidatingAuthenticationStateProvider(
     protected override async Task<bool> ValidateAuthenticationStateAsync(
         AuthenticationState authenticationState, CancellationToken cancellationToken)
     {
-        // Get the user manager from a new scope to ensure it fetches fresh data
+        // Get the auth service from a new scope to ensure it fetches fresh data.
         await using var scope = scopeFactory.CreateAsyncScope();
         var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
 

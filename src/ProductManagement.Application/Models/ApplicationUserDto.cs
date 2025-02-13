@@ -1,5 +1,8 @@
 ﻿namespace ProductManagement.Application.Models;
 
+/// <summary>
+/// Represents a user in the application.
+/// </summary>
 public class ApplicationUserDto
 {
     public ApplicationUserDto(string id, string? email, bool emailConfirmed, string? role)

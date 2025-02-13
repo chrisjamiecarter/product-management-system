@@ -3,6 +3,9 @@ using ProductManagement.Application.Features.Users.Queries.GetUserById;
 
 namespace ProductManagement.BlazorApp.Components.Users.Models;
 
+/// <summary>
+/// Represents the input model for deleting an existing user.
+/// </summary>
 public class DeleteUserInputModel
 {
     public DeleteUserInputModel(GetUserByIdQueryResponse user)

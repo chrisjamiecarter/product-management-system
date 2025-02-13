@@ -4,6 +4,9 @@ using ProductManagement.Domain.Shared;
 
 namespace ProductManagement.Application.Interfaces.Infrastructure;
 
+/// <summary>
+/// Defines the service for authentication operations.
+/// </summary>
 public interface IAuthService
 {
     Task<Result> ConfirmEmailAsync(string userId, AuthToken token, CancellationToken cancellationToken = default);

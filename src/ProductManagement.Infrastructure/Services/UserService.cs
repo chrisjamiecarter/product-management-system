@@ -4,12 +4,16 @@ using ProductManagement.Application.Constants;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Shared;
+using ProductManagement.Infrastructure.Extensions;
 using ProductManagement.Infrastructure.Interfaces;
 using ProductManagement.Infrastructure.Models;
 using static ProductManagement.Application.Errors.ApplicationErrors;
 
 namespace ProductManagement.Infrastructure.Services;
 
+/// <summary>
+/// Provides the service for user operations.
+/// </summary>
 internal class UserService : IUserService
 {
     private readonly RoleManager<IdentityRole> _roleManager;

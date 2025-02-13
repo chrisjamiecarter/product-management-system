@@ -1,18 +1,18 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using ProductManagement.Application.Constants;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.Application.Models;
 using ProductManagement.Domain.Shared;
-using ProductManagement.Infrastructure.Extensions;
 using ProductManagement.Infrastructure.Interfaces;
 using ProductManagement.Infrastructure.Models;
 using static ProductManagement.Application.Errors.ApplicationErrors;
 
-
 namespace ProductManagement.Infrastructure.Services;
 
+/// <summary>
+/// Provides the service for authentication operations.
+/// </summary>
 internal class AuthService : IAuthService
 {
     private readonly IdentityOptions _options;

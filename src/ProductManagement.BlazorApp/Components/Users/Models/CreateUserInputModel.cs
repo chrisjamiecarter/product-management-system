@@ -2,6 +2,9 @@
 
 namespace ProductManagement.BlazorApp.Components.Users.Models;
 
+/// <summary>
+/// Represents the input model for creating a new user.
+/// </summary>
 public class CreateUserInputModel
 {
     [Required]
