@@ -88,7 +88,13 @@ On start-up of the **BlazorApp** application, any required database creation/mig
      - SeederOptions:
        - SeedDatabase: Set to true to seed database, false will not seed database.
        - SeedUsers: Define Email and Role of users to be seeded.
-       - NOTE: Generated passwords will be in the format: email before the @ symbol, upper case first, lower case rest, then 123###       - e.g. user@email.com = User123###
+       - Password Generation Format:
+            - When seeding users, passwords are automatically generated using the following format:
+                - Take the portion of the email before the @ symbol.
+                - Capitalize the first letter, with the rest in lowercase.
+                - Append 123### to the end.
+            - Example:
+                - For the email `user@email.com`, the generated password will be: `User123###`
 
 4. Build the application using the .NET CLI:
 
