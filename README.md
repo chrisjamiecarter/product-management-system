@@ -100,7 +100,7 @@ On start-up of the **BlazorApp** application, any required database creation/mig
 
 NOTE: If you run from Visual Studio, the application may catch a `Microsoft.AspNetCore.Components.NavigationException` exception. Un-check `Break when this exception type is user-unhandled`
 
-![YouTube Video Demonstration](./_resources/turn-this-off.png)
+![Turn This Setting Off](./_resources/turn-this-off.png)
 
 OR
 
