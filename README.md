@@ -7,7 +7,7 @@ Welcome to the **Product Management** System!
 
 This is a .NET project designed to demonstrate role based authentication and authorisation with ASP.NET Core Identity.
 
-Product Management System is a back-of-store application developed soley using .NET!
+Product Management System is a back-of-store application developed solely using .NET!
 Users can create, view, update and delete products. Whilst admins can create, view, update and delete users. Owners have full controls, and account with no role will just be able to see the home page.
 
 The web front-end is delivered by a Blazor Web App and utilises Boostrap for styling.
@@ -88,7 +88,13 @@ On start-up of the **BlazorApp** application, any required database creation/mig
      - SeederOptions:
        - SeedDatabase: Set to true to seed database, false will not seed database.
        - SeedUsers: Define Email and Role of users to be seeded.
-       - NOTE: Generated passwords will be in the format: email before the @ symbol, upper case first, lower case rest, then 123###       - e.g. user@email.com = User123###
+       - Password Generation Format:
+            - When seeding users, passwords are automatically generated using the following format:
+                - Take the portion of the email before the @ symbol.
+                - Capitalize the first letter, with the rest in lowercase.
+                - Append 123### to the end.
+            - Example:
+                - For the email `user@email.com`, the generated password will be: `User123###`
 
 4. Build the application using the .NET CLI:
 
@@ -100,7 +106,7 @@ On start-up of the **BlazorApp** application, any required database creation/mig
 
 NOTE: If you run from Visual Studio, the application may catch a `Microsoft.AspNetCore.Components.NavigationException` exception. Un-check `Break when this exception type is user-unhandled`
 
-![YouTube Video Demonstration](./_resources/turn-this-off.png)
+![Turn This Setting Off](./_resources/turn-this-off.png)
 
 OR
 
