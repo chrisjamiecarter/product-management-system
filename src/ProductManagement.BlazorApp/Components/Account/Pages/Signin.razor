@@ -17,7 +17,7 @@
             <div class="col-md-8 col-lg-6 col-xl-5">
                 <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
                 <StatusMessage Status="@status" />
-                <EditForm Model="Input" method="post" OnValidSubmit="SignInUserAsync" OnInvalidSubmit="HandleInvalidSubmit" FormName="signin" data-loading-button>
+                <EditForm FormName="signin" Model="Input"  OnValidSubmit="SignInUserAsync" OnInvalidSubmit="HandleInvalidSubmit" method="post" data-loading-button>
                     <DataAnnotationsValidator />
                     <div class="form-floating mb-3">
                         <InputText @bind-Value="Input.Email" id="Input.Email" class=@($"form-control form-control-lg {ValidationHelper.GetValidationCssClass(Input, nameof(Input.Email), showValidation)}") autocomplete="email" aria-required="true" placeholder="name@example.com" />
@@ -46,18 +46,21 @@
                         </div>
                     </div>
                 </EditForm>
-                
+
                 <div class="divider d-flex align-items-center my-4">
                     <p class="text-center fw-bold mx-3 mb-0">Or sign in with</p>
                 </div>
 
-                <div class="d-flex justify-content-evenly">
-                    <button class="btn btn-dark btn-lg" type="button">
+                <form class="d-flex justify-content-evenly" action="Account/PerformExternalLogin" method="post">
+                    <AntiforgeryToken />
+                    <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
+
+                    <button class="btn btn-dark btn-lg" type="submit" name="provider" value="Facebook">
                         <div class="d-flex align-items-center justify-content-center">
                             <FacebookSvg Height="1.5rem" Width="1.5rem" />
                         </div>
                     </button>
-                
+
                     <button class="btn btn-dark btn-lg" type="button">
                         <div class="d-flex align-items-center justify-content-center">
                             <GitHubSvg Height="1.5rem" Width="1.5rem" />
@@ -81,8 +84,7 @@
                             <TwitterXSvg Height="1.5rem" Width="1.5rem" />
                         </div>
                     </button>
-                </div>
-
+                </form>
             </div>
         </div>
     </div>
@@ -95,7 +97,7 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    [SupplyParameterFromForm]
+    [SupplyParameterFromForm(FormName = "signin")]
     private SignInUserInputModel Input { get; set; } = new();
 
     [SupplyParameterFromQuery]

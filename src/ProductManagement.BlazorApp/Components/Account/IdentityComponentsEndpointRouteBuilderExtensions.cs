@@ -1,6 +1,10 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 using ProductManagement.Application.Interfaces.Infrastructure;
+using ProductManagement.BlazorApp.Components.Account.Pages;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -14,6 +18,26 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
         ArgumentNullException.ThrowIfNull(endpoints);
 
         var accountGroup = endpoints.MapGroup("/Account");
+
+        accountGroup.MapPost("/PerformExternalLogin", (
+            HttpContext context,
+            [FromForm] string provider,
+            [FromForm] string returnUrl) =>
+        {
+            IEnumerable<KeyValuePair<string, StringValues>> query = [
+                new("ReturnUrl", returnUrl),
+                new("Action", ExternalLogin.LoginCallbackAction)];
+
+            var redirectUrl = UriHelper.BuildRelative(
+                context.Request.PathBase,
+                "/Account/ExternalLogin",
+                QueryString.Create(query));
+
+            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+            properties.Items["LoginProvider"] = provider;
+
+            return TypedResults.Challenge(properties, [provider]);
+        });
 
         accountGroup.MapPost("/Logout", async (
             ClaimsPrincipal user,

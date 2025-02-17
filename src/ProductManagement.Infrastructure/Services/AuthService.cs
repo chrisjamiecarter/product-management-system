@@ -45,6 +45,45 @@ internal class AuthService : IAuthService
         return Result.Success();
     }
 
+    public async Task<Result> ExternalLoginSignInAsync(CancellationToken cancellationToken = default)
+    {
+        ExternalLoginInfo? info = await _signInManager.GetExternalLoginInfoAsync();
+        if (info is null)
+        {
+            return Result.Failure(new Error("ERROR", "GetExternalLoginInfoAsync"));
+        }
+
+        var email = info.Principal.FindFirstValue(ClaimTypes.Email) ?? "";
+        if (await _userManager.FindByEmailAsync(email) == null)
+        {
+            // NOTE: Executive decision, if using External Auth, automatically confirm email.
+            var user = new ApplicationUser { Email = email, UserName = email, EmailConfirmed = true };
+            var userResult = await _userManager.CreateAsync(user);
+            if (!userResult.Succeeded)
+            {
+                return Result.Failure(new Error("ERROR", "CreateAsync"));
+            }
+
+            var hasLogin = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey) != null;
+            if (!hasLogin)
+            {
+                var loginResult = await _userManager.AddLoginAsync(user, info);
+                if (!loginResult.Succeeded)
+                {
+                    return Result.Failure(new Error("ERROR", "AddLoginAsync"));
+                }
+            }
+        }
+                
+        var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, false, true);
+        if (!result.Succeeded)
+        {
+            return Result.Failure(new Error("ERROR", "ExternalLoginSignInAsync"));
+        }
+
+        return Result.Success();
+    }
+    
     public async Task<Result<AuthToken>> GenerateEmailChangeTokenAsync(string userId, string updatedEmail, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId);

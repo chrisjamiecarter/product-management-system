@@ -50,6 +50,14 @@ public static class InfrastructureInstaller
         .AddSignInManager()
         .AddDefaultTokenProviders();
 
+        services.AddAuthentication()
+                .AddFacebook(facebookOptions =>
+                {
+                    facebookOptions.AppId = configuration["Authentication:Facebook:AppId"] ?? throw new InvalidOperationException("Setting 'Authentication:Facebook:AppId' not found.");
+                    facebookOptions.AppSecret = configuration["Authentication:Facebook:AppSecret"] ?? throw new InvalidOperationException("Setting 'Authentication:Facebook:AppSecret' not found.");
+                    facebookOptions.AccessDeniedPath = "/Account/AccessDenied";
+                });
+
         var sqlLogger = new LoggerConfiguration()
             .Enrich.FromLogContext()
             .Enrich.WithMachineName()
@@ -62,7 +70,7 @@ public static class InfrastructureInstaller
                 },
                 restrictedToMinimumLevel: LogEventLevel.Warning)
             .CreateLogger();
-        
+
         services.AddLogging(builder =>
         {
             builder.AddSerilog(sqlLogger);
