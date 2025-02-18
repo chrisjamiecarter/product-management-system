@@ -28,7 +28,7 @@ internal sealed class CreateUserCommandHandler : ICommandHandler<CreateUserComma
 
     public async Task<Result> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
-        var createResult = await _userService.CreateAsync(request.Email, cancellationToken);
+        var createResult = await _userService.CreateAsync(request.Email, false, cancellationToken);
         if (createResult.IsFailure)
         {
             _logger.LogWarning("{@Error}", createResult.Error);

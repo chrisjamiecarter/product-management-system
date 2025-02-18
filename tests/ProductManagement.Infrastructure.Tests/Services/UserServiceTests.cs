@@ -235,7 +235,7 @@ public class UserServiceTests
         _userManagerWrapper.CreateAndReturnDomainResultAsync(user).ReturnsForAnyArgs(DefaultIdentityFailureResult);
 
         // Act.
-        var result = await _userService.CreateAsync(email);
+        var result = await _userService.CreateAsync(email, false);
 
         // Assert.
         Assert.True(result.IsFailure);
@@ -252,7 +252,7 @@ public class UserServiceTests
         _userManagerWrapper.CreateAndReturnDomainResultAsync(user).ReturnsForAnyArgs(DefaultSuccessResult);
 
         // Act.
-        var result = await _userService.CreateAsync(email);
+        var result = await _userService.CreateAsync(email, false);
 
         // Assert.
         Assert.True(result.IsSuccess);

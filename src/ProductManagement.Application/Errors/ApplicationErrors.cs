@@ -14,6 +14,21 @@ public static class ApplicationErrors
             $"Unable to send email to {toEmailAddress}");
     }
 
+    public static class ExternalLogin
+    {
+        public static Error NotAdded(string email) => new(
+            "ExternalLogin.NotAdded",
+            $"Unable to add external login for {email}");
+
+        public static readonly Error NotFound = new(
+            "ExternalLogin.NotFound",
+            "Unable to find external login for the current login");
+
+        public static readonly Error NullEmailClaim = new(
+            "ExternalLogin.NullEmailClaim",
+            "Unable to find an email claim from the external login for the current login");
+    }
+
     public static class PaginatedList
     {
         public static Error InvalidPageNumber(int pageNumber) => new(

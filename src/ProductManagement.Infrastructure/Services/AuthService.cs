@@ -28,6 +28,31 @@ internal class AuthService : IAuthService
         _userManagerWrapper = userManagerWrapper;
     }
 
+    public async Task<Result> AddExternalLoginAsync(string email, string provider, string providerKey, string? providerDisplayName, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user is null)
+        {
+            return Result.Failure(User.EmailNotFound(email));
+        }
+
+        var userLogin = await _userManager.FindByLoginAsync(provider, providerKey);
+        if (userLogin != null)
+        {
+            return Result.Success();
+        }
+
+        var login = new UserLoginInfo(provider, providerKey, providerDisplayName);
+
+        var loginResult = await _userManagerWrapper.AddLoginAndReturnDomainResultAsync(user, login);
+        if (loginResult.IsFailure)
+        {
+            return Result.Failure(ExternalLogin.NotAdded(email));
+        }
+
+        return Result.Success();
+    }
+
     public async Task<Result> ConfirmEmailAsync(string userId, AuthToken token, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId);
@@ -45,45 +70,33 @@ internal class AuthService : IAuthService
         return Result.Success();
     }
 
-    public async Task<Result> ExternalLoginSignInAsync(CancellationToken cancellationToken = default)
+    public async Task<Result> ExternalLoginSignInAsync(string email, string provider, string providerKey, CancellationToken cancellationToken = default)
     {
-        ExternalLoginInfo? info = await _signInManager.GetExternalLoginInfoAsync();
-        if (info is null)
+        var result = await _signInManager.ExternalLoginSignInAsync(provider, providerKey, false, true);
+
+        if (result.Succeeded)
         {
-            return Result.Failure(new Error("ERROR", "GetExternalLoginInfoAsync"));
+            return Result.Success();
         }
 
-        var email = info.Principal.FindFirstValue(ClaimTypes.Email) ?? "";
-        if (await _userManager.FindByEmailAsync(email) == null)
+        if (result.IsLockedOut)
         {
-            // NOTE: Executive decision, if using External Auth, automatically confirm email.
-            var user = new ApplicationUser { Email = email, UserName = email, EmailConfirmed = true };
-            var userResult = await _userManager.CreateAsync(user);
-            if (!userResult.Succeeded)
-            {
-                return Result.Failure(new Error("ERROR", "CreateAsync"));
-            }
-
-            var hasLogin = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey) != null;
-            if (!hasLogin)
-            {
-                var loginResult = await _userManager.AddLoginAsync(user, info);
-                if (!loginResult.Succeeded)
-                {
-                    return Result.Failure(new Error("ERROR", "AddLoginAsync"));
-                }
-            }
-        }
-                
-        var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, false, true);
-        if (!result.Succeeded)
-        {
-            return Result.Failure(new Error("ERROR", "ExternalLoginSignInAsync"));
+            return Result.Failure(User.LockedOut(email));
         }
 
-        return Result.Success();
+        if (result.IsNotAllowed)
+        {
+            return Result.Failure(User.NotAllowed(email));
+        }
+
+        if (result.RequiresTwoFactor)
+        {
+            return Result.Failure(User.RequiresTwoFactor(email));
+        }
+
+        return Result.Failure(User.InvalidSignInAttempt(email));
     }
-    
+
     public async Task<Result<AuthToken>> GenerateEmailChangeTokenAsync(string userId, string updatedEmail, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId);
@@ -132,6 +145,24 @@ internal class AuthService : IAuthService
         var roles = await _userManager.GetRolesAsync(user);
 
         var response = new ApplicationUserDto(user.Id, user.Email, user.EmailConfirmed, roles.FirstOrDefault());
+        return Result.Success(response);
+    }
+
+    public async Task<Result<ExternalLoginDto>> GetExternalLoginInfo(CancellationToken cancellationToken = default)
+    {
+        var info = await _signInManager.GetExternalLoginInfoAsync();
+        if (info is null)
+        {
+            return Result.Failure<ExternalLoginDto>(ExternalLogin.NotFound);
+        }
+
+        var email = info.Principal.FindFirstValue(ClaimTypes.Email) ?? "";
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return Result.Failure<ExternalLoginDto>(ExternalLogin.NullEmailClaim);
+        }
+
+        var response = new ExternalLoginDto(email, info.LoginProvider, info.ProviderKey, info.ProviderDisplayName);
         return Result.Success(response);
     }
 

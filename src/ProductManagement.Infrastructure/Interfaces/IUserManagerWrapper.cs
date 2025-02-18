@@ -1,4 +1,5 @@
-﻿using ProductManagement.Domain.Shared;
+﻿using Microsoft.AspNetCore.Identity;
+using ProductManagement.Domain.Shared;
 using ProductManagement.Infrastructure.Models;
 
 namespace ProductManagement.Infrastructure.Interfaces;
@@ -8,6 +9,7 @@ namespace ProductManagement.Infrastructure.Interfaces;
 /// </summary>
 internal interface IUserManagerWrapper
 {
+    Task<Result> AddLoginAndReturnDomainResultAsync(ApplicationUser user, UserLoginInfo login);
     Task<Result> AddPasswordAndReturnDomainResultAsync(ApplicationUser user, string password);
     Task<Result> AddToRoleAndReturnDomainResultAsync(ApplicationUser user, string? role);
     Task<Result> ChangeEmailAndReturnDomainResultAsync(ApplicationUser user, string newEmail, string token);

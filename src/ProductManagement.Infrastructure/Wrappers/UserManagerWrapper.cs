@@ -19,6 +19,21 @@ internal class UserManagerWrapper : IUserManagerWrapper
     }
 
     /// <summary>
+    /// Adds an external <see cref="UserLoginInfo"/> to the specified <paramref name="user"/>.
+    /// </summary>
+    /// <param name="user">The user to add the login to.</param>
+    /// <param name="login">The external <see cref="UserLoginInfo"/> to add to the specified <paramref name="user"/>.</param>
+    /// <returns>
+    /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="Result"/>
+    /// of the operation, which has been mapped from the <see cref="IdentityResult"/>.
+    /// </returns>
+    public async Task<Result> AddLoginAndReturnDomainResultAsync(ApplicationUser user, UserLoginInfo login)
+    {
+        var result = await _userManager.AddLoginAsync(user, login);
+        return result.ToDomainResult();
+    }
+
+    /// <summary>
     /// Adds the <paramref name="password"/> to the specified <paramref name="user"/> only if the user
     /// does not already have a password.
     /// </summary>

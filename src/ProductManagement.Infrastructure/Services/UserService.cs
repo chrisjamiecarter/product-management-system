@@ -84,12 +84,13 @@ internal class UserService : IUserService
         return Result.Success();
     }
 
-    public async Task<Result> CreateAsync(string email, CancellationToken cancellationToken = default)
+    public async Task<Result> CreateAsync(string email, bool emailConfirmed, CancellationToken cancellationToken = default)
     {
         var user = new ApplicationUser
         {
             Email = email,
             UserName = email,
+            EmailConfirmed = emailConfirmed,
         };
 
         var result = await _userManagerWrapper.CreateAndReturnDomainResultAsync(user);
