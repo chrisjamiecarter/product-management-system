@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Security.Claims;
+using System.Security.Principal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using NSubstitute;
@@ -37,6 +39,93 @@ public class AuthServiceTests
         _signInManager = Substitute.For<SignInManager<ApplicationUser>>(_userManager, Substitute.For<IHttpContextAccessor>(), Substitute.For<IUserClaimsPrincipalFactory<ApplicationUser>>(), null, null, null, null);
 
         _authService = new AuthService(_options, _signInManager, _userManager, _userManagerWrapper);
+    }
+
+    [Fact]
+    public async Task AddExternalLoginAsync_ReturnsFailure_WhenUserNotFound()
+    {
+        // Arrange.
+        string email = "user@testing.com";
+        string provider = "provider";
+        string providerKey = "providerKey";
+        string providerDisplayName = "providerDisplayName";
+
+        _userManager.FindByEmailAsync(email).Returns(DefaultNullApplicationUser);
+
+        // Act.
+        var result = await _authService.AddExternalLoginAsync(email, provider, providerKey, providerDisplayName);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(User.EmailNotFound(email), result.Error);
+    }
+
+    [Fact]
+    public async Task AddExternalLoginAsync_ReturnsFailure_WhenExternalLoginNotAdded()
+    {
+        // Arrange.
+        string userId = Guid.NewGuid().ToString();
+        string email = "user@testing.com";
+        ApplicationUser user = new ApplicationUser { Id = userId, Email = email, UserName = email, EmailConfirmed = true };
+        string provider = "provider";
+        string providerKey = "providerKey";
+        string providerDisplayName = "providerDisplayName";
+        UserLoginInfo userLoginInfo = new UserLoginInfo(provider, providerKey, providerDisplayName);
+
+        _userManager.FindByEmailAsync(email).Returns(user);
+        _userManager.FindByLoginAsync(provider, providerKey).Returns(DefaultNullApplicationUser);
+        _userManagerWrapper.AddLoginAndReturnDomainResultAsync(user, userLoginInfo).ReturnsForAnyArgs(DefaultIdentityFailureResult);
+
+        // Act.
+        var result = await _authService.AddExternalLoginAsync(email, provider, providerKey, providerDisplayName);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(ExternalLogin.NotAdded(email), result.Error);
+    }
+
+    [Fact]
+    public async Task AddExternalLoginAsync_ReturnsSuccess_WhenUserAlreadyHasExternalLogin()
+    {
+        // Arrange.
+        string userId = Guid.NewGuid().ToString();
+        string email = "user@testing.com";
+        ApplicationUser user = new ApplicationUser { Id = userId, Email = email, UserName = email, EmailConfirmed = true };
+        string provider = "provider";
+        string providerKey = "providerKey";
+        string providerDisplayName = "providerDisplayName";
+
+        _userManager.FindByEmailAsync(email).Returns(user);
+        _userManager.FindByLoginAsync(provider, providerKey).Returns(user);
+
+        // Act.
+        var result = await _authService.AddExternalLoginAsync(email, provider, providerKey, providerDisplayName);
+
+        // Assert.
+        Assert.True(result.IsSuccess);
+    }
+
+    [Fact]
+    public async Task AddExternalLoginAsync_ReturnsSuccess_WhenExternalLoginAdded()
+    {
+        // Arrange.
+        string userId = Guid.NewGuid().ToString();
+        string email = "user@testing.com";
+        ApplicationUser user = new ApplicationUser { Id = userId, Email = email, UserName = email, EmailConfirmed = true };
+        string provider = "provider";
+        string providerKey = "providerKey";
+        string providerDisplayName = "providerDisplayName";
+        UserLoginInfo userLoginInfo = new UserLoginInfo(provider, providerKey, providerDisplayName);
+
+        _userManager.FindByEmailAsync(email).Returns(user);
+        _userManager.FindByLoginAsync(provider, providerKey).Returns(DefaultNullApplicationUser);
+        _userManagerWrapper.AddLoginAndReturnDomainResultAsync(user, userLoginInfo).ReturnsForAnyArgs(DefaultSuccessResult);
+
+        // Act.
+        var result = await _authService.AddExternalLoginAsync(email, provider, providerKey, providerDisplayName);
+
+        // Assert.
+        Assert.True(result.IsSuccess);
     }
 
     [Fact]
@@ -88,6 +177,95 @@ public class AuthServiceTests
 
         // Act.
         var result = await _authService.ConfirmEmailAsync(user.Id, token);
+
+        // Assert.
+        Assert.True(result.IsSuccess);
+    }
+
+    [Fact]
+    public async Task ExternalLoginSignInAsync_ReturnsFailure_WhenUserLockedOut()
+    {
+        // Arrange.
+        string email = "user@testing.com";
+        string provider = "provider";
+        string providerKey = "providerKey";
+
+        _signInManager.ExternalLoginSignInAsync(provider, providerKey, false, true).Returns(SignInResult.LockedOut);
+
+        // Act.
+        var result = await _authService.ExternalLoginSignInAsync(email, provider, providerKey);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(User.LockedOut(email), result.Error);
+    }
+
+    [Fact]
+    public async Task ExternalLoginSignInAsync_ReturnsFailure_WhenUserNotAllowed()
+    {
+        // Arrange.
+        string email = "user@testing.com";
+        string provider = "provider";
+        string providerKey = "providerKey";
+
+        _signInManager.ExternalLoginSignInAsync(provider, providerKey, false, true).Returns(SignInResult.NotAllowed);
+
+        // Act.
+        var result = await _authService.ExternalLoginSignInAsync(email, provider, providerKey);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(User.NotAllowed(email), result.Error);
+    }
+
+    [Fact]
+    public async Task ExternalLoginSignInAsync_ReturnsFailure_WhenUserRequiresTwoFactor()
+    {
+        // Arrange.
+        string email = "user@testing.com";
+        string provider = "provider";
+        string providerKey = "providerKey";
+
+        _signInManager.ExternalLoginSignInAsync(provider, providerKey, false, true).Returns(SignInResult.TwoFactorRequired);
+
+        // Act.
+        var result = await _authService.ExternalLoginSignInAsync(email, provider, providerKey);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(User.RequiresTwoFactor(email), result.Error);
+    }
+
+    [Fact]
+    public async Task ExternalLoginSignInAsync_ReturnsFailure_WhenUserInvalidSignInAttempt()
+    {
+        // Arrange.
+        string email = "user@testing.com";
+        string provider = "provider";
+        string providerKey = "providerKey";
+
+        _signInManager.ExternalLoginSignInAsync(provider, providerKey, false, true).Returns(SignInResult.Failed);
+
+        // Act.
+        var result = await _authService.ExternalLoginSignInAsync(email, provider, providerKey);
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(User.InvalidSignInAttempt(email), result.Error);
+    }
+
+    [Fact]
+    public async Task ExternalLoginSignInAsync_ReturnsSuccess_WhenUserSignedIn()
+    {
+        // Arrange.
+        string email = "user@testing.com";
+        string provider = "provider";
+        string providerKey = "providerKey";
+
+        _signInManager.ExternalLoginSignInAsync(provider, providerKey, false, true).Returns(SignInResult.Success);
+
+        // Act.
+        var result = await _authService.ExternalLoginSignInAsync(email, provider, providerKey);
 
         // Assert.
         Assert.True(result.IsSuccess);
@@ -228,6 +406,42 @@ public class AuthServiceTests
         // Assert.
         Assert.True(result.IsSuccess);
     }
+    
+    [Fact]
+    public async Task GetExternalLoginInfo_ReturnsFailure_WhenExternalLoginInfoNotFound()
+    {
+        // Arrange.
+        ExternalLoginInfo? info = null;
+
+        _signInManager.GetExternalLoginInfoAsync().Returns(info);
+
+        // Act.
+        var result = await _authService.GetExternalLoginInfo();
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(ExternalLogin.NotFound, result.Error);
+    }
+
+    [Fact]
+    public async Task GetExternalLoginInfo_ReturnsFailure_WhenEmailClaimIsNull()
+    {
+        // Arrange.
+        string provider = "provider";
+        string providerKey = "providerKey";
+        string displayName = "displayName";
+        ExternalLoginInfo? info = new ExternalLoginInfo(new ClaimsPrincipal(), provider, providerKey, displayName);
+
+        //info.Principal.FindFirstValue(ClaimTypes.Email).Returns()
+        _signInManager.GetExternalLoginInfoAsync().Returns(info);
+
+        // Act.
+        var result = await _authService.GetExternalLoginInfo();
+
+        // Assert.
+        Assert.True(result.IsFailure);
+        Assert.Equal(ExternalLogin.NullEmailClaim, result.Error);
+    }
 
     [Fact]
     public async Task PasswordSignInAsync_ReturnsFailure_WhenUserLockedOut()
@@ -306,7 +520,7 @@ public class AuthServiceTests
     }
 
     [Fact]
-    public async Task GetCurrentUserAsync_ReturnsSuccess_WhenUserSignedIn()
+    public async Task PasswordSignInAsync_ReturnsSuccess_WhenUserSignedIn()
     {
         // Arrange.
         string email = "user@testing.com";
@@ -465,7 +679,7 @@ public class AuthServiceTests
     }
 
     [Fact]
-    public async Task SignInAsync_ReturnsSuccess_WhenUserFound()
+    public async Task SignInAsync_ReturnsSuccess_WhenUserSignedIn()
     {
         // Arrange.
         string userId = Guid.NewGuid().ToString();
