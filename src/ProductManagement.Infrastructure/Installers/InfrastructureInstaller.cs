@@ -50,13 +50,26 @@ public static class InfrastructureInstaller
         .AddSignInManager()
         .AddDefaultTokenProviders();
 
-        services.AddAuthentication()
+        services.AddAuthentication(options =>
+                {
+                    options.DefaultScheme = IdentityConstants.ApplicationScheme;
+                    options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+                })
                 .AddFacebook(facebookOptions =>
                 {
                     facebookOptions.AppId = configuration["Authentication:Facebook:AppId"] ?? throw new InvalidOperationException("Setting 'Authentication:Facebook:AppId' not found.");
                     facebookOptions.AppSecret = configuration["Authentication:Facebook:AppSecret"] ?? throw new InvalidOperationException("Setting 'Authentication:Facebook:AppSecret' not found.");
                     facebookOptions.AccessDeniedPath = "/Account/AccessDenied";
-                });
+                })
+                .AddGitHub(gitHubOptions =>
+                {
+                    gitHubOptions.ClientId = configuration["Authentication:GitHub:ClientId"] ?? throw new InvalidOperationException("Setting 'Authentication:GitHub:ClientId' not found.");
+                    gitHubOptions.ClientSecret = configuration["Authentication:GitHub:ClientSecret"] ?? throw new InvalidOperationException("Setting 'Authentication:GitHub:ClientSecret' not found.");
+                    gitHubOptions.AccessDeniedPath = "/Account/AccessDenied";
+                    gitHubOptions.CallbackPath = "/signin-github";
+                    gitHubOptions.Scope.Add("user:email");
+                })
+                .AddIdentityCookies();
 
         var sqlLogger = new LoggerConfiguration()
             .Enrich.FromLogContext()

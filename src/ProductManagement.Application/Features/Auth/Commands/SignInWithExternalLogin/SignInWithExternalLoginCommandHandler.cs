@@ -42,13 +42,13 @@ internal sealed class SignInWithExternalLoginCommandHandler : ICommandHandler<Si
                 _logger.LogWarning("{@Error}", createResult.Error);
                 return Result.Failure(createResult.Error);
             }
+        }
 
-            var addLoginResult = await _authService.AddExternalLoginAsync(info.Email, info.Provider, info.ProviderKey, info.ProviderDisplayName, cancellationToken);
-            if (addLoginResult.IsFailure)
-            {
-                _logger.LogWarning("{@Error}", addLoginResult.Error);
-                return Result.Failure(addLoginResult.Error);
-            }
+        var addLoginResult = await _authService.AddExternalLoginAsync(info.Email, info.Provider, info.ProviderKey, info.ProviderDisplayName, cancellationToken);
+        if (addLoginResult.IsFailure)
+        {
+            _logger.LogWarning("{@Error}", addLoginResult.Error);
+            return Result.Failure(addLoginResult.Error);
         }
 
         var signInResult = await _authService.ExternalLoginSignInAsync(info.Email, info.Provider, info.ProviderKey, cancellationToken);
