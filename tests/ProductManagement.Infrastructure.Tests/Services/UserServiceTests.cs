@@ -607,7 +607,7 @@ public class UserServiceTests
         _userManager.FindByIdAsync(userId).Returns(user);
         _userManager.GetRolesAsync(user).Returns(x => currentRoles, x => []);
         _userManagerWrapper.RemoveFromRolesAndReturnDomainResultAsync(user, currentRoles).Returns(DefaultSuccessResult);
-        _userManagerWrapper.RemoveFromRoleAndReturnDomainResultAsync(user, null).Returns(DefaultSuccessResult);
+        _userManagerWrapper.RemoveFromRoleAndReturnDomainResultAsync(user, string.Empty).Returns(DefaultSuccessResult);
         _userManagerWrapper.AddToRoleAndReturnDomainResultAsync(user, updatedRole).Returns(DefaultSuccessResult);
 
         // Act.
