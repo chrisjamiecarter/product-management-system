@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication.Google;
+﻿using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +19,7 @@ using ProductManagement.Infrastructure.Wrappers;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.MSSqlServer;
+using System.Text.Json;
 
 namespace ProductManagement.Infrastructure.Installers;
 
@@ -84,6 +87,14 @@ public static class InfrastructureInstaller
                     microsoftOptions.ClientSecret = configuration["Authentication:Microsoft:ClientSecret"] ?? throw new InvalidOperationException("Setting 'Authentication:Microsoft:ClientSecret' not found.");
                     microsoftOptions.AccessDeniedPath = "/Account/AccessDenied";
                     microsoftOptions.CallbackPath = "/signin-microsoft";
+                })
+                .AddTwitter(twitterOptions =>
+                {
+                    twitterOptions.ConsumerKey = configuration["Authentication:Twitter:ConsumerKey"] ?? throw new InvalidOperationException("Setting 'Authentication:Twitter:ConsumerKey' not found.");
+                    twitterOptions.ConsumerSecret = configuration["Authentication:Twitter:ConsumerSecret"] ?? throw new InvalidOperationException("Setting 'Authentication:Twitter:ConsumerSecret' not found.");
+                    twitterOptions.AccessDeniedPath = "/Account/AccessDenied";
+                    twitterOptions.CallbackPath = "/signin-twitter";
+                    twitterOptions.RetrieveUserDetails = true;
                 })
                 .AddIdentityCookies();
 
