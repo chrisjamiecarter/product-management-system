@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -60,6 +61,7 @@ public static class InfrastructureInstaller
                     facebookOptions.AppId = configuration["Authentication:Facebook:AppId"] ?? throw new InvalidOperationException("Setting 'Authentication:Facebook:AppId' not found.");
                     facebookOptions.AppSecret = configuration["Authentication:Facebook:AppSecret"] ?? throw new InvalidOperationException("Setting 'Authentication:Facebook:AppSecret' not found.");
                     facebookOptions.AccessDeniedPath = "/Account/AccessDenied";
+                    facebookOptions.CallbackPath = "/signin-facebook";
                 })
                 .AddGitHub(gitHubOptions =>
                 {
@@ -75,6 +77,13 @@ public static class InfrastructureInstaller
                     googleOptions.ClientSecret = configuration["Authentication:Google:ClientSecret"] ?? throw new InvalidOperationException("Setting 'Authentication:Google:ClientSecret' not found.");
                     googleOptions.AccessDeniedPath = "/Account/AccessDenied";
                     googleOptions.CallbackPath = "/signin-google";
+                })
+                .AddMicrosoftAccount(microsoftOptions =>
+                {
+                    microsoftOptions.ClientId = configuration["Authentication:Microsoft:ClientId"] ?? throw new InvalidOperationException("Setting 'Authentication:Microsoft:ClientId' not found.");
+                    microsoftOptions.ClientSecret = configuration["Authentication:Microsoft:ClientSecret"] ?? throw new InvalidOperationException("Setting 'Authentication:Microsoft:ClientSecret' not found.");
+                    microsoftOptions.AccessDeniedPath = "/Account/AccessDenied";
+                    microsoftOptions.CallbackPath = "/signin-microsoft";
                 })
                 .AddIdentityCookies();
 
