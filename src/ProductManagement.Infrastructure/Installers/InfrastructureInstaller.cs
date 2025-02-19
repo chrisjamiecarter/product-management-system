@@ -69,6 +69,13 @@ public static class InfrastructureInstaller
                     gitHubOptions.CallbackPath = "/signin-github";
                     gitHubOptions.Scope.Add("user:email");
                 })
+                .AddGoogle(googleOptions =>
+                {
+                    googleOptions.ClientId = configuration["Authentication:Google:ClientId"] ?? throw new InvalidOperationException("Setting 'Authentication:Google:ClientId' not found.");
+                    googleOptions.ClientSecret = configuration["Authentication:Google:ClientSecret"] ?? throw new InvalidOperationException("Setting 'Authentication:Google:ClientSecret' not found.");
+                    googleOptions.AccessDeniedPath = "/Account/AccessDenied";
+                    googleOptions.CallbackPath = "/signin-google";
+                })
                 .AddIdentityCookies();
 
         var sqlLogger = new LoggerConfiguration()
