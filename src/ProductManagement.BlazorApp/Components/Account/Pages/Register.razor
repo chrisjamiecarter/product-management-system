@@ -43,38 +43,40 @@
                     <p class="text-center fw-bold mx-3 mb-0">Or register with</p>
                 </div>
 
-                <div class="d-flex justify-content-evenly">
-                    <button class="btn btn-dark btn-lg" type="button">
+                <form class="d-flex justify-content-evenly" action="Account/PerformExternalLogin" method="post">
+                    <AntiforgeryToken />
+                    <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
+
+                    <button class="btn btn-dark btn-lg" type="submit" name="provider" value="Facebook">
                         <div class="d-flex align-items-center justify-content-center">
                             <FacebookSvg Height="1.5rem" Width="1.5rem" />
                         </div>
                     </button>
 
-                    <button class="btn btn-dark btn-lg" type="button">
+                    <button class="btn btn-dark btn-lg" type="submit" name="provider" value="GitHub">
                         <div class="d-flex align-items-center justify-content-center">
                             <GitHubSvg Height="1.5rem" Width="1.5rem" />
                         </div>
                     </button>
 
-                    <button class="btn btn-dark btn-lg" type="button">
+                    <button class="btn btn-dark btn-lg" type="submit" name="provider" value="Google">
                         <div class="d-flex align-items-center justify-content-center">
                             <GoogleSvg Height="1.5rem" Width="1.5rem" />
                         </div>
                     </button>
 
-                    <button class="btn btn-dark btn-lg" type="button">
+                    <button class="btn btn-dark btn-lg" type="submit" name="provider" value="Microsoft">
                         <div class="d-flex align-items-center justify-content-center">
                             <MicrosoftSvg Height="1.5rem" Width="1.5rem" />
                         </div>
                     </button>
 
-                    <button class="btn btn-dark btn-lg" type="button">
+                    <button class="btn btn-dark btn-lg" type="submit" name="provider" value="Twitter">
                         <div class="d-flex align-items-center justify-content-center">
                             <TwitterXSvg Height="1.5rem" Width="1.5rem" />
                         </div>
                     </button>
-                </div>
-
+                </form>
             </div>
         </div>
     </div>
