@@ -45,19 +45,19 @@ public class AuthServiceTests
     public async Task AddExternalLoginAsync_ReturnsFailure_WhenUserNotFound()
     {
         // Arrange.
-        string email = "user@testing.com";
+        string userId = Guid.NewGuid().ToString();
         string provider = "provider";
         string providerKey = "providerKey";
         string providerDisplayName = "providerDisplayName";
 
-        _userManager.FindByEmailAsync(email).Returns(DefaultNullApplicationUser);
+        _userManager.FindByIdAsync(userId).Returns(DefaultNullApplicationUser);
 
         // Act.
-        var result = await _authService.AddExternalLoginAsync(email, provider, providerKey, providerDisplayName);
+        var result = await _authService.AddExternalLoginAsync(userId, provider, providerKey, providerDisplayName);
 
         // Assert.
         Assert.True(result.IsFailure);
-        Assert.Equal(User.EmailNotFound(email), result.Error);
+        Assert.Equal(User.NotFound(userId), result.Error);
     }
 
     [Fact]
@@ -72,16 +72,16 @@ public class AuthServiceTests
         string providerDisplayName = "providerDisplayName";
         UserLoginInfo userLoginInfo = new UserLoginInfo(provider, providerKey, providerDisplayName);
 
-        _userManager.FindByEmailAsync(email).Returns(user);
+        _userManager.FindByIdAsync(userId).Returns(user);
         _userManager.FindByLoginAsync(provider, providerKey).Returns(DefaultNullApplicationUser);
         _userManagerWrapper.AddLoginAndReturnDomainResultAsync(user, userLoginInfo).ReturnsForAnyArgs(DefaultIdentityFailureResult);
 
         // Act.
-        var result = await _authService.AddExternalLoginAsync(email, provider, providerKey, providerDisplayName);
+        var result = await _authService.AddExternalLoginAsync(userId, provider, providerKey, providerDisplayName);
 
         // Assert.
         Assert.True(result.IsFailure);
-        Assert.Equal(ExternalLogin.NotAdded(email), result.Error);
+        Assert.Equal(ExternalLogin.NotAdded(userId), result.Error);
     }
 
     [Fact]
@@ -95,11 +95,11 @@ public class AuthServiceTests
         string providerKey = "providerKey";
         string providerDisplayName = "providerDisplayName";
 
-        _userManager.FindByEmailAsync(email).Returns(user);
+        _userManager.FindByIdAsync(userId).Returns(user);
         _userManager.FindByLoginAsync(provider, providerKey).Returns(user);
 
         // Act.
-        var result = await _authService.AddExternalLoginAsync(email, provider, providerKey, providerDisplayName);
+        var result = await _authService.AddExternalLoginAsync(userId, provider, providerKey, providerDisplayName);
 
         // Assert.
         Assert.True(result.IsSuccess);
