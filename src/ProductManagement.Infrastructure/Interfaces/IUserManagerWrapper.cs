@@ -20,6 +20,7 @@ internal interface IUserManagerWrapper
     Task<Result> DeleteAndReturnDomainResultAsync(ApplicationUser user);
     Task<Result> RemoveFromRoleAndReturnDomainResultAsync(ApplicationUser user, string? role);
     Task<Result> RemoveFromRolesAndReturnDomainResultAsync(ApplicationUser user, IEnumerable<string> roles);
+    Task<Result> RemoveLoginAndReturnDomainResultAsync(ApplicationUser user, string loginProvider, string providerKey);
     Task<Result> ResetPasswordAndReturnDomainResultAsync(ApplicationUser user, string token, string newPassword);
     Task<Result> SetUserNameAndReturnDomainResultAsync(ApplicationUser user, string? userName);
 }

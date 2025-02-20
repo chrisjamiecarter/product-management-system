@@ -28,12 +28,12 @@ internal class AuthService : IAuthService
         _userManagerWrapper = userManagerWrapper;
     }
 
-    public async Task<Result> AddExternalLoginAsync(string email, string provider, string providerKey, string? providerDisplayName, CancellationToken cancellationToken = default)
+    public async Task<Result> AddExternalLoginAsync(string userId, string provider, string providerKey, string? providerDisplayName, CancellationToken cancellationToken = default)
     {
-        var user = await _userManager.FindByEmailAsync(email);
+        var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            return Result.Failure(User.EmailNotFound(email));
+            return Result.Failure(User.NotFound(userId));
         }
 
         var userLogin = await _userManager.FindByLoginAsync(provider, providerKey);
@@ -47,7 +47,7 @@ internal class AuthService : IAuthService
         var loginResult = await _userManagerWrapper.AddLoginAndReturnDomainResultAsync(user, login);
         if (loginResult.IsFailure)
         {
-            return Result.Failure(ExternalLogin.NotAdded(email));
+            return Result.Failure(ExternalLogin.NotAdded(userId));
         }
 
         return Result.Success();
@@ -164,6 +164,21 @@ internal class AuthService : IAuthService
 
         var response = new ExternalLoginDto(email, info.LoginProvider, info.ProviderKey, info.ProviderDisplayName);
         return Result.Success(response);
+    }
+
+    public async Task<Result<List<ExternalLoginDto>>> GetExternalLogins(string userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return Result.Failure<List<ExternalLoginDto>>(User.NotFound(userId));
+        }
+
+        var userLogins = await _userManager.GetLoginsAsync(user);
+
+        var externalLogins = userLogins.Select(l => new ExternalLoginDto(user.Email!, l.LoginProvider, l.ProviderKey, l.ProviderDisplayName)).ToList();
+
+        return Result.Success(externalLogins);
     }
 
     public async Task<Result> PasswordSignInAsync(string email, string password, bool remember, CancellationToken cancellationToken = default)

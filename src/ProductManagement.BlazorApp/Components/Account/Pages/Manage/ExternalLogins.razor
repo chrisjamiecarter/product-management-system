@@ -1,0 +1,152 @@
+﻿@inject ISenderService Sender
+
+<section class="row mb-4">
+    <div class="col-md-8 col-lg-6 col-xl-5">
+        <h3 class="h3 mb-3 fw-normal">External Logins</h3>
+        <StatusMessage Status="@status" />
+        @if (logins is null)
+        {
+            <LoadingSpinner />
+        }
+        else
+        {
+            <table class="table table-hover align-middle">
+                <tbody>
+                    @foreach (var login in logins.Where(l => l.IsLinked))
+                    {
+                        <tr>
+                            <td>@login.ProviderDisplayName</td>
+                            <td scope="row" class="col-1">
+                                <form @formname="@($"remove-login-{login.Provider}")" @onsubmit="OnSubmitAsync" method="post">
+                                    <AntiforgeryToken />
+                                    <div title="Remove login if you have a password or 1 other means of logging in">
+                                        <input type="hidden" name="@nameof(LoginProvider)" value="@login.Provider" />
+                                        <input type="hidden" name="@nameof(ProviderKey)" value="@login.ProviderKey" />
+                                        <button type="submit" class="btn btn-lg btn-outline-dark w-100" disabled="@(disableRemoveButton)" title="Remove this @login.DisplayName login from your account">
+                                            <div class="d-flex align-items-center justify-content-center">
+                                                <LinkOffSvg Height="1.25rem" Width="1.25rem" />
+                                            </div>
+                                        </button>
+                                    </div>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <form class="form-horizontal" action="Account/Manage/LinkExternalLogin" method="post">
+                <AntiforgeryToken />
+                <table class="table table-hover align-middle">
+                    <tbody>
+                        @foreach (var login in logins.Where(l => !l.IsLinked))
+                        {
+                            <tr>
+                                <td>@login.ProviderDisplayName</td>
+                                <td scope="row" class="col-1">
+                                    <button type="submit" class="btn btn-lg btn-outline-dark w-100" name="Provider" value="@login.Provider" title="Log in using your @login.DisplayName account">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <AddLinkSvg Height="1.25rem" Width="1.25rem" />
+                                        </div>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </form>
+        }
+    </div>
+</section>
+
+@code {
+    public const string LinkLoginCallbackAction = "LinkLoginCallback";
+    public readonly string[] ExternalProviders = ["Facebook", "GitHub", "Google", "Microsoft", "Twitter"];
+
+    private IList<ExternalLoginDisplayModel>? logins;
+    private IList<ExternalLoginDto>? currentLogins;
+    private bool disableRemoveButton;
+    private StatusModel status = StatusModel.None;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public ApplicationUserDto User { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public bool HasPassword { get; set; }
+
+    [SupplyParameterFromForm]
+    private string? LoginProvider { get; set; }
+
+    [SupplyParameterFromForm]
+    private string? ProviderKey { get; set; }
+
+    [SupplyParameterFromQuery]
+    private string? Action { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpMethods.IsGet(HttpContext.Request.Method) && Action == LinkLoginCallbackAction)
+        {
+            await OnGetLinkLoginCallbackAsync();
+        }
+        await GetCurrentLoginsAsync();
+    }
+
+    private async Task GetCurrentLoginsAsync()
+    {
+        var command = new GetExternalLoginsQuery(User.Id);
+        var result = await Sender.SendAsync(command);
+        if (result.IsFailure)
+        {
+            status = new StatusModel(result.Error.Message, MessageLevel.Error);
+            return;
+        }
+
+        currentLogins = result.Value.ExternalLogins;
+
+        logins = ExternalProviders.Select(provider => new ExternalLoginDisplayModel(
+            currentLogins?.FirstOrDefault(l => l.Provider == provider) ??
+            new ExternalLoginDto(string.Empty, provider, string.Empty, provider))).ToList();
+
+        disableRemoveButton = !HasPassword && currentLogins.Count <= 1;
+    }
+
+    private async Task OnGetLinkLoginCallbackAsync()
+    {
+        var command = new LinkExternalLoginCommand(User.Id);
+        var result = await Sender.SendAsync(command);
+        if (result.IsFailure)
+        {
+            status = new StatusModel(result.Error.Message, MessageLevel.Error);
+            return;
+        }
+
+        await GetCurrentLoginsAsync();
+
+        status = new StatusModel("The external login was added.", MessageLevel.Success);
+    }
+
+    private async Task OnSubmitAsync()
+    {
+        if (string.IsNullOrWhiteSpace(LoginProvider) || string.IsNullOrWhiteSpace(ProviderKey))
+        {
+            // This should never trigger...
+            status = new StatusModel("Unexpected error occurred.", MessageLevel.Error);
+            return;
+        }
+
+        var command = new RemoveExternalLoginCommand(User.Id, LoginProvider, ProviderKey);
+        var result = await Sender.SendAsync(command);
+        if (result.IsFailure)
+        {
+            status = new StatusModel(result.Error.Message, MessageLevel.Error);
+            return;
+        }
+
+        await GetCurrentLoginsAsync();
+
+        status = new StatusModel("The external login was removed.", MessageLevel.Success);
+    }
+}

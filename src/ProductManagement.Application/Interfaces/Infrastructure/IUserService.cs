@@ -15,8 +15,10 @@ public interface IUserService
     Task<Result> DeleteAsync(string userId, CancellationToken cancellationToken = default);
     Task<Result<ApplicationUserDto>> FindByEmailAsync(string email, CancellationToken cancellationToken = default);
     Task<Result<ApplicationUserDto>> FindByIdAsync(string userId, CancellationToken cancellationToken = default);
+    Task<Result<ApplicationUserDto>> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken = default);
     Task<Result<PaginatedList<ApplicationUserDto>>> GetPageAsync(string? searchEmail, bool? searchEmailConfirmed, string? searchRole, string? sortColumn, string? sortOrder, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
     Task<Result<bool>> HasPasswordAsync(string userId, CancellationToken cancellationToken = default);
     Task<Result<bool>> IsEmailConfirmedAsync(string userId, CancellationToken cancellationToken = default);
+    Task<Result> RemoveExternalLoginAsync(string userId, string provider, string providerKey, CancellationToken cancellationToken = default);
     Task<Result> UpdateRoleAsync(string userId, string? role, CancellationToken cancellationToken = default);
 }

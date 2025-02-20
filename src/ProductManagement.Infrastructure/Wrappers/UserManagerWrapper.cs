@@ -205,6 +205,23 @@ internal class UserManagerWrapper : IUserManagerWrapper
     }
 
     /// <summary>
+    /// Attempts to remove the provided external login information from the specified <paramref name="user"/>.
+    /// and returns a flag indicating whether the removal succeed or not.
+    /// </summary>
+    /// <param name="user">The user to remove the login information from.</param>
+    /// <param name="loginProvider">The login provide whose information should be removed.</param>
+    /// <param name="providerKey">The key given by the external login provider for the specified user.</param>
+    /// <returns>
+    /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="Result"/>
+    /// of the operation, which has been mapped from the <see cref="IdentityResult"/>.
+    /// </returns>
+    public async Task<Result> RemoveLoginAndReturnDomainResultAsync(ApplicationUser user, string loginProvider, string providerKey)
+    {
+        var result = await _userManager.RemoveLoginAsync(user, loginProvider, providerKey);
+        return result.ToDomainResult();
+    }
+
+    /// <summary>
     /// Resets the <paramref name="user"/>'s password to the specified <paramref name="newPassword"/> after
     /// validating the given password reset <paramref name="token"/>.
     /// </summary>

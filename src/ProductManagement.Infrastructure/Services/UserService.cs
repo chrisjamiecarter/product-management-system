@@ -143,6 +143,18 @@ internal class UserService : IUserService
         return Result.Success(user.ToDto(role));
     }
 
+    public async Task<Result<ApplicationUserDto>> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByLoginAsync(loginProvider, providerKey);
+        if (user is null)
+        {
+            return Result.Failure<ApplicationUserDto>(User.LoginNotFound);
+        }
+
+        var role = await GetUserRole(user);
+        return Result.Success(user.ToDto(role));
+    }
+
     public async Task<Result<PaginatedList<ApplicationUserDto>>> GetPageAsync(string? searchEmail, bool? searchEmailConfirmed, string? searchRole, string? sortColumn, string? sortOrder, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
         if (pageNumber <= 0)
@@ -225,6 +237,23 @@ internal class UserService : IUserService
 
         var response = await _userManager.IsEmailConfirmedAsync(user);
         return Result.Success(response);
+    }
+
+    public async Task<Result> RemoveExternalLoginAsync(string userId, string provider, string providerKey, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return Result.Failure(User.NotFound(userId));
+        }
+
+        var result = await _userManagerWrapper.RemoveLoginAndReturnDomainResultAsync(user, provider, providerKey);
+        if (result.IsFailure)
+        {
+            return Result.Failure(result.Error);
+        }
+
+        return Result.Success();
     }
 
     public async Task<Result> UpdateRoleAsync(string userId, string? role, CancellationToken cancellationToken = default)

@@ -96,6 +96,10 @@ public static class ApplicationErrors
             "User.LockedOut",
             $"The user {email} is locked out");
 
+        public static readonly Error LoginNotFound = new(
+            "User.LoginNotFound",
+            $"A login was not found.");
+
         public static Error NotAllowed(string email) => new(
             "User.NotAllowed",
             $"The user {email} is not allowed to sign in");

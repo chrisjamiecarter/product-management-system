@@ -24,6 +24,8 @@ internal sealed class SignInWithExternalLoginCommandHandler : ICommandHandler<Si
 
     public async Task<Result> Handle(SignInWithExternalLoginCommand request, CancellationToken cancellationToken)
     {
+        string userId;
+        
         var infoResult = await _authService.GetExternalLoginInfo(cancellationToken);
         if (infoResult.IsFailure)
         {
@@ -33,32 +35,49 @@ internal sealed class SignInWithExternalLoginCommandHandler : ICommandHandler<Si
 
         var info = infoResult.Value;
 
-        var userResult = await _userService.FindByEmailAsync(info.Email, cancellationToken);
-        if (userResult.IsFailure)
+        var userLoginResult = await _userService.FindByLoginAsync(info.Provider, info.ProviderKey, cancellationToken);
+        if (userLoginResult.IsSuccess)
         {
-            var createResult = await _userService.CreateAsync(info.Email, true, cancellationToken);
-            if (createResult.IsFailure)
+            userId = userLoginResult.Value.Id;
+        }
+        else 
+        {
+            var userEmailResult = await _userService.FindByEmailAsync(info.Email, cancellationToken);
+            if (userEmailResult.IsFailure)
             {
-                _logger.LogWarning("{@Error}", createResult.Error);
-                return Result.Failure(createResult.Error);
+                var createResult = await _userService.CreateAsync(info.Email, true, cancellationToken);
+                if (createResult.IsFailure)
+                {
+                    _logger.LogWarning("{@Error}", createResult.Error);
+                    return Result.Failure(createResult.Error);
+                }
+
+                userEmailResult = await _userService.FindByEmailAsync(info.Email, cancellationToken);
+                if (userEmailResult.IsFailure)
+                {
+                    _logger.LogWarning("{@Error}", userEmailResult.Error);
+                    return Result.Failure(userEmailResult.Error);
+                }
+            }
+
+            userId = userEmailResult.Value.Id;
+
+            var addLoginResult = await _authService.AddExternalLoginAsync(userId, info.Provider, info.ProviderKey, info.ProviderDisplayName, cancellationToken);
+            if (addLoginResult.IsFailure)
+            {
+                _logger.LogWarning("{@Error}", addLoginResult.Error);
+                return Result.Failure(addLoginResult.Error);
             }
         }
 
-        var addLoginResult = await _authService.AddExternalLoginAsync(info.Email, info.Provider, info.ProviderKey, info.ProviderDisplayName, cancellationToken);
-        if (addLoginResult.IsFailure)
-        {
-            _logger.LogWarning("{@Error}", addLoginResult.Error);
-            return Result.Failure(addLoginResult.Error);
-        }
-
-        var signInResult = await _authService.ExternalLoginSignInAsync(info.Email, info.Provider, info.ProviderKey, cancellationToken);
+        var signInResult = await _authService.ExternalLoginSignInAsync(userId, info.Provider, info.ProviderKey, cancellationToken);
         if (signInResult.IsFailure)
         {
             _logger.LogWarning("{@Error}", signInResult.Error);
             return Result.Failure(signInResult.Error);
         }
 
-        _logger.LogInformation("Signed in User {email} successfully with {provider} provider", info.Email, info.Provider);
+        _logger.LogInformation("Signed in User {id} successfully with {provider} provider", userId, info.Provider);
         return Result.Success();
     }
 }

@@ -1,10 +1,13 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
+using ProductManagement.Application.Interfaces.Application;
 using ProductManagement.Application.Interfaces.Infrastructure;
 using ProductManagement.BlazorApp.Components.Account.Pages;
+using ProductManagement.BlazorApp.Components.Account.Pages.Manage;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -46,6 +49,28 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
         {
             await authService.SignOutAsync();
             return TypedResults.LocalRedirect($"~/{returnUrl}");
+        });
+
+        var manageGroup = accountGroup.MapGroup("/Manage").RequireAuthorization();
+
+        manageGroup.MapPost("/LinkExternalLogin", async (
+            HttpContext context,
+            [FromServices] ICurrentUserService currentUserService,
+            [FromForm] string provider) =>
+        {
+            // Clear the existing external cookie to ensure a clean login process
+            await context.SignOutAsync(IdentityConstants.ExternalScheme);
+
+            var redirectUrl = UriHelper.BuildRelative(
+                context.Request.PathBase,
+                "/Account/Manage",
+                QueryString.Create("Action", ExternalLogins.LinkLoginCallbackAction));
+
+            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+            properties.Items["LoginProvider"] = provider;
+            properties.Items["XsrfId"] = currentUserService.UserId;
+
+            return TypedResults.Challenge(properties, [provider]);
         });
 
         return accountGroup;
