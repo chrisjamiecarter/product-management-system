@@ -6,6 +6,7 @@
 Welcome to the **Product Management** System!
 
 This is a .NET project designed to demonstrate role based authentication and authorisation with ASP.NET Core Identity.
+Additionally, it also demonstrates integrating with third-party services to provide authentication.
 
 Product Management System is a back-of-store application developed solely using .NET!
 Users can create, view, update and delete products. Whilst admins can create, view, update and delete users. Owners have full controls, and account with no role will just be able to see the home page.
@@ -25,6 +26,10 @@ There is an integrated SQL Server database in the back-end.
   - Admins can create, view, update and delete users. Search, ordering and pagination has been implemented.
 - **Account**:
   - New users can register themselves, or an Admin can create them. However, to log in they must first confirm their email. Authenticated users can update their email or set/change their password.
+- **External Login Providers**
+  - Facebook, GitHub, Google, Microsoft, Twitter/X.
+  - New users can choose to register with any of these providers.
+  - Existing users can link or un-link their account with any of these providers.
 - **Email Integration**:
   - Email confirmations, change of emails, and password resets are all handled via a link send via email.
 - **Error Logging**:
@@ -74,6 +79,8 @@ On start-up of the **BlazorApp** application, any required database creation/mig
 3. Configure the application:
 
    - Update any required settings in `appsettings.json` to target your environment:
+     - Authentication
+       - Set your provider ID's and secret's.
      - ConnectionStrings
        - ProductManagement: Required to target database.
      - EmailOptions
@@ -121,13 +128,20 @@ OR
 
 Please refer to the short YouTube video demonstration below:
 
+### Product Management System
+
 [![YouTube Video Demonstration](./_resources/product-management-system-home.png)](https://www.youtube.com/watch?v=P36DjCTBLRI "Product Management System Showcase")
+
+### Product Management System - External Auth
+
+[![YouTube Video Demonstration](./_resources/product-management-system-home.png)](https://www.youtube.com/watch?v=SylZHQoUaoE "Product Management System - External Auth Showcase")
 
 ## How It Works
 
 - **Web Project**: This project uses Blazor Web App v9 to serve .NET pages to your web browser. Interactive render mode provides interactability.
 - **Web Design**: This project uses Bootstrap v5.3.3 to style the app and provide a responsive web design.
 - **Authentication and Authorization**: This project uses ASP.NET Core Identity to secure the app.
+- **External Authentication**: This project uses Facebook, GitHub, Google, Microsoft, Twitter/X as external login providers.
 - **MediatR**: MediatR is used to send and handle commands and queries within the application.
 - **Seeding**: Bogus is used to generate fake product data for the database.
 - **Logging**: Serilog and it's MsSqlServer Sink is used to write log messages to the database.
@@ -157,7 +171,7 @@ The CQRS pattern is applied to separate read and write operations. Commands hand
 
 ## Version
 
-This document applies to the ProductManagementSystem v1.0.0 release version.
+This document applies to the ProductManagementSystem v2.0.0 release version.
 
 ## Contributing
 
